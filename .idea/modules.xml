@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/PushSDK/PushSDK.iml" filepath="$PROJECT_DIR$/PushSDK/PushSDK.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libs/android-pdfview/android-pdfview.iml" filepath="$PROJECT_DIR$/libs/android-pdfview/android-pdfview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pm-android.iml" filepath="$PROJECT_DIR$/pm-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libs/pull-to-refresh/pull-to-refresh.iml" filepath="$PROJECT_DIR$/libs/pull-to-refresh/pull-to-refresh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/umeng-push/umeng-push.iml" filepath="$PROJECT_DIR$/umeng-push/umeng-push.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libs/umeng-social/umeng-social.iml" filepath="$PROJECT_DIR$/libs/umeng-social/umeng-social.iml" />
+    </modules>
+  </component>
+</project>
