@@ -16,6 +16,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -359,7 +361,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				}
 			}).start();
 		} else {
-			urlString = link;
+			urlString = "http://123.56.91.131:8091";
 
 			runOnUiThread(new Runnable() {
 				@Override
@@ -371,15 +373,27 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
                          * 外部链接传参: user_num, timestamp
                          */
 						mWebView.getSettings().setDomStorageEnabled(true);
-						String appendParams = String.format("user_num=%s&timestamp=%s", userNum, URLs.timestamp());
-						String splitString = urlString.contains("?") ? "&" : "?";
-						urlString = String.format("%s%s%s", urlString, splitString, appendParams);
-						mWebView.loadUrl(urlString);
+						try {
+							synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid="+user.getString("sessionid"));
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+						mWebView.loadUrl("http://123.56.91.131:8091");
 						Log.i("OutLink", urlString);
 					}
 				}
 			});
 		}
+	}
+
+	public boolean synCookie(String url,String cookie) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			CookieSyncManager.createInstance(SubjectActivity.this);
+		}
+		CookieManager cookieManager = CookieManager.getInstance();
+		cookieManager.setCookie(url, cookie);
+		String newCookie = cookieManager.getCookie(url);
+		return TextUtils.isEmpty(newCookie)?false:true;
 	}
 
 	private final Handler mHandlerForPDF = new Handler() {

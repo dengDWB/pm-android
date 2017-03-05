@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -30,6 +31,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -102,6 +104,7 @@ public class BaseActivity extends Activity {
     Context mAppContext;
     Toast toast;
     int displayDpi; //屏幕密度
+    SharedPreferences sp;
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
@@ -114,6 +117,7 @@ public class BaseActivity extends Activity {
 
         mMyApp = (YHApplication)this.getApplication();
         mAppContext = mMyApp.getAppContext();
+        sp = getSharedPreferences("cookie", MODE_PRIVATE);
 
         sharedPath = FileUtil.sharedPath(mAppContext);
         assetsPath = sharedPath;
@@ -266,8 +270,8 @@ public class BaseActivity extends Activity {
         animLoading = (RelativeLayout) findViewById(R.id.anim_loading);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webSettings.setDefaultTextEncodingName("utf-8");
 
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.setDrawingCacheEnabled(true);
@@ -276,6 +280,9 @@ public class BaseActivity extends Activity {
             public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
                 //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
                 view.loadUrl(url);
+                CookieManager cm = CookieManager.getInstance();
+                String cookies = cm.getCookie(url);
+                sp.edit().putString("cook", cookies).apply();
                 return true;
             }
 

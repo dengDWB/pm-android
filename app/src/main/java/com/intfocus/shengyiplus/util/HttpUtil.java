@@ -75,7 +75,7 @@ public class HttpUtil {
             boolean isJSON = false;
             for (int i = 0, len = responseHeaders.size(); i < len; i++) {
                 retMap.put(responseHeaders.name(i), responseHeaders.value(i));
-                // Log.i("HEADER", String.format("Key : %s, Value: %s", responseHeaders.name(i), responseHeaders.value(i)));
+                Log.i("HEADER123", String.format("Key : %s, Value: %s", responseHeaders.name(i), responseHeaders.value(i)));
                 isJSON = responseHeaders.name(i).equalsIgnoreCase(kContentType) && responseHeaders.value(i).contains(kApplicationJson);
             }
             retMap.put(URLs.kCode, String.format("%d", response.code()));
