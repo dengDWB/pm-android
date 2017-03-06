@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.intfocus.shengyiplus"
+    package="com.intfocus.hdmcre"
     android:versionCode="1"
     android:versionName="0.01">
 
@@ -29,7 +29,7 @@
 
     <!-- 获取logcat日志 -->
     <application
-        android:name=".YHApplication"
+        android:name="com.intfocus.hdmcre.YHApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -37,7 +37,7 @@
         tools:replace="android:icon,android:theme">
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.intfocus.shengyiplus.fileprovider"
+            android:authorities="com.intfocus.hdmcre.fileprovider"
             android:grantUriPermissions="true"
             android:exported="false">
             <meta-data
@@ -60,7 +60,7 @@
             android:enabled="false" />
         -->
         <activity
-            android:name=".LoginActivity"
+            android:name="com.intfocus.hdmcre.LoginActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme">
@@ -71,54 +71,54 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ForgetPasswordActivity"
+            android:name="com.intfocus.hdmcre.ForgetPasswordActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
-        <activity android:name=".InputBarCodeActivity"
+        <activity android:name="com.intfocus.hdmcre.InputBarCodeActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
-        <activity android:name=".BarCodeScannerActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".SettingActivity"
+        <activity android:name="com.intfocus.hdmcre.BarCodeScannerActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".DashboardActivity"
+            android:name="com.intfocus.hdmcre.SettingActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".SubjectActivity"
+            android:name="com.intfocus.hdmcre.DashboardActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name="com.intfocus.hdmcre.SubjectActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="fullSensor"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".ReportSelectorAcitity"
+            android:name="com.intfocus.hdmcre.ReportSelectorAcitity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".CommentActivity"
+            android:name="com.intfocus.hdmcre.CommentActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".ResetPasswordActivity"
+            android:name="com.intfocus.hdmcre.ResetPasswordActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".BarCodeResultActivity"
+            android:name="com.intfocus.hdmcre.BarCodeResultActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".StoreSelectorActivity"
+            android:name="com.intfocus.hdmcre.StoreSelectorActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".screen_lock.InitPassCodeActivity"
+            android:name="com.intfocus.hdmcre.screen_lock.InitPassCodeActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".screen_lock.ConfirmPassCodeActivity"
+            android:name="com.intfocus.hdmcre.screen_lock.ConfirmPassCodeActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
@@ -126,22 +126,22 @@
             android:excludeFromRecents="true"
             android:theme="@style/Theme.UMDefault" />
         <activity
-            android:name=".ThursdaySayActivity"
+            android:name="com.intfocus.hdmcre.ThursdaySayActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".DeveloperActivity"
+            android:name="com.intfocus.hdmcre.DeveloperActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".wxapi.WXEntryActivity"
+            android:name="com.intfocus.hdmcre.wxapi.WXEntryActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <!-- Services -->
-        <service android:name=".LocalNotificationService" />
+        <service android:name="com.intfocus.hdmcre.LocalNotificationService" />
 
         <!-- 蒲公英 必选 -->
         <meta-data
