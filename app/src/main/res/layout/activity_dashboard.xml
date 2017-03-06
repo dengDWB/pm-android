@@ -19,7 +19,7 @@
             android:layout_centerInParent="true"
             android:layout_marginBottom="12dp"
             android:layout_marginTop="12dp"
-            android:src="@drawable/banner_logo"/>
+            android:src="@drawable/pm_logo"/>
 
         <ImageView
             android:id="@+id/bannerSetting"
@@ -69,28 +69,28 @@
         android:background="@color/white"
         android:orientation="horizontal">
 
-        <com.intfocus.shengyiplus.view.TabView
+        <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabKPI"
             style="@style/ToolBarTab"
             app:active_src="@drawable/tab_kpi_s"
             app:src="@drawable/tab_kpi"
-            app:text="仪表盘"/>
+            app:text="首页"/>
 
-        <com.intfocus.shengyiplus.view.TabView
+        <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabAnalyse"
             style="@style/ToolBarTab"
             app:active_src="@drawable/tab_analysis_s"
             app:src="@drawable/tab_analysis"
-            app:text="分析"/>
+            app:text="待办"/>
 
-        <com.intfocus.shengyiplus.view.TabView
-            android:id="@+id/tabApp"
-            style="@style/ToolBarTab"
-            app:active_src="@drawable/tab_app_s"
-            app:src="@drawable/tab_app"
-            app:text="应用"/>
+        <!--<com.intfocus.hdmcre.view.TabView-->
+            <!--android:id="@+id/tabApp"-->
+            <!--style="@style/ToolBarTab"-->
+            <!--app:active_src="@drawable/tab_app_s"-->
+            <!--app:src="@drawable/tab_app"-->
+            <!--app:text="应用"/>-->
 
-        <com.intfocus.shengyiplus.view.TabView
+        <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabMessage"
             style="@style/ToolBarTab"
             app:active_src="@drawable/tab_message_s"
