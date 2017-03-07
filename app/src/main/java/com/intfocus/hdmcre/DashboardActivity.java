@@ -24,10 +24,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.handmark.pulltorefresh.library.PullToRefreshWebView;
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
+import com.intfocus.hdmcre.util.HttpUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
@@ -45,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.intfocus.hdmcre.util.URLs.kGroupId;
 
@@ -123,6 +126,7 @@ public class DashboardActivity extends BaseActivity {
 		mWebView.loadUrl(urlString);
 
 		checkUserModifiedInitPassword();
+		downloadUserJs();
 	}
 
 	protected void onResume() {
@@ -927,5 +931,34 @@ public class DashboardActivity extends BaseActivity {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public void downloadUserJs() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String userConfigPath = String.format("%s/%s", FileUtil.basePath(DashboardActivity.this), K.kUserConfigFileName);
+					JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+					String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
+					String assetsPath = FileUtil.sharedPath(DashboardActivity.this);
+					Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
+					String outPath = assetsPath+"/offline_pages/static/js/user_permission.js";
+					final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, outPath, headers);
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200")) {
+								Toast.makeText(DashboardActivity.this, "用户权限js文件下载成功", Toast.LENGTH_SHORT).show();
+							}else {
+								Toast.makeText(DashboardActivity.this, "用户权限js文件下载失败", Toast.LENGTH_SHORT).show();
+							}
+						}
+					});
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }

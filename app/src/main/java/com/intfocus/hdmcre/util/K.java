@@ -48,6 +48,8 @@ public class K extends PrivateURLs implements Serializable {
   public final static String kStaticHtml               = "file:///%s/offline_pages/%s";
   public final static String kLogOut                   = "%s/api/v1/%s/%s/logout";
 
+  public final static String kUserJsDownload           ="%s/api/v1/download/hd/%s";
+
   /**
    *  Config#Application
    */
