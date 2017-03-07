@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 public class SettingActivity extends BaseActivity {
@@ -568,6 +569,17 @@ public class SettingActivity extends BaseActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
 
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Map<String, String> response = HttpUtil.httpPost(String.format(K.kLogOut, K.kBaseUrl, "android", user.getString("user_device_id")), new HashMap());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
             /*
              * 用户行为记录, 单独异常处理，不可影响用户体验
              */
@@ -671,6 +683,7 @@ public class SettingActivity extends BaseActivity {
                                 FileUtil.checkAssets(mAppContext, URLs.kStylesheets, true);
                                 FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
                                 FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
+                                FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
                                 // FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
 
                                 toast("校正完成");

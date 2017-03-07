@@ -6,6 +6,11 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
+
+import org.OpenUDID.OpenUDID_manager;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,9 +22,6 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.OpenUDID.OpenUDID_manager;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import static com.intfocus.hdmcre.util.K.kAppVersion;
 import static com.intfocus.hdmcre.util.K.kFontsMd5;
@@ -64,6 +66,12 @@ public class ApiHelper {
                 return response.get(URLs.kBody);
             }
             // FileUtil.dirPath 需要优先写入登录用户信息
+            if (response.containsKey("csrftoken")){
+                response.remove("csrftoken");
+            }
+            if (response.containsKey("sessionid")){
+                response.remove("sessionid");
+            }
             JSONObject responseJSON = new JSONObject(response.get(URLs.kBody));
             userJSON = ApiHelper.mergeJson(userJSON, responseJSON);
             FileUtil.writeFile(userConfigPath, userJSON.toString());

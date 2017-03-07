@@ -25,7 +25,6 @@ import com.intfocus.hdmcre.screen_lock.ConfirmPassCodeActivity;
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.K;
-import com.intfocus.hdmcre.util.URLs;
 import com.pgyersdk.update.PgyUpdateManager;
 
 import org.json.JSONObject;
@@ -270,7 +269,7 @@ public class LoginActivity extends BaseActivity{
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final String info = ApiHelper.authentication(mAppContext, usernameString, URLs.MD5(passwordString));
+                    final String info = ApiHelper.authentication(mAppContext, usernameString, passwordString);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

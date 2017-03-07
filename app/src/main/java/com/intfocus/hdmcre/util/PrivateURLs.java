@@ -13,7 +13,7 @@ package com.intfocus.hdmcre.util;
 
 public class PrivateURLs {
   public final static String kAppCode         = "shengyiplus";
-  public final static String kThemeColor      = "#53a93f";
+  public final static String kThemeColor      = "#1099F5";
   public final static String kBannerBgColor   = "#53a93f";
   public final static String kBannerTextColor = "#ffffff";
   public final static String kInitPassword    = "123456";
@@ -22,7 +22,7 @@ public class PrivateURLs {
   public final static String kBaseUrl     = "http://123.56.91.131:8090";
 
   public final static String kPgyerAppId   = "38e630134f0ca8098aeffe13d52ad5b6";
-  public final static String kPgyerUrl     = "http://www.pgyer.com/shengyiplus-a";
+  public final static String kPgyerUrl     = "https://www.pgyer.com/hdmcre-a";
 
   public final static String kUMAppId      = "5705c952e0f55a391a0011cc";
   public final static String kWXAppId      = "wx0ad40e5c84419ce2";

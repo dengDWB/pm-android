@@ -205,7 +205,7 @@ public class DashboardActivity extends BaseActivity {
 						break;
 					case "analyse":
 						jumpTab(mTabAnalyse);
-						urlString = String.format(K.kAnalyseMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId));
+						urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
 						break;
 //					case "app":
 //						jumpTab(mTabAPP);
@@ -392,6 +392,7 @@ public class DashboardActivity extends BaseActivity {
 		initPullWebView();
 		setPullToRefreshWebView(true);
 		mWebView.requestFocus();
+		mWebView.getSettings().setDomStorageEnabled(true);
 		mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
 		animLoading.setVisibility(View.VISIBLE);
 

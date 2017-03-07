@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="fill_parent"
-              android:background="@drawable/banner_popup_background"
+              android:background="@drawable/pm_popup_background"
               android:orientation="vertical">
 
     <ListView

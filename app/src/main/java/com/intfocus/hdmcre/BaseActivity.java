@@ -214,6 +214,7 @@ public class BaseActivity extends Activity {
         mWebView = pullToRefreshWebView.getRefreshableView();
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
@@ -274,6 +275,7 @@ public class BaseActivity extends Activity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setDefaultTextEncodingName("utf-8");
+        webSettings.setDomStorageEnabled(true);
 
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.setDrawingCacheEnabled(true);
@@ -292,24 +294,6 @@ public class BaseActivity extends Activity {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), url));
-                boolean flag = false;
-                if (urlStack.isEmpty()){
-                    urlStack.push(url);
-                }else {
-                    for (int i = 0; i< urlStack.size();i++){
-                        Log.d("Stack1",(String)urlStack.get(i));
-                        if(urlStack.get(i).equals(url)){
-                            for (int j = i+1; j<urlStack.size(); j++){
-                                urlStack.remove(j);
-                            }
-                            flag =true;
-                        }
-                    }
-                    if (!flag){
-                        urlStack.push(url);
-                    }
-                }
-                Log.i("urlStack1", urlStack.toString());
             }
 
             @Override
@@ -389,7 +373,7 @@ public class BaseActivity extends Activity {
                 String urlKey = urlString.contains("?") ? TextUtils.split(urlString, "?")[0] : urlString;
                 ApiHelper.clearResponseHeader(urlKey, assetsPath);
             }
-            new Thread(mRunnableForDetecting).start();
+//            new Thread(mRunnableForDetecting).start();
 
             /*
              * 用户行为记录, 单独异常处理，不可影响用户体验
@@ -410,6 +394,7 @@ public class BaseActivity extends Activity {
             super.onPostExecute(aVoid);
             // Call onRefreshComplete when the list has been refreshed. 如果没有下面的函数那么刷新将不会停
             pullToRefreshWebView.onRefreshComplete();
+            mWebView.loadUrl(urlString);
         }
     }
 
@@ -860,6 +845,7 @@ public class BaseActivity extends Activity {
         checkAssetUpdated(shouldReloadUIThread, URLs.kStylesheets, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kJavaScripts, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kBarCodeScan, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePages, false);
         // checkAssetUpdated(shouldReloadUIThread, URLs.kAdvertisement, false);
     }
 
@@ -1012,7 +998,7 @@ public class BaseActivity extends Activity {
          */
         @JavascriptInterface
         public void refreshBrowser() {
-            new Thread(mRunnableForDetecting).start();
+            mWebView.loadUrl(urlString);
         }
 
         @JavascriptInterface

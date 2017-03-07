@@ -21,6 +21,7 @@ import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.K;
+import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
 import com.joanzapata.pdfview.PDFView;
 import com.joanzapata.pdfview.listener.OnErrorOccurredListener;
@@ -49,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.webkit.WebView.enableSlowWholeDocumentDraw;
 import static java.lang.String.format;
@@ -65,6 +68,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	private ArrayList<HashMap<String, Object>> listItem;
 	private Context mContext;
 	private int loadCount = 0;
+	private Map<String,String> staticUrlMap;
+	private TextView mTitle;
 
 	@Override
 	@SuppressLint("SetJavaScriptEnabled")
@@ -91,14 +96,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			groupID = -2;
 			userNum = "not-set";
 		}
-
-		mWebView = (WebView) findViewById(R.id.browser);
-		initSubWebView();
-
-		mWebView.requestFocus();
-		mWebView.setVisibility(View.VISIBLE);
-		mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
-		animLoading.setVisibility(View.VISIBLE);
+		initWebView();
 		initActiongBar();
 
 		List<ImageView> colorViews = new ArrayList<>();
@@ -110,10 +108,87 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		initColorView(colorViews);
 	}
 
+	public void initWebView(){
+		mWebView = (WebView) findViewById(R.id.browser);
+		initSubWebView();
+		mWebView.setWebViewClient(new WebViewClient() {
+			@Override
+			public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
+				//返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
+				view.loadUrl(url);
+				return true;
+			}
+
+			@Override
+			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+				super.onPageStarted(view, url, favicon);
+				LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), url));
+				setUrlStack(url);
+			}
+
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				super.onPageFinished(view, url);
+				animLoading.setVisibility(View.GONE);
+				LogUtil.d("onPageFinished", String.format("%s - %s", URLs.timestamp(), url));
+			}
+
+			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+				LogUtil.d("onReceivedError",
+						String.format("errorCode: %d, description: %s, url: %s", errorCode, description,
+								failingUrl));
+			}
+		});
+
+		mWebView.requestFocus();
+		mWebView.setVisibility(View.VISIBLE);
+		mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
+		animLoading.setVisibility(View.VISIBLE);
+	}
+
+	public void setUrlStack(String url){
+		boolean flag = false;
+		if (urlStack.isEmpty()){
+			urlStack.push(url);
+		}else {
+			for (int i = 0; i< urlStack.size();i++){
+				if(urlStack.get(i).equals(url)){
+					for (int j = i+1; j<urlStack.size(); j++){
+						urlStack.remove(j);
+					}
+					flag =true;
+				}
+			}
+			if (!flag){
+				urlStack.push(url);
+			}
+		}
+		Log.i("urlStack1", urlStack.toString());
+		setBannerName((String)urlStack.peek());
+	}
+
+	public void setBannerName(String url){
+		if (url.contains("offline_pages") && url.contains("file")) {
+			StringBuilder sb = new StringBuilder(url);
+			final String newUrl = url.substring(sb.lastIndexOf("/")+1, url.length());
+			initStaticUrl();
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if(staticUrlMap.containsKey(newUrl)){
+						mTitle.setText(staticUrlMap.get(newUrl));
+					}else {
+						mTitle.setText(newUrl);
+					}
+				}
+			});
+		}
+	}
+
 	private void initActiongBar(){
 		bannerView = (RelativeLayout) findViewById(R.id.actionBar);
 		ImageView mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
-		TextView mTitle = (TextView) findViewById(R.id.bannerTitle);
+		mTitle = (TextView) findViewById(R.id.bannerTitle);
 
 		/*
          * Intent Data || JSON Data
@@ -365,7 +440,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			}).start();
 		} else {
 			urlString = link;
-
+			webSettings.setDomStorageEnabled(true);
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
@@ -374,28 +449,44 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 					} else {
 						if (link.startsWith("offline://")){
 							String newLink = link.replace("offline://","");
-							Log.i("flag1111", String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), newLink));
 							mWebView.loadUrl(String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), newLink));
 						}else {
 							/*
                          * 外部链接传参: user_num, timestamp
                          */
-							mWebView.getSettings().setDomStorageEnabled(true);
-							try {
-								if (user.has("csrftoken") && user.has("sessionid")){
-									synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid="+user.getString("sessionid"));
-								}
-							} catch (JSONException e) {
-								e.printStackTrace();
+						try {
+							if (user.has("csrftoken") && user.has("sessionid")){
+								synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid="+user.getString("sessionid"));
 							}
-							mWebView.loadUrl(urlString);
+						} catch (JSONException e) {
+							e.printStackTrace();
 						}
-
+						mWebView.loadUrl(urlString);
+						}
 						Log.i("OutLink", urlString);
 					}
 				}
 			});
 		}
+	}
+
+	public void initStaticUrl(){
+		staticUrlMap = new HashMap<>();
+		staticUrlMap.put("devices.html", "设备巡检列表");
+		staticUrlMap.put("device.new.html", "新建巡检工单");
+		staticUrlMap.put("device.view.html", "设备巡检报告");
+		staticUrlMap.put("meters.html", "仪表盘读取列表");
+		staticUrlMap.put("meter.view.html", "仪表盘读数明细");
+		staticUrlMap.put("meter.new.html", "新建仪表盘");
+		staticUrlMap.put("opers.html", "运营巡检记录");
+		staticUrlMap.put("oper.view.html", "运营巡检详情");
+		staticUrlMap.put("oper.new.html", "新建运营巡检");
+		staticUrlMap.put("repairs.html", "设备维修列表");
+		staticUrlMap.put("repair.view.html", "设备维修明细");
+		staticUrlMap.put("repair.new.html", "设备维修新建");
+		staticUrlMap.put("list.html", "待办列表");
+		staticUrlMap.put("maintain.execute.html", "工程报修");
+		staticUrlMap.put("oper.signin.html", "运营巡检签收");
 	}
 
 	public boolean synCookie(String url,String cookie) {
@@ -590,6 +681,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		Log.i("urlStack",urlStack.toString());
 		if (urlStack.size() > 1){
 			urlStack.pop();
+			mWebView.getSettings().setDomStorageEnabled(true);
 			mWebView.loadUrl((String )urlStack.pop());
 		}else {
 			finish();
