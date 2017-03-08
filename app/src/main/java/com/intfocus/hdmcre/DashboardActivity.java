@@ -922,11 +922,11 @@ public class DashboardActivity extends BaseActivity {
 				logParams.put(URLs.kObjTitle, String.format("主页面/%s", ex));
 				new Thread(mRunnableForLogger).start();
 
-				//点击两次还是有异常 异常报出
-				if (loadCount < 2) {
-					showWebViewExceptionForWithoutNetwork();
-					loadCount++;
-				}
+//				//点击两次还是有异常 异常报出
+//				if (loadCount < 2) {
+//					showWebViewExceptionForWithoutNetwork();
+//					loadCount++;
+//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -949,7 +949,6 @@ public class DashboardActivity extends BaseActivity {
 						@Override
 						public void run() {
 							if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200")) {
-								Toast.makeText(DashboardActivity.this, "用户权限js文件下载成功", Toast.LENGTH_SHORT).show();
 							}else {
 								Toast.makeText(DashboardActivity.this, "用户权限js文件下载失败", Toast.LENGTH_SHORT).show();
 							}

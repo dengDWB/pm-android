@@ -144,10 +144,10 @@ public class ResetPasswordActivity extends BaseActivity {
                 new Thread(mRunnableForLogger).start();
 
                 //点击两次还是有异常 异常报出
-                if (loadCount < 2) {
-                    showWebViewExceptionForWithoutNetwork();
-                    loadCount++;
-                }
+//                if (loadCount < 2) {
+//                    showWebViewExceptionForWithoutNetwork();
+//                    loadCount++;
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

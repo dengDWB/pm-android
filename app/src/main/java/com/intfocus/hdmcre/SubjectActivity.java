@@ -295,11 +295,18 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		checkInterfaceOrientation(this.getResources().getConfiguration());
 		mMyApp.setCurrentActivity(this);
 		isWeiXinShared = false;
+		mWebView.resumeTimers();
 		/*
 		 * 判断是否允许浏览器复制
 		 */
 		isAllowBrowerCopy();
 		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		mWebView.pauseTimers();
 	}
 
 	protected void displayBannerTitleAndSearchIcon() {
@@ -796,10 +803,10 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				new Thread(mRunnableForLogger).start();
 
 				//点击两次还是有异常 异常报出
-				if (loadCount < 2) {
-					showWebViewExceptionForWithoutNetwork();
-					loadCount++;
-				}
+//				if (loadCount < 2) {
+//					showWebViewExceptionForWithoutNetwork();
+//					loadCount++;
+//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

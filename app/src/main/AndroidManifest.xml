@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.intfocus.hdmcre"
-    android:versionCode="12"
-    android:versionName="0.12">
+    android:versionCode="14"
+    android:versionName="0.14">
 
     <!-- 扫描条形码或二维码 -->
     <uses-permission android:name="android.permission.CAMERA" />

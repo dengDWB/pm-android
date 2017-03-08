@@ -355,7 +355,6 @@ public class BaseActivity extends Activity {
                 });
     }
 
-
     public static int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
@@ -373,7 +372,11 @@ public class BaseActivity extends Activity {
                 String urlKey = urlString.contains("?") ? TextUtils.split(urlString, "?")[0] : urlString;
                 ApiHelper.clearResponseHeader(urlKey, assetsPath);
             }
-//            new Thread(mRunnableForDetecting).start();
+            if (urlString.contains("file:///")){
+
+            }else {
+                new Thread(mRunnableForDetecting).start();
+            }
 
             /*
              * 用户行为记录, 单独异常处理，不可影响用户体验
@@ -394,7 +397,9 @@ public class BaseActivity extends Activity {
             super.onPostExecute(aVoid);
             // Call onRefreshComplete when the list has been refreshed. 如果没有下面的函数那么刷新将不会停
             pullToRefreshWebView.onRefreshComplete();
-            mWebView.loadUrl(urlString);
+            if (urlString.contains("file:///")){
+                mWebView.loadUrl(urlString);
+            }
         }
     }
 
