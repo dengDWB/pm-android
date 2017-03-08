@@ -46,9 +46,12 @@ import com.umeng.socialize.media.UMImage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +71,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	private ArrayList<HashMap<String, Object>> listItem;
 	private Context mContext;
 	private int loadCount = 0;
-	private Map<String,String> staticUrlMap;
+	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
 
 	@Override
@@ -108,7 +111,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		initColorView(colorViews);
 	}
 
-	public void initWebView(){
+	public void initWebView() {
 		mWebView = (WebView) findViewById(R.id.browser);
 		initSubWebView();
 		mWebView.setWebViewClient(new WebViewClient() {
@@ -146,38 +149,39 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		animLoading.setVisibility(View.VISIBLE);
 	}
 
-	public void setUrlStack(String url){
+	public void setUrlStack(String url) {
 		boolean flag = false;
-		if (urlStack.isEmpty()){
+		if (urlStack.isEmpty()) {
 			urlStack.push(url);
-		}else {
-			for (int i = 0; i< urlStack.size();i++){
-				if(urlStack.get(i).equals(url)){
-					for (int j = i+1; j<urlStack.size(); j++){
+		} else {
+			for (int i = 0; i < urlStack.size(); i++) {
+				if (urlStack.get(i).equals(url)) {
+					for (int j = i + 1; j < urlStack.size(); j++) {
 						urlStack.remove(j);
 					}
-					flag =true;
+					flag = true;
 				}
 			}
-			if (!flag){
+			if (!flag) {
 				urlStack.push(url);
 			}
 		}
 		Log.i("urlStack1", urlStack.toString());
-		setBannerName((String)urlStack.peek());
+		setBannerName((String) urlStack.peek());
 	}
 
-	public void setBannerName(String url){
+	public void setBannerName(String url) {
 		if (url.contains("offline_pages") && url.contains("file")) {
 			StringBuilder sb = new StringBuilder(url);
-			final String newUrl = url.substring(sb.lastIndexOf("/")+1, url.length());
+			final String newUrl = url.substring(sb.lastIndexOf("/") + 1, url.length());
 			initStaticUrl();
+			Log.i("newUrl",newUrl);
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					if(staticUrlMap.containsKey(newUrl)){
-						mTitle.setText(staticUrlMap.get(newUrl));
-					}else {
+					if (staticUrlMap.containsKey(newUrl.replace(".tmp",""))) {
+						mTitle.setText(staticUrlMap.get(newUrl.replace(".tmp","")));
+					} else {
 						mTitle.setText(newUrl);
 					}
 				}
@@ -185,7 +189,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 	}
 
-	private void initActiongBar(){
+	private void initActiongBar() {
 		bannerView = (RelativeLayout) findViewById(R.id.actionBar);
 		ImageView mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
 		mTitle = (TextView) findViewById(R.id.bannerTitle);
@@ -198,15 +202,19 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		bannerName = intent.getStringExtra(URLs.kBannerName);
 		objectID = intent.getIntExtra(URLs.kObjectId, -1);
 		objectType = intent.getIntExtra(URLs.kObjectType, -1);
-		mTitle.setText(bannerName);
+//		mTitle.setText(bannerName);
 
 		if (link.toLowerCase().endsWith(".pdf")) {
 			mPDFView = (PDFView) findViewById(R.id.pdfview);
 			mPDFView.setVisibility(View.INVISIBLE);
 		}
 		mBannerSetting.setVisibility(View.VISIBLE);
-		if (link.startsWith("offline://")){
-		}else {
+		if (link.startsWith("offline:///")){
+			finish();
+		}
+
+		if (link.startsWith("offline://")) {
+		} else {
 			isInnerLink = !(link.startsWith("http://") || link.startsWith("https://"));
 		}
 	}
@@ -238,8 +246,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		listItem = new ArrayList<>();
 		String[] itemName = {"分享", "评论", "刷新"};
 		int[] itemImage = {R.drawable.banner_share,
-					R.drawable.banner_comment,
-					R.drawable.btn_refresh};
+				R.drawable.banner_comment,
+				R.drawable.btn_refresh};
 //					mTts.isSpeaking() ? R.drawable.btn_stop : R.drawable.btn_play};
 		for (int i = 0; i < itemName.length; i++) {
 			HashMap<String, Object> map = new HashMap<>();
@@ -250,8 +258,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 		if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
 			HashMap<String, Object> map = new HashMap<>();
-			map.put("ItemImage",R.drawable.banner_search);
-			map.put("ItemText","筛选");
+			map.put("ItemImage", R.drawable.banner_search);
+			map.put("ItemText", "筛选");
 			listItem.add(map);
 		}
 
@@ -295,18 +303,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		checkInterfaceOrientation(this.getResources().getConfiguration());
 		mMyApp.setCurrentActivity(this);
 		isWeiXinShared = false;
-		mWebView.resumeTimers();
 		/*
 		 * 判断是否允许浏览器复制
 		 */
 		isAllowBrowerCopy();
 		super.onResume();
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		mWebView.pauseTimers();
 	}
 
 	protected void displayBannerTitleAndSearchIcon() {
@@ -318,8 +319,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 					ArrayList<String> items = FileUtil.reportSearchItems(SubjectActivity.this, String.format("%d", groupID), templateID, reportID);
 					if (items.size() > 0) {
 						selectedItem = items.get(0);
-					}
-					else {
+					} else {
 						selectedItem = String.format("%s(NONE)", bannerName);
 					}
 				}
@@ -393,8 +393,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
 			getWindow().setAttributes(lp);
 			getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-		}
-		else {
+		} else {
 			WindowManager.LayoutParams attr = getWindow().getAttributes();
 			attr.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
 			getWindow().setAttributes(attr);
@@ -454,21 +453,22 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 					if (urlString.toLowerCase().endsWith(".pdf")) {
 						new Thread(mRunnableForPDF).start();
 					} else {
-						if (link.startsWith("offline://")){
-							String newLink = link.replace("offline://","");
-							mWebView.loadUrl(String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), newLink));
-						}else {
+						String loadUrl = urlTempFile(urlString);
+						Log.i("11", loadUrl);
+						if (!loadUrl.equals("")) {
+							mWebView.loadUrl("file:///" + loadUrl);
+						} else {
 							/*
-                         * 外部链接传参: user_num, timestamp
-                         */
-						try {
-							if (user.has("csrftoken") && user.has("sessionid")){
-								synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid="+user.getString("sessionid"));
+							 * 外部链接传参: user_num, timestamp
+							 */
+							try {
+								if (user.has("csrftoken") && user.has("sessionid")) {
+									synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid=" + user.getString("sessionid"));
+								}
+							} catch (JSONException e) {
+								e.printStackTrace();
 							}
-						} catch (JSONException e) {
-							e.printStackTrace();
-						}
-						mWebView.loadUrl(urlString);
+							mWebView.loadUrl(urlString);
 						}
 						Log.i("OutLink", urlString);
 					}
@@ -477,33 +477,39 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 	}
 
-	public void initStaticUrl(){
+	public void initStaticUrl() {
 		staticUrlMap = new HashMap<>();
-		staticUrlMap.put("devices.html", "设备巡检列表");
+		staticUrlMap.put("complaint.execute.html", "投诉详情");
+		staticUrlMap.put("device.execute.html", "设备巡检计划工单");
 		staticUrlMap.put("device.new.html", "新建巡检工单");
 		staticUrlMap.put("device.view.html", "设备巡检报告");
-		staticUrlMap.put("meters.html", "仪表盘读取列表");
-		staticUrlMap.put("meter.view.html", "仪表盘读数明细");
-		staticUrlMap.put("meter.new.html", "新建仪表盘");
-		staticUrlMap.put("opers.html", "运营巡检记录");
-		staticUrlMap.put("oper.view.html", "运营巡检详情");
-		staticUrlMap.put("oper.new.html", "新建运营巡检");
-		staticUrlMap.put("repairs.html", "设备维修列表");
-		staticUrlMap.put("repair.view.html", "设备维修明细");
-		staticUrlMap.put("repair.new.html", "设备维修新建");
+		staticUrlMap.put("devices.html", "设备巡检列表");
 		staticUrlMap.put("list.html", "待办列表");
 		staticUrlMap.put("maintain.execute.html", "工程报修");
+		staticUrlMap.put("meter.new.html", "新建仪表读数");
+		staticUrlMap.put("meter.view.html", "仪表读数明细");
+		staticUrlMap.put("meters.html", "仪表读数列表");
+		staticUrlMap.put("oper.execute.html", "运营巡检");
+		staticUrlMap.put("oper.new.html", "新建运营巡检");
 		staticUrlMap.put("oper.signin.html", "运营巡检签收");
+		staticUrlMap.put("oper.view.html", "运营巡检详情");
+		staticUrlMap.put("opers.html", "运营巡检记录");
+		staticUrlMap.put("repair.execute.html", "设备维修");
+		staticUrlMap.put("repair.signin.html", "设备维修新建");
+		staticUrlMap.put("repair.new.html", "设备维修明细");
+		staticUrlMap.put("repair.view.html", "设备维修明细");
+		staticUrlMap.put("repairs.html", "设备维修列表");
+		staticUrlMap.put("sales.input.execute.html", "销售录入审批");
 	}
 
-	public boolean synCookie(String url,String cookie) {
+	public boolean synCookie(String url, String cookie) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 			CookieSyncManager.createInstance(SubjectActivity.this);
 		}
 		CookieManager cookieManager = CookieManager.getInstance();
 		cookieManager.setCookie(url, cookie);
 		String newCookie = cookieManager.getCookie(url);
-		return TextUtils.isEmpty(newCookie)?false:true;
+		return TextUtils.isEmpty(newCookie) ? false : true;
 	}
 
 	private final Handler mHandlerForPDF = new Handler() {
@@ -572,7 +578,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 		try {
 			mWebView.setDrawingCacheEnabled(true);
-			if (!betaJSON.has("image_within_screen") || betaJSON.getBoolean("image_within_screen")){
+			if (!betaJSON.has("image_within_screen") || betaJSON.getBoolean("image_within_screen")) {
 				mWebView.measure(View.MeasureSpec.makeMeasureSpec(
 						View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED),
 						View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
@@ -593,8 +599,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				int iHeight = imgBmp.getHeight();
 				canvas.drawBitmap(imgBmp, 0, iHeight, paint);
 				mWebView.draw(canvas);
-			}
-			else {
+			} else {
 				imgBmp = mWebView.getDrawingCache();
 			}
 			FileUtil.saveImage(filePath, imgBmp);
@@ -606,7 +611,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 		File file = new File(filePath);
 		if (file.exists() && file.length() > 0) {
-				UMImage image = new UMImage(SubjectActivity.this, file);
+			UMImage image = new UMImage(SubjectActivity.this, file);
 
 			new ShareAction(this)
 					.withTitle("分享截图")
@@ -685,12 +690,12 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 	@Override
 	public void onBackPressed() {
-		Log.i("urlStack",urlStack.toString());
-		if (urlStack.size() > 1){
+		Log.i("urlStack", urlStack.toString());
+		if (urlStack.size() > 1) {
 			urlStack.pop();
 			mWebView.getSettings().setDomStorageEnabled(true);
-			mWebView.loadUrl((String )urlStack.pop());
-		}else {
+			mWebView.loadUrl((String) urlStack.pop());
+		} else {
 			finish();
 		}
 	}
@@ -749,6 +754,45 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	}
 
 	private class JavaScriptInterface extends JavaScriptBase {
+		/*
+         * JS 接口，暴露给JS的方法使用@JavascriptInterface装饰
+         */
+		@JavascriptInterface
+		public void pageLink(final String bannerName, final String link, final int objectID) {
+			if (null == link || link.equals("")) {
+				toast("该功能正在开发中");
+				return;
+			}
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (link.startsWith("offline:///")){
+						finish();
+					}else if (link.startsWith("offline://")){
+						String loadUrl = urlTempFile(link);
+						if (!loadUrl.equals("")) {
+							mWebView.loadUrl("file:///" + loadUrl);
+						}
+					}
+				}
+			});
+
+			/*
+			 * 用户行为记录, 单独异常处理，不可影响用户体验
+			 */
+
+			try {
+				logParams = new JSONObject();
+				logParams.put(URLs.kAction, "点击/主页面/浏览器");
+				logParams.put("obj_id", objectID);
+				logParams.put(URLs.kObjType, objectType);
+				logParams.put(URLs.kObjTitle, bannerName);
+				new Thread(mRunnableForLogger).start();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 		/*
 		 * JS 接口，暴露给JS的方法使用@JavascriptInterface装饰
 		 */
@@ -815,7 +859,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		@JavascriptInterface
 		public void reportSearchItems(final String arrayString) {
 			try {
- 				String searchItemsPath = String.format("%s.search_items", FileUtil.reportJavaScriptDataPath(SubjectActivity.this, String.format("%d", groupID), templateID, reportID));
+				String searchItemsPath = String.format("%s.search_items", FileUtil.reportJavaScriptDataPath(SubjectActivity.this, String.format("%d", groupID), templateID, reportID));
 				FileUtil.writeFile(searchItemsPath, arrayString);
 
 				/**
@@ -852,4 +896,38 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			});
 		}
 	}
+
+	public String urlTempFile(String url) {
+		String newHtmlPath = "";
+		if (url.startsWith("offline://")) {
+			String newLink = url.replace("offline://", "");
+			String htmlPath = FileUtil.sharedPath(mContext) + "/offline_pages/" + newLink;
+			String htmlContent = readFile(new File(htmlPath));
+
+			String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
+			newHtmlPath = String.format("%s.tmp", htmlPath);
+			try {
+				FileUtil.writeFile(newHtmlPath, newHtmlContent.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return newHtmlPath;
+	}
+
+	public String readFile(File file){
+		StringBuilder result = new StringBuilder();
+		try{
+			BufferedReader br = new BufferedReader(new FileReader(file));//构造一个BufferedReader类来读取文件
+			String s = null;
+			while((s = br.readLine())!=null){//使用readLine方法，一次读一行
+				result.append(System.lineSeparator()+s);
+			}
+			br.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return result.toString();
+	}
+
 }

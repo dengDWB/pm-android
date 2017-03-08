@@ -24,7 +24,6 @@
 
         <TextView
             android:id="@+id/bannerTitle"
-            android:text="主题名称"
             style="@style/BannerTitle" />
 
         <ImageView
