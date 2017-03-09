@@ -27,6 +27,7 @@ import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.K;
 import com.pgyersdk.update.PgyUpdateManager;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -87,6 +88,13 @@ public class LoginActivity extends BaseActivity{
 
         usernameEditText = (EditText) findViewById(R.id.etUsername);
         passwordEditText = (EditText) findViewById(R.id.etPassword);
+        try {
+            if (user !=null && user.has("user_num")) {
+                usernameEditText.setText(user.getString("user_num"));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         TextView versionTv = (TextView) findViewById(R.id.versionTv);
         findViewById(R.id.forgetPasswordTv).setOnClickListener(new View.OnClickListener() {
             @Override

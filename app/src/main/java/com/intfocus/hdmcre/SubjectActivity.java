@@ -7,11 +7,15 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +23,8 @@ import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -38,7 +44,6 @@ import com.joanzapata.pdfview.listener.OnErrorOccurredListener;
 import com.joanzapata.pdfview.listener.OnLoadCompleteListener;
 import com.joanzapata.pdfview.listener.OnPageChangeListener;
 import com.umeng.socialize.ShareAction;
-import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.media.UMImage;
@@ -73,6 +78,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	private int loadCount = 0;
 	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
+	private static final int CODE_CAMERA_REQUEST = 0xa1;
 
 	@Override
 	@SuppressLint("SetJavaScriptEnabled")
@@ -114,6 +120,28 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	public void initWebView() {
 		mWebView = (WebView) findViewById(R.id.browser);
 		initSubWebView();
+		mWebView.setWebChromeClient(new WebChromeClient(){
+
+			// Android 5.0 以上
+			@Override
+			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+				mUploadMessage1 = filePathCallback;
+				Log.d("result2", mUploadMessage1.toString());
+				getCameraCapture();
+				return true;
+			}
+
+			//Android 4.0 以下
+			public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType) {
+				mUploadMessage = uploadMsg;
+				getCameraCapture();
+			}
+			// Android 4.0 - 4.4.4
+			public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType, String capture) {
+				mUploadMessage = uploadMsg;
+				getCameraCapture();
+			}
+		});
 		mWebView.setWebViewClient(new WebViewClient() {
 			@Override
 			public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
@@ -653,12 +681,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 	};
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		UMShareAPI.get(this).onActivityResult(requestCode, resultCode, data);
-	}
-
 	/*
 	 * 评论
 	 */
@@ -930,4 +952,86 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		return result.toString();
 	}
 
+	public void getCameraCapture() {
+		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+
+		i.addCategory(Intent.CATEGORY_OPENABLE);
+
+		i.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+
+		Intent intentFromCapture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        /*
+         * 需要调用裁剪图片功能，无法读取内部存储，故使用 SD 卡先存储图片
+         */
+		if (hasSdcard()) {
+			Uri imageUri;
+			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+				imageUri = FileProvider.getUriForFile(SubjectActivity.this, "com.intfocus.shengyiplus.fileprovider", new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg"));
+				intentFromCapture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+				intentFromCapture.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+			}else {
+				imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg"));
+			}
+			intentFromCapture.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+			intentFromCapture.putExtra(Intent.EXTRA_INTENT, i);
+		}
+
+		startActivityForResult(intentFromCapture,CODE_CAMERA_REQUEST);
+	}
+	public boolean hasSdcard() {
+		String state = Environment.getExternalStorageState();
+		return state.equals(Environment.MEDIA_MOUNTED);
+	}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+//		UMShareAPI.get(this).onActivityResult(requestCode, resultCode, intent);
+		if (requestCode == CODE_CAMERA_REQUEST) {
+			if (null == mUploadMessage1){
+				return;
+			}
+
+//			Uri result;
+//			if (intent == null){
+//				result = null;
+//			}else {
+//				result = intent.getData();
+//			}
+//			if (null != result)
+//			{
+//				ContentResolver resolver = this.getContentResolver();
+//				String[] columns = { MediaStore.Images.Media.DATA};
+//				Cursor cursor = resolver.query(result, columns, null, null, null);
+//				cursor.moveToFirst();
+//				int columnIndex = cursor.getColumnIndex(columns[0]);
+//				String imgPath = cursor.getString(columnIndex);
+//				Log.i("imgPath1",imgPath);
+//				if (null == imgPath)
+//				{
+//					return;
+//				}
+//				if (new File(imgPath).exists()){
+//					Log.i("1111","有图片");
+//					result = Uri.fromFile(new File(imgPath));
+////					Uri imageUri = Uri.fromFile(new File(imgPath));
+//					mUploadMessage1.onReceiveValue(new Uri[]{result});
+//				}
+////				File file = new File(imgPath);
+////				// 将图片处理成大小符合要求的文件
+////				result = Uri.fromFile(Uri.fromFile(new File(imgPath)));
+////				mUploadMessage1.onReceiveValue(new Uri[]{result});
+//
+//			}
+			try{
+				if (new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg").exists()){
+					Uri uri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg"));
+					mUploadMessage1.onReceiveValue(new Uri[]{uri});
+					mUploadMessage1 = null;
+				}
+			}catch (Exception e){
+				Log.d("Excepiton", e.toString());
+			}
+		}
+		super.onActivityResult(requestCode, resultCode, intent);
+	}
 }
