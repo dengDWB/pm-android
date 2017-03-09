@@ -125,21 +125,33 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			// Android 5.0 以上
 			@Override
 			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+				if (mUploadMessage1 != null) {
+					mUploadMessage1.onReceiveValue(null);
+				}
+				Log.i("FileType1",fileChooserParams.toString());
 				mUploadMessage1 = filePathCallback;
-				Log.d("result2", mUploadMessage1.toString());
-				getCameraCapture();
+				Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+				i.addCategory(Intent.CATEGORY_OPENABLE);
+				if (fileChooserParams != null && fileChooserParams.getAcceptTypes() != null
+						&& fileChooserParams.getAcceptTypes().length > 0) {
+					i.setType(fileChooserParams.getAcceptTypes()[0]);
+				} else {
+					i.setType("*/*");
+				}
+				getCameraCapture(i);
+//				openImageChooserActivity();
 				return true;
 			}
 
 			//Android 4.0 以下
 			public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType) {
 				mUploadMessage = uploadMsg;
-				getCameraCapture();
+//				getCameraCapture();
 			}
 			// Android 4.0 - 4.4.4
 			public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType, String capture) {
 				mUploadMessage = uploadMsg;
-				getCameraCapture();
+//				getCameraCapture();
 			}
 		});
 		mWebView.setWebViewClient(new WebViewClient() {
@@ -952,13 +964,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		return result.toString();
 	}
 
-	public void getCameraCapture() {
-		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-
-		i.addCategory(Intent.CATEGORY_OPENABLE);
-
-		i.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-
+	public void getCameraCapture(Intent i ) {
 		Intent intentFromCapture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         /*
@@ -984,13 +990,13 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		return state.equals(Environment.MEDIA_MOUNTED);
 	}
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 //		UMShareAPI.get(this).onActivityResult(requestCode, resultCode, intent);
 		if (requestCode == CODE_CAMERA_REQUEST) {
 			if (null == mUploadMessage1){
 				return;
 			}
-
+//			Log.d("intent1",intent.getData().toString()+"1");
 //			Uri result;
 //			if (intent == null){
 //				result = null;
@@ -1016,11 +1022,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 ////					Uri imageUri = Uri.fromFile(new File(imgPath));
 //					mUploadMessage1.onReceiveValue(new Uri[]{result});
 //				}
-////				File file = new File(imgPath);
-////				// 将图片处理成大小符合要求的文件
-////				result = Uri.fromFile(Uri.fromFile(new File(imgPath)));
-////				mUploadMessage1.onReceiveValue(new Uri[]{result});
-//
+//				File file = new File(imgPath);
+//				// 将图片处理成大小符合要求的文件
+//				result = Uri.fromFile(Uri.fromFile(new File(imgPath)));
+//				mUploadMessage1.onReceiveValue(new Uri[]{result});
+
 //			}
 			try{
 				if (new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg").exists()){
@@ -1031,7 +1037,46 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			}catch (Exception e){
 				Log.d("Excepiton", e.toString());
 			}
+//			if (null == mUploadMessage && null == mUploadMessage1) return;
+//			Uri result = data == null || resultCode != RESULT_OK ? null : data.getData();
+//			if (mUploadMessage1 != null) {
+//				onActivityResultAboveL(requestCode, resultCode, data);
+//			} else if (mUploadMessage != null) {
+////				uploadMessage.onReceiveValue(result);
+////				uploadMessage = null;
+//			}
+			super.onActivityResult(requestCode, resultCode, data);
 		}
-		super.onActivityResult(requestCode, resultCode, intent);
 	}
+
+//	private void openImageChooserActivity() {
+//		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+//		i.addCategory(Intent.CATEGORY_OPENABLE);
+//		i.setType("image/*");
+//		startActivityForResult(Intent.createChooser(i, "Image Chooser"), CODE_CAMERA_REQUEST);
+//	}
+
+//	private void onActivityResultAboveL(int requestCode, int resultCode, Intent intent) {
+//		if (requestCode != CODE_CAMERA_REQUEST || mUploadMessage1 == null)
+//			return;
+//		Uri[] results = null;
+//		if (resultCode == RESULT_OK) {
+//			if (intent != null) {
+//				String dataString = intent.getDataString();
+//				ClipData clipData = intent.getClipData();
+//				if (clipData != null) {
+//					results = new Uri[clipData.getItemCount()];
+//					for (int i = 0; i < clipData.getItemCount(); i++) {
+//						ClipData.Item item = clipData.getItemAt(i);
+//						results[i] = item.getUri();
+//					}
+//				}
+//				if (dataString != null)
+//					results = new Uri[]{Uri.parse(dataString)};
+//			}
+//		}
+//		mUploadMessage1.onReceiveValue(results);
+//		mUploadMessage1 = null;
+//		Log.d("1123","123");
+//	}
 }

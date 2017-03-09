@@ -92,6 +92,9 @@ public class LoginActivity extends BaseActivity{
             if (user !=null && user.has("user_num")) {
                 usernameEditText.setText(user.getString("user_num"));
             }
+            if (user !=null && user.has("password")){
+                passwordEditText.setText(user.getString("password"));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
