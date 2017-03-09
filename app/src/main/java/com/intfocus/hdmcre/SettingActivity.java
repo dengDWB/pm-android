@@ -637,58 +637,67 @@ public class SettingActivity extends BaseActivity {
                 @Override
                 public void run() {
                     try {
-                        /*
-                         * 用户报表数据 js 文件存放在公共区域
-                         */
-                        String headerPath = String.format("%s/%s", FileUtil.sharedPath(mAppContext), K.kCachedHeaderConfigFileName);
-                        new File(headerPath).delete();
-                        headerPath = String.format("%s/%s", FileUtil.dirPath(mAppContext, K.kHTMLDirName), K.kCachedHeaderConfigFileName);
-                        new File(headerPath).delete();
+                        String info = ApiHelper.authentication(SettingActivity.this, user.getString(URLs.kUserNum), user.getString(URLs.kPassword));
+                        if (!info.isEmpty() && info.equals("success")) {
+                            /*
+                             * 用户报表数据 js 文件存放在公共区域
+                             */
+                            String headerPath = String.format("%s/%s", FileUtil.sharedPath(mAppContext), K.kCachedHeaderConfigFileName);
+                            new File(headerPath).delete();
+                            headerPath = String.format("%s/%s", FileUtil.dirPath(mAppContext, K.kHTMLDirName), K.kCachedHeaderConfigFileName);
+                            new File(headerPath).delete();
 
-                        /*
-                         * Umeng Device Token 重新上传服务器
-                         */
-                        String pushConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPushConfigFileName);
-                        JSONObject pushJSON = FileUtil.readConfigFile(pushConfigPath);
-                        if(pushJSON.has(K.kPushDeviceToken) && pushJSON.getString(K.kPushDeviceToken).length() == 44) {
-                            pushJSON.put(K.kPushIsValid, false);
-                            FileUtil.writeFile(pushConfigPath, pushJSON.toString());
-                        }
+                            /*
+                             * Umeng Device Token 重新上传服务器
+                             */
+                            String pushConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPushConfigFileName);
+                            JSONObject pushJSON = FileUtil.readConfigFile(pushConfigPath);
+                            if(pushJSON.has(K.kPushDeviceToken) && pushJSON.getString(K.kPushDeviceToken).length() == 44) {
+                                pushJSON.put(K.kPushIsValid, false);
+                                FileUtil.writeFile(pushConfigPath, pushJSON.toString());
+                            }
 
-                        ApiHelper.authentication(SettingActivity.this, user.getString(URLs.kUserNum), user.getString(URLs.kPassword));
+                            /*
+                             * 获取头像下载链接,准备重新下载头像
+                             */
+                            gravatarUrl = user.getString(kGravatar);
+                            gravatarImgName = gravatarUrl.substring(gravatarUrl.lastIndexOf("/") + 1, gravatarUrl.length());
+                            gravatarImgPath = FileUtil.dirPath(mAppContext, K.kConfigDirName, gravatarImgName);
 
-                        // pushJSON = FileUtil.readConfigFile(pushConfigPath);
-                        // mPushState.setText(pushJSON.has("push_valid") && pushJSON.getBoolean("push_valid") ? "开启" : "关闭");
-
-                        /*
-                         * 获取头像下载链接,准备重新下载头像
-                         */
-                        gravatarUrl = user.getString(kGravatar);
-                        gravatarImgName = gravatarUrl.substring(gravatarUrl.lastIndexOf("/") + 1, gravatarUrl.length());
-                        gravatarImgPath = FileUtil.dirPath(mAppContext, K.kConfigDirName, gravatarImgName);
-
-                        /*
+                            /*
                          * 检测服务器静态资源是否更新，并下载
                          */
-                        runOnUiThread(new Runnable() {
-                            @Override public void run() {
-                                new DownloadGravatar().execute(); //校正头像,必须在主线程运行
+                            runOnUiThread(new Runnable() {
+                                @Override public void run() {
+                                    new DownloadGravatar().execute(); //校正头像,必须在主线程运行
 
-                                checkAssetsUpdated(false);
+                                    checkAssetsUpdated(false);
 
-                                FileUtil.checkAssets(mAppContext, URLs.kAssets, false);
-                                FileUtil.checkAssets(mAppContext, URLs.kLoding, false);
-                                FileUtil.checkAssets(mAppContext, URLs.kFonts, true);
-                                FileUtil.checkAssets(mAppContext, URLs.kImages, true);
-                                FileUtil.checkAssets(mAppContext, URLs.kStylesheets, true);
-                                FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
-                                FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
-                                FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
-                                // FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
+                                    FileUtil.checkAssets(mAppContext, URLs.kAssets, false);
+                                    FileUtil.checkAssets(mAppContext, URLs.kLoding, false);
+                                    FileUtil.checkAssets(mAppContext, URLs.kFonts, true);
+                                    FileUtil.checkAssets(mAppContext, URLs.kImages, true);
+                                    FileUtil.checkAssets(mAppContext, URLs.kStylesheets, true);
+                                    FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
+                                    FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
+                                    FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
+                                    // FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
 
-                                toast("校正完成");
-                            }
-                        });
+                                    toast("校正完成");
+                                }
+                            });
+                        }else {
+                            toast(info);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            });
+                        }
+
                     } catch (JSONException | IOException e) {
                         e.printStackTrace();
                     }

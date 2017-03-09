@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -107,6 +108,8 @@ public class BaseActivity extends Activity {
     int displayDpi; //屏幕密度
     SharedPreferences sp;
     Stack urlStack = new Stack();
+    ValueCallback<Uri> mUploadMessage;
+    ValueCallback<Uri[]> mUploadMessage1;
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
@@ -273,11 +276,29 @@ public class BaseActivity extends Activity {
         animLoading = (RelativeLayout) findViewById(R.id.anim_loading);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setAllowFileAccess(true);
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
 
-        mWebView.setWebChromeClient(new WebChromeClient());
+        mWebView.setWebChromeClient(new WebChromeClient(){
+
+            // Android 5.0 以上
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                mUploadMessage1 = filePathCallback;
+                return true;
+            }
+
+            //Android 4.0 以下
+            public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType) {
+                mUploadMessage=uploadMsg;
+            }
+            // Android 4.0 - 4.4.4
+            public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType, String capture) {
+                mUploadMessage=uploadMsg;
+            }
+        });
         mWebView.setDrawingCacheEnabled(true);
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
