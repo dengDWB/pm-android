@@ -1,9 +1,11 @@
 package com.intfocus.hdmcre;
 
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -78,7 +80,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	private int loadCount = 0;
 	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
+
+	/* 请求识别码 */
+	private static final int CODE_GALLERY_REQUEST = 0xa0;
 	private static final int CODE_CAMERA_REQUEST = 0xa1;
+	private static final int CODE_RESULT_REQUEST = 0xa2;
 
 	@Override
 	@SuppressLint("SetJavaScriptEnabled")
@@ -125,6 +131,9 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			// Android 5.0 以上
 			@Override
 			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+				if (mUploadMessage1 != null) {
+					mUploadMessage1 = null;
+				}
 				mUploadMessage1 = filePathCallback;
 				Log.d("result2", mUploadMessage1.toString());
 				getCameraCapture();
@@ -161,6 +170,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			public void onPageFinished(WebView view, String url) {
 				super.onPageFinished(view, url);
 				animLoading.setVisibility(View.GONE);
+				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+					CookieSyncManager.getInstance().sync();
+				} else {
+					CookieManager.getInstance().flush();
+				}
 				LogUtil.d("onPageFinished", String.format("%s - %s", URLs.timestamp(), url));
 			}
 
@@ -552,7 +566,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 						.swipeVertical(true)
 						.onLoad(SubjectActivity.this)
 						.onPageChange(SubjectActivity.this)
-						.onErrorOccured(SubjectActivity.this)
 						.load();
 				mWebView.setVisibility(View.INVISIBLE);
 				mPDFView.setVisibility(View.VISIBLE);
@@ -952,86 +965,122 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		return result.toString();
 	}
 
-	public void getCameraCapture() {
-		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-
-		i.addCategory(Intent.CATEGORY_OPENABLE);
-
-		i.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-
-		Intent intentFromCapture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        /*
-         * 需要调用裁剪图片功能，无法读取内部存储，故使用 SD 卡先存储图片
-         */
-		if (hasSdcard()) {
-			Uri imageUri;
-			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-				imageUri = FileProvider.getUriForFile(SubjectActivity.this, "com.intfocus.shengyiplus.fileprovider", new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg"));
-				intentFromCapture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-				intentFromCapture.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-			}else {
-				imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg"));
-			}
-			intentFromCapture.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-			intentFromCapture.putExtra(Intent.EXTRA_INTENT, i);
+	/*
+     * 调用系统的裁剪
+     */
+	public void cropPhoto(Uri uri) {
+		Intent intent = new Intent("com.android.camera.action.CROP");
+		File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
+		Uri outPutUri = Uri.fromFile(tempFile);
+		if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.KITKAT) {
+			String url=FileUtil.getBitmapUrlPath(this, uri);
+			intent.setDataAndType(Uri.fromFile(new File(url)), "image/*");
+		}else{
+			intent.setDataAndType(uri, "image/*");
 		}
-
-		startActivityForResult(intentFromCapture,CODE_CAMERA_REQUEST);
+		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+		intent.putExtra("crop", "true");
+		// aspectX aspectY 是宽高的比例
+		intent.putExtra("aspectX", 1);
+		intent.putExtra("aspectY", 1);
+		// outputX outputY 是裁剪图片宽高
+		intent.putExtra("outputX", 150);
+		intent.putExtra("outputY", 150);
+		intent.putExtra("return-data",true);
+		intent.putExtra(MediaStore.EXTRA_OUTPUT, outPutUri);
+		startActivityForResult(intent, CODE_RESULT_REQUEST);
 	}
+
+	public void getCameraCapture() {
+		Intent intentFromGallery = new Intent(Intent.ACTION_PICK,null);
+		intentFromGallery.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
+		startActivityForResult(intentFromGallery,CODE_RESULT_REQUEST);
+//		startActivityForResult(intentFromCapture,CODE_CAMERA_REQUEST);
+	}
+
 	public boolean hasSdcard() {
 		String state = Environment.getExternalStorageState();
 		return state.equals(Environment.MEDIA_MOUNTED);
 	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 //		UMShareAPI.get(this).onActivityResult(requestCode, resultCode, intent);
-		if (requestCode == CODE_CAMERA_REQUEST) {
-			if (null == mUploadMessage1){
-				return;
-			}
+		switch (requestCode) {
+			case CODE_GALLERY_REQUEST:
+				cropPhoto(intent.getData());
+				break;
+			case CODE_CAMERA_REQUEST:
+				File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
+				if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+					Uri photoURI = FileProvider.getUriForFile(this,
+							"com.intfocus.shengyiplus.fileprovider",
+							tempFile);
+					cropPhoto(photoURI);
+				}else {
+					cropPhoto(Uri.fromFile(tempFile));
+				}
+				break;
+			default:
+				Log.i("uploadImg", "is ok 1");
+				if (null == mUploadMessage1){
+					Log.i("uploadImg", "is null 1");
+					return;
+				}
 
-//			Uri result;
-//			if (intent == null){
-//				result = null;
-//			}else {
-//				result = intent.getData();
-//			}
-//			if (null != result)
-//			{
-//				ContentResolver resolver = this.getContentResolver();
-//				String[] columns = { MediaStore.Images.Media.DATA};
-//				Cursor cursor = resolver.query(result, columns, null, null, null);
-//				cursor.moveToFirst();
-//				int columnIndex = cursor.getColumnIndex(columns[0]);
-//				String imgPath = cursor.getString(columnIndex);
-//				Log.i("imgPath1",imgPath);
-//				if (null == imgPath)
-//				{
-//					return;
-//				}
-//				if (new File(imgPath).exists()){
-//					Log.i("1111","有图片");
-//					result = Uri.fromFile(new File(imgPath));
-////					Uri imageUri = Uri.fromFile(new File(imgPath));
-//					mUploadMessage1.onReceiveValue(new Uri[]{result});
-//				}
-////				File file = new File(imgPath);
-////				// 将图片处理成大小符合要求的文件
-////				result = Uri.fromFile(Uri.fromFile(new File(imgPath)));
-////				mUploadMessage1.onReceiveValue(new Uri[]{result});
-//
-//			}
-			try{
-				if (new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg").exists()){
-					Uri uri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(),"uploadImg.jpg"));
+				try{
+					Uri uri = intent.getData();
+					if (uri == null) {
+						Log.i("uploadImg", "is null 2");
+					}
+					uri = file2Content(uri);
+					Log.i("uploadImg", "is ok 2");
 					mUploadMessage1.onReceiveValue(new Uri[]{uri});
 					mUploadMessage1 = null;
+				}catch (Exception e){
+					Log.i("uploadImg", "is error");
+					Log.d("Excepiton", e.toString());
 				}
-			}catch (Exception e){
-				Log.d("Excepiton", e.toString());
+				break;
+		}
+
+		super.onActivityResult(requestCode, resultCode, intent);
+	}
+
+	private Uri file2Content(Uri uri) {
+		if (uri.getScheme().equals("content")) {
+			Log.i("uploadImg", "is file");
+			String path = uri.getEncodedPath();
+			if (path != null) {
+				path = Uri.decode(path);
+				ContentResolver cr = this.getContentResolver();
+				StringBuffer buff = new StringBuffer();
+				buff.append("(")
+						.append(MediaStore.Images.ImageColumns.DATA)
+						.append("=")
+						.append("'" + path + "'")
+						.append(")");
+				Cursor cur = cr.query(
+						MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+						new String[]{MediaStore.Images.ImageColumns._ID},
+						buff.toString(), null, null);
+				int index = 0;
+				for (cur.moveToFirst(); !cur.isAfterLast(); cur.moveToNext()) {
+					index = cur.getColumnIndex(MediaStore.Images.ImageColumns._ID);
+					index = cur.getInt(index);
+				}
+				if (index == 0) {
+					//do nothing
+				} else {
+					Uri uri_temp = Uri
+							.parse("content://media/external/images/media/"
+									+ index);
+					if (uri_temp != null) {
+						uri = uri_temp;
+					}
+				}
 			}
 		}
-		super.onActivityResult(requestCode, resultCode, intent);
+		return uri;
 	}
 }
