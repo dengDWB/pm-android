@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -891,7 +892,7 @@ public class DashboardActivity extends BaseActivity {
                         bvAnalyse.setBackgroundColor(Color.RED);
                         bvAnalyse.setText(num);
                         bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
-                        bvAnalyse.setBadgeMargin(70,0);
+                        bvAnalyse.setBadgeMargin(66,0);
                         bvAnalyse.show();
                     }
                 });
@@ -968,9 +969,24 @@ public class DashboardActivity extends BaseActivity {
                         public void run() {
                             if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(outPath).exists()) {
                                 String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
+                                String userPermissionPath = FileUtil.dirPath(DashboardActivity.this, "config","user_permission.js");
                                 FileUtil.copyFile(outPath, newPath);
+                                FileUtil.copyFile(outPath, userPermissionPath);
                             } else {
-                                Toast.makeText(DashboardActivity.this, "用户权限js文件下载失败", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(DashboardActivity.this, "用户权限验证失败", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                                        SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                                        mEditor.putBoolean("isLogin",false);
+                                        mEditor.commit();
+
+                                        Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                });
                             }
                         }
                     });
