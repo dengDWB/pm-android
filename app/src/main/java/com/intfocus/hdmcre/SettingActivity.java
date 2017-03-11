@@ -316,7 +316,7 @@ public class SettingActivity extends BaseActivity {
      * 启动拍照并获取图片
      */
     private void getCameraCapture() {
-        Intent intentFromCapture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Intent intentFromCapture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
         /*
          * 需要调用裁剪图片功能，无法读取内部存储，故使用 SD 卡先存储图片
@@ -324,7 +324,10 @@ public class SettingActivity extends BaseActivity {
         if (hasSdcard()) {
             Uri imageUri;
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                imageUri = FileProvider.getUriForFile(SettingActivity.this, "com.intfocus.shengyiplus.fileprovider", new File(Environment.getExternalStorageDirectory(),"icon.jpg"));
+                imageUri = FileProvider.getUriForFile(SettingActivity.this, "com.intfocus.hdmcre.fileprovider", new File(Environment.getExternalStorageDirectory(),"icon.jpg"));
+                if (imageUri == null) {
+                    return;
+                }
                 intentFromCapture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intentFromCapture.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }else {
@@ -362,7 +365,7 @@ public class SettingActivity extends BaseActivity {
                 File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
                     Uri photoURI = FileProvider.getUriForFile(this,
-                            "com.intfocus.shengyiplus.fileprovider",
+                            "com.intfocus.hdmcre.fileprovider",
                             tempFile);
                     cropPhoto(photoURI);
                 }else {
@@ -661,7 +664,7 @@ public class SettingActivity extends BaseActivity {
                 @Override
                 public void run() {
                     try {
-                        String info = ApiHelper.authentication(SettingActivity.this, user.getString(URLs.kUserNum), user.getString(URLs.kPassword),user.getString(URLs.kPassword));
+                        String info = ApiHelper.authentication(SettingActivity.this, user.getString(URLs.kUserNum), user.getString(URLs.kPassword),user.getString("loginType"));
                         if (!info.isEmpty() && info.equals("success")) {
                             /*
                              * 用户报表数据 js 文件存放在公共区域
