@@ -70,9 +70,9 @@ public class YHApplication extends Application {
         /*
          *  基本目录结构
          */
+
         makeSureFolderExist(K.kSharedDirName);
         makeSureFolderExist(K.kCachedDirName);
-
         /**
          *  新安装、或升级后，把代码包中的静态资源重新拷贝覆盖一下
          *  避免再从服务器下载更新，浪费用户流量
@@ -93,7 +93,7 @@ public class YHApplication extends Application {
         FileUtil.checkAssets(appContext, URLs.kJavaScripts, true);
         FileUtil.checkAssets(appContext, URLs.kBarCodeScan, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePages,false);
-        // FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
+         FileUtil.checkAssets(appContext, URLs.kAdvertisement, false);
 
         /*
          *  手机待机再激活时发送开屏广播
@@ -177,9 +177,9 @@ public class YHApplication extends Application {
                     }
                     intent = new Intent (appContext,DashboardActivity.class);
                 }
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-            } catch (JSONException | IOException e) {
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }
         }
@@ -296,7 +296,7 @@ public class YHApplication extends Application {
 
             String assetZipPath;
             File assetZipFile;
-            String[] assetsName = {URLs.kAssets,URLs.kLoding,URLs.kFonts,URLs.kImages,URLs.kStylesheets,URLs.kJavaScripts,URLs.kBarCodeScan}; // ,URLs.kAdvertisement
+            String[] assetsName = {URLs.kAssets,URLs.kLoding,URLs.kFonts,URLs.kImages,URLs.kStylesheets,URLs.kJavaScripts,URLs.kBarCodeScan,URLs.kAdvertisement}; //
 
             for (String string : assetsName) {
                 assetZipPath = String.format("%s/%s.zip", sharedPath, string);

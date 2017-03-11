@@ -8,6 +8,9 @@ import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -29,8 +33,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class HttpUtil {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -246,9 +248,9 @@ public class HttpUtil {
         LogUtil.d("POST2", urlString);
         Map<String, String> retMap = new HashMap<>();
         OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(3, TimeUnit.SECONDS)
-                .writeTimeout(3, TimeUnit.SECONDS)
-                .readTimeout(3, TimeUnit.SECONDS)
+                .connectTimeout(13, TimeUnit.SECONDS)
+                .writeTimeout(13, TimeUnit.SECONDS)
+                .readTimeout(13, TimeUnit.SECONDS)
                 .build();
         Request request;
         Response response;

@@ -1,15 +1,17 @@
 package com.intfocus.hdmcre;
 
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -38,6 +41,7 @@ import android.widget.TextView;
 
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
+import com.intfocus.hdmcre.util.ImageUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
@@ -77,13 +81,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	private RelativeLayout bannerView;
 	private ArrayList<HashMap<String, Object>> listItem;
 	private Context mContext;
-	private int loadCount = 0;
 	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
+	private Intent mSourceIntent;
 
 	/* 请求识别码 */
-	private static final int CODE_GALLERY_REQUEST = 0xa0;
-	private static final int CODE_CAMERA_REQUEST = 0xa1;
 	private static final int CODE_RESULT_REQUEST = 0xa2;
 
 	@Override
@@ -113,6 +115,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 		initWebView();
 		initActiongBar();
+		checkInterfaceOrientation(this.getResources().getConfiguration());
 
 		List<ImageView> colorViews = new ArrayList<>();
 		colorViews.add((ImageView) findViewById(R.id.colorView0));
@@ -126,32 +129,14 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	public void initWebView() {
 		mWebView = (WebView) findViewById(R.id.browser);
 		initSubWebView();
-		mWebView.setWebChromeClient(new WebChromeClient(){
-
-			// Android 5.0 以上
-			@Override
-			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-				if (mUploadMessage1 != null) {
-					mUploadMessage1 = null;
-				}
-				mUploadMessage1 = filePathCallback;
-				Log.d("result2", mUploadMessage1.toString());
-				getCameraCapture();
-				return true;
-			}
-
-			//Android 4.0 以下
-			public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType) {
-				mUploadMessage = uploadMsg;
-				getCameraCapture();
-			}
-			// Android 4.0 - 4.4.4
-			public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType, String capture) {
-				mUploadMessage = uploadMsg;
-				getCameraCapture();
-			}
-		});
+		mWebView.setWebChromeClient(new mWebChromeClient());
 		mWebView.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+				Log.i("uploadImg", error.toString());
+				handler.proceed();
+			}
+
 			@Override
 			public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
 				//返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
@@ -189,6 +174,35 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		mWebView.setVisibility(View.VISIBLE);
 		mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
 		animLoading.setVisibility(View.VISIBLE);
+	}
+
+	public class mWebChromeClient extends WebChromeClient {
+		// Android 5.0 以上
+		@Override
+		public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+			if (mUploadMessage1 != null) {
+				mUploadMessage1 = null;
+			}
+			Log.i("FileType1",fileChooserParams.toString());
+			mUploadMessage1 = filePathCallback;
+//				mSourceIntent = getCameraCapture();
+//				startActivityForResult(mSourceIntent, CODE_RESULT_REQUEST);
+			mSourceIntent = ImageUtil.takeBigPicture();
+			startActivityForResult(mSourceIntent, CODE_RESULT_REQUEST);
+//			getCameraCapture();
+			return true;
+		}
+
+		//Android 4.0 以下
+		public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType) {
+			mUploadMessage = uploadMsg;
+//				getCameraCapture();
+		}
+		// Android 4.0 - 4.4.4
+		public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType, String capture) {
+			mUploadMessage = uploadMsg;
+//				getCameraCapture();
+		}
 	}
 
 	public void setUrlStack(String url) {
@@ -251,7 +265,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			mPDFView.setVisibility(View.INVISIBLE);
 		}
 		mBannerSetting.setVisibility(View.VISIBLE);
-		if (link.startsWith("offline:///")){
+		if (link.startsWith("offline:////")){
 			finish();
 		}
 
@@ -341,8 +355,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	};
 
 	public void onResume() {
-
-		checkInterfaceOrientation(this.getResources().getConfiguration());
 		mMyApp.setCurrentActivity(this);
 		isWeiXinShared = false;
 		/*
@@ -456,8 +468,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			// format: /mobile/v1/group/:group_id/template/:template_id/report/:report_id
 			// deprecated
 			// format: /mobile/report/:report_id/group/:group_id
-			templateID = TextUtils.split(link, "/")[6];
-			reportID = TextUtils.split(link, "/")[8];
+			templateID = TextUtils.split(link, "/")[7];
+			reportID = TextUtils.split(link, "/")[9];
 			String urlPath = format(link.replace("%@", "%d"), groupID);
 			urlString = String.format("%s%s", K.kBaseUrl, urlPath);
 			webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -542,6 +554,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		staticUrlMap.put("repair.view.html", "设备维修明细");
 		staticUrlMap.put("repairs.html", "设备维修列表");
 		staticUrlMap.put("sales.input.execute.html", "销售录入审批");
+		staticUrlMap.put("notice.view.html", "公告明细");
+		staticUrlMap.put("notices.html", "公告");
 	}
 
 	public boolean synCookie(String url, String cookie) {
@@ -798,15 +812,17 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				toast("该功能正在开发中");
 				return;
 			}
+			Log.i("pageUrlString",link + "1");
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					if (link.startsWith("offline:///")){
+					if (link.startsWith("offline:////")){
 						finish();
 					}else if (link.startsWith("offline://")){
 						String loadUrl = urlTempFile(link);
+						Log.i("pageUrlString",link + "2");
 						if (!loadUrl.equals("")) {
-							mWebView.loadUrl("file:///" + loadUrl);
+							mWebView.loadUrl("file://" + loadUrl);
 						}
 					}
 				}
@@ -869,6 +885,16 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 
 		@JavascriptInterface
+		public void toggleShowBanner(final String state) {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					bannerView.setVisibility(state.equals("show") ? View.VISIBLE : View.GONE);
+				}
+			});
+		}
+
+		@JavascriptInterface
 		public void jsException(final String ex) {
             /*
              * 用户行为记录, 单独异常处理，不可影响用户体验
@@ -920,6 +946,20 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			return item;
 		}
 
+
+		@JavascriptInterface
+		public void showAlert(String title, String content) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(SubjectActivity.this);
+			builder.setTitle(title)
+					.setMessage(content)
+					.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+						}
+					});
+			builder.show();
+		}
+
 		@JavascriptInterface
 		public void refreshBrowser() {
 			runOnUiThread(new Runnable() {
@@ -965,122 +1005,90 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		return result.toString();
 	}
 
-	/*
-     * 调用系统的裁剪
-     */
-	public void cropPhoto(Uri uri) {
-		Intent intent = new Intent("com.android.camera.action.CROP");
-		File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
-		Uri outPutUri = Uri.fromFile(tempFile);
-		if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.KITKAT) {
-			String url=FileUtil.getBitmapUrlPath(this, uri);
-			intent.setDataAndType(Uri.fromFile(new File(url)), "image/*");
-		}else{
-			intent.setDataAndType(uri, "image/*");
-		}
-		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-		intent.putExtra("crop", "true");
-		// aspectX aspectY 是宽高的比例
-		intent.putExtra("aspectX", 1);
-		intent.putExtra("aspectY", 1);
-		// outputX outputY 是裁剪图片宽高
-		intent.putExtra("outputX", 150);
-		intent.putExtra("outputY", 150);
-		intent.putExtra("return-data",true);
-		intent.putExtra(MediaStore.EXTRA_OUTPUT, outPutUri);
-		startActivityForResult(intent, CODE_RESULT_REQUEST);
-	}
-
-	public void getCameraCapture() {
-		Intent intentFromGallery = new Intent(Intent.ACTION_PICK,null);
-		intentFromGallery.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
-		startActivityForResult(intentFromGallery,CODE_RESULT_REQUEST);
-//		startActivityForResult(intentFromCapture,CODE_CAMERA_REQUEST);
-	}
+//	public void getCameraCapture() {
+//		Intent intentFromGallery = new Intent(Intent.ACTION_GET_CONTENT);
+//		intentFromGallery.setType("image/*");
+//		startActivityForResult(Intent.createChooser(intentFromGallery, null),CODE_RESULT_REQUEST);
+//	}
 
 	public boolean hasSdcard() {
 		String state = Environment.getExternalStorageState();
 		return state.equals(Environment.MEDIA_MOUNTED);
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-//		UMShareAPI.get(this).onActivityResult(requestCode, resultCode, intent);
-		switch (requestCode) {
-			case CODE_GALLERY_REQUEST:
-				cropPhoto(intent.getData());
-				break;
-			case CODE_CAMERA_REQUEST:
-				File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
-				if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-					Uri photoURI = FileProvider.getUriForFile(this,
-							"com.intfocus.shengyiplus.fileprovider",
-							tempFile);
-					cropPhoto(photoURI);
-				}else {
-					cropPhoto(Uri.fromFile(tempFile));
-				}
-				break;
-			default:
-				Log.i("uploadImg", "is ok 1");
-				if (null == mUploadMessage1){
-					Log.i("uploadImg", "is null 1");
-					return;
-				}
+	/*
+ * 启动拍照并获取图片
+ */
+	private void getCameraCapture() {
+		Intent intentFromCapture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-				try{
-					Uri uri = intent.getData();
-					if (uri == null) {
-						Log.i("uploadImg", "is null 2");
-					}
-					uri = file2Content(uri);
-					Log.i("uploadImg", "is ok 2");
-					mUploadMessage1.onReceiveValue(new Uri[]{uri});
-					mUploadMessage1 = null;
-				}catch (Exception e){
-					Log.i("uploadImg", "is error");
-					Log.d("Excepiton", e.toString());
-				}
-				break;
-		}
-
-		super.onActivityResult(requestCode, resultCode, intent);
-	}
-
-	private Uri file2Content(Uri uri) {
-		if (uri.getScheme().equals("content")) {
-			Log.i("uploadImg", "is file");
-			String path = uri.getEncodedPath();
-			if (path != null) {
-				path = Uri.decode(path);
-				ContentResolver cr = this.getContentResolver();
-				StringBuffer buff = new StringBuffer();
-				buff.append("(")
-						.append(MediaStore.Images.ImageColumns.DATA)
-						.append("=")
-						.append("'" + path + "'")
-						.append(")");
-				Cursor cur = cr.query(
-						MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-						new String[]{MediaStore.Images.ImageColumns._ID},
-						buff.toString(), null, null);
-				int index = 0;
-				for (cur.moveToFirst(); !cur.isAfterLast(); cur.moveToNext()) {
-					index = cur.getColumnIndex(MediaStore.Images.ImageColumns._ID);
-					index = cur.getInt(index);
-				}
-				if (index == 0) {
-					//do nothing
-				} else {
-					Uri uri_temp = Uri
-							.parse("content://media/external/images/media/"
-									+ index);
-					if (uri_temp != null) {
-						uri = uri_temp;
-					}
-				}
+        /*
+         * 需要调用裁剪图片功能，无法读取内部存储，故使用 SD 卡先存储图片
+         */
+		if (hasSdcard()) {
+			Uri imageUri;
+			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+				imageUri = FileProvider.getUriForFile(SubjectActivity.this, "com.intfocus.shengyiplus.fileprovider", new File(Environment.getExternalStorageDirectory(), "icon.jpg"));
+				intentFromCapture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+				intentFromCapture.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+			} else {
+				imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "icon.jpg"));
+			}
+			intentFromCapture.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+		} else {
+			try {
+				logParams = new JSONObject();
+				logParams.put("action", "头像/拍照");
+				logParams.put("obj_title", "功能: \"头像上传，拍照\",报错: \"not find SdCard\"");
+				new Thread(mRunnableForLogger).start();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
-		return uri;
+
+		startActivityForResult(intentFromCapture, CODE_RESULT_REQUEST);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (resultCode != Activity.RESULT_OK) {
+			if (mUploadMessage != null) {
+				mUploadMessage.onReceiveValue(null);
+			}
+
+			if (mUploadMessage1 != null) {         // for android 5.0+
+				mUploadMessage1.onReceiveValue(null);
+			}
+			return;
+		}
+		switch (requestCode) {
+			case CODE_RESULT_REQUEST: {
+				Log.e("uploadImg", "1.");
+				try {
+					if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+						if (mUploadMessage == null) {
+							return;
+						}
+						Uri uri = intent.getData();
+						mUploadMessage.onReceiveValue(uri);
+					} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+						if (mUploadMessage1 == null) {        // for android 5.0+
+							return;
+						}
+						String sourcePath = ImageUtil.retrievePath(this, mSourceIntent, intent);
+
+						Uri uri = Uri.fromFile(new File(sourcePath));
+						mUploadMessage1.onReceiveValue(new Uri[]{uri});
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				break;
+			}
+		}
+
+//		UMShareAPI.get(this).onActivityResult(requestCode, resultCode, intent);
+
+		super.onActivityResult(requestCode, resultCode, intent);
 	}
 }

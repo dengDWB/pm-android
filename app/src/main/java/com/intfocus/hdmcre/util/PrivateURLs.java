@@ -13,7 +13,7 @@ package com.intfocus.hdmcre.util;
 
 public class PrivateURLs {
   public final static String kAppCode         = "shengyiplus";
-  public final static String kThemeColor      = "#1099F5";
+  public final static String kThemeColor      = "#8C0122";
   public final static String kBannerBgColor   = "#53a93f";
   public final static String kBannerTextColor = "#ffffff";
   public final static String kInitPassword    = "123456";
@@ -28,7 +28,7 @@ public class PrivateURLs {
   public final static String kWXAppId      = "wx0ad40e5c84419ce2";
   public final static String kWXAppSecret  = "fac49cd8a126145d7b0bd528306298d8";
 
-  public final static boolean kDashboardAd      = false;
+  public final static boolean kDashboardAd      = true;
   public final static boolean kDropMenuScan     = true;
   public final static boolean kDropMenuSearch   = true;
   public final static boolean kDropMenuVoice    = true;
