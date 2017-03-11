@@ -2,12 +2,15 @@ package com.intfocus.hdmcre.util;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 
@@ -73,6 +76,9 @@ public class ImageUtil {
                     }
                 }
             }
+
+            FileUtil.saveImage(picPath,losslessScale(picPath,50));
+
             return picPath;
         } finally {
             Log.d(TAG, "retrievePath(" + sourceIntent + "," + dataIntent + ") ret: " + picPath);
@@ -81,6 +87,16 @@ public class ImageUtil {
 
     private static final Uri newPictureUri(String path) {
         return Uri.fromFile(new File(path));
+    }
+
+    public static Bitmap losslessScale(String path, int quality){
+        Bitmap bitmap = BitmapFactory.decodeFile(path);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
+        Bitmap compressedBitmap = BitmapFactory.decodeByteArray(
+                baos.toByteArray(), 0, baos.toByteArray().length);
+        return compressedBitmap;
     }
 
     private static final boolean isFileExists(String path) {

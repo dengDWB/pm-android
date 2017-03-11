@@ -3,6 +3,7 @@ package com.intfocus.hdmcre;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -558,6 +559,12 @@ public class SettingActivity extends BaseActivity {
             try {
                 JSONObject configJSON = new JSONObject();
                 configJSON.put("is_login", false);
+
+                // 改变登录信息
+                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                mEditor.putBoolean("isLogin",false);
+                mEditor.commit();
 
                 modifiedUserConfig(configJSON);
             } catch (JSONException e) {
