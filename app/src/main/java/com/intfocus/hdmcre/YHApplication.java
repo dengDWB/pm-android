@@ -157,15 +157,16 @@ public class YHApplication extends Application {
         public void dealWithCustomAction(Context context, UMessage uMessage) {
             super.dealWithCustomAction(context, uMessage);
             try {
-                if (uMessage.custom.equals(null) ||uMessage.custom.equals("")) {
-                    Toast.makeText(appContext,"推送没有携带消息",Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                Log.e("dealsend","is ok");
                 String pushMessagePath = String.format("%s/%s", FileUtil.basePath(appContext), K.kPushMessageFileName);
-                JSONObject pushMessageJSON = new JSONObject(uMessage.custom);
+                JSONObject pushMessageJSON = new JSONObject();
                 pushMessageJSON.put("state", false);
                 FileUtil.writeFile(pushMessagePath, pushMessageJSON.toString());
 
+//                if (uMessage.custom.equals(null) ||uMessage.custom.equals("")) {
+//                        Toast.makeText(appContext,"推送没有携带消息",Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
                 Intent intent;
                 if ((mCurrentActivity == null)) {
                     intent = new Intent (appContext, LoginActivity.class);
@@ -180,6 +181,7 @@ public class YHApplication extends Application {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         } catch (JSONException | IOException e) {
+                Log.e("dealsend",e.toString());
                 e.printStackTrace();
             }
         }

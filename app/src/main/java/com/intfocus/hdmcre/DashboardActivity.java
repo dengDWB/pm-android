@@ -112,7 +112,6 @@ public class DashboardActivity extends BaseActivity {
 		 */
 //		initNotificationService();
 
-        dealSendMessage();
         if (urlStrings.get(2).equals(urlString)) {
             setWebViewLongListener(false);
         }
@@ -129,6 +128,10 @@ public class DashboardActivity extends BaseActivity {
 		 * 启动 Activity 时也需要判断小红点是否显示
 		 */
 //		receiveNotification();
+
+        dealSendMessage();
+
+        displayAdOrNot(true);
 
 		/*
 		 * 判断是否允许浏览器复制
@@ -185,13 +188,15 @@ public class DashboardActivity extends BaseActivity {
         currentUIVersion = URLs.currentUIVersion(mAppContext);
         String pushMessagePath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPushMessageFileName);
         JSONObject pushMessageJSON = FileUtil.readConfigFile(pushMessagePath);
+
         try {
+            Log.i("dealsend", pushMessageJSON.getBoolean("state") + "");
             if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state")) {
                 return;
             }
-            if (pushMessageJSON.has("type")) {
-                String type = pushMessageJSON.getString("type");
-                switch (type) {
+//            if (pushMessageJSON.has("type")) {
+//                String type = pushMessageJSON.getString("type");
+//                switch (type) {
 //                    case "report":
 //                        Intent subjectIntent = new Intent(this, SubjectActivity.class);
 //                        subjectIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -217,12 +222,12 @@ public class DashboardActivity extends BaseActivity {
 //                        Intent blogLinkIntent = new Intent(DashboardActivity.this, ThursdaySayActivity.class);
 //                        startActivity(blogLinkIntent);
 //                        break;
-                    default:
+//                    default:
                         jumpTab(mTabAnalyse);
                         urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
-                        break;
-                }
-            }
+//                        break;
+//                }
+//            }
             pushMessageJSON.put("state", true);
             FileUtil.writeFile(pushMessagePath, pushMessageJSON.toString());
         } catch (JSONException | IOException e) {
@@ -305,9 +310,7 @@ public class DashboardActivity extends BaseActivity {
         String adIndexBasePath = FileUtil.sharedPath(this) + "/advertisement/index";
         String adIndexPath = adIndexBasePath + ".html";
         String adIndexWithTimestampPath = adIndexBasePath + ".timestamp.html";
-        Log.i("uploadImg", adIndexPath);
         if (new File(adIndexPath).exists()) {
-            Log.i("uploadImg", " is exist");
             String htmlContent = FileUtil.readFile(adIndexPath);
             htmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
             try {
@@ -320,7 +323,6 @@ public class DashboardActivity extends BaseActivity {
         }
 
         if (isShouldLoadHtml) {
-            Log.i("uploadImg", " is display 1");
             browserAd.loadUrl(String.format("file:///%s", adIndexWithTimestampPath));
         }
 
@@ -402,7 +404,6 @@ public class DashboardActivity extends BaseActivity {
         mWebView.getSettings().setDomStorageEnabled(true);
         mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
         animLoading.setVisibility(View.VISIBLE);
-
 
         browserAd = (WebView) findViewById(R.id.browserAd);
         browserAd.getSettings().setUseWideViewPort(true);
@@ -974,19 +975,14 @@ public class DashboardActivity extends BaseActivity {
                                 FileUtil.copyFile(outPath, userPermissionPath);
                             } else {
                                 Toast.makeText(DashboardActivity.this, "用户权限验证失败", Toast.LENGTH_SHORT).show();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-                                        SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                                        mEditor.putBoolean("isLogin",false);
-                                        mEditor.commit();
+                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                                SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                                mEditor.putBoolean("isLogin",false);
+                                mEditor.commit();
 
-                                        Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                });
+                                Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                                finish();
                             }
                         }
                     });

@@ -284,7 +284,7 @@ public class BaseActivity extends Activity {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
-        webSettings.setBlockNetworkImage(true);
+        webSettings.setBlockNetworkImage(false);
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
@@ -358,7 +358,6 @@ public class BaseActivity extends Activity {
                     @Override
                     public void onRefresh(PullToRefreshBase<android.webkit.WebView> refreshView) {
                         new pullToRefreshTask().execute();
-
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         String label = simpleDateFormat.format(System.currentTimeMillis());
                         refreshView.getLoadingLayoutProxy().setLastUpdatedLabel(label);

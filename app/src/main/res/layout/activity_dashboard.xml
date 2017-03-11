@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context=".DashboardActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DashboardActivity">
 
     <RelativeLayout
         android:id="@+id/actionBar"
@@ -59,14 +59,6 @@
 
     </RelativeLayout>
 
-
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@id/actionBar"
-        android:background="@color/divider"/>
-
     <LinearLayout
         android:id="@+id/toolBar"
         android:layout_width="match_parent"
@@ -90,11 +82,11 @@
             app:text="待办"/>
 
         <!--<com.intfocus.hdmcre.view.TabView-->
-            <!--android:id="@+id/tabApp"-->
-            <!--style="@style/ToolBarTab"-->
-            <!--app:active_src="@drawable/tab_app_s"-->
-            <!--app:src="@drawable/tab_app"-->
-            <!--app:text="应用"/>-->
+        <!--android:id="@+id/tabApp"-->
+        <!--style="@style/ToolBarTab"-->
+        <!--app:active_src="@drawable/tab_app_s"-->
+        <!--app:src="@drawable/tab_app"-->
+        <!--app:text="应用"/>-->
 
         <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabMessage"
@@ -109,7 +101,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/toolBar"
-        android:layout_below="@id/divider">
+        android:layout_below="@id/actionBar">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -119,7 +111,7 @@
             <WebView
                 android:id="@+id/browserAd"
                 android:layout_width="match_parent"
-                android:layout_height="120px"
+                android:layout_height="60dp"
                 android:layerType="software"
                 android:scrollbars="none"
                 android:visibility="visible"/>
@@ -141,7 +133,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:visibility="visible"
-                app:indicatorColor="@color/actionBar"
+                app:indicatorColor="@color/loading"
                 app:indicatorName="BallPulseIndicator"
                 />
         </RelativeLayout>
