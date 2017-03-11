@@ -974,19 +974,14 @@ public class DashboardActivity extends BaseActivity {
                                 FileUtil.copyFile(outPath, userPermissionPath);
                             } else {
                                 Toast.makeText(DashboardActivity.this, "用户权限验证失败", Toast.LENGTH_SHORT).show();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-                                        SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                                        mEditor.putBoolean("isLogin",false);
-                                        mEditor.commit();
+                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                                SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                                mEditor.putBoolean("isLogin",false);
+                                mEditor.commit();
 
-                                        Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                });
+                                Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                                finish();
                             }
                         }
                     });
