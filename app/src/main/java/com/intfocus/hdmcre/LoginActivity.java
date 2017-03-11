@@ -106,14 +106,18 @@ public class LoginActivity extends BaseActivity{
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        if (true){
+            findViewById(R.id.forgetPasswordTv).setVisibility(View.GONE);
+//            findViewById(R.id.forgetPasswordTv).setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    Intent intent = new Intent (LoginActivity.this, ForgetPasswordActivity.class);
+//                    startActivity(intent);
+//                }
+//            });
+        }
+
         TextView versionTv = (TextView) findViewById(R.id.versionTv);
-        findViewById(R.id.forgetPasswordTv).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent (LoginActivity.this, ForgetPasswordActivity.class);
-                startActivity(intent);
-            }
-        });
 
         /*
          * 显示当前应用版本号

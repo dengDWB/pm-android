@@ -3,6 +3,7 @@ package com.intfocus.hdmcre;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -563,6 +564,15 @@ public class SettingActivity extends BaseActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            String userPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
+            if (new File(userPermissionPath).exists()){
+                new File(userPermissionPath).delete();
+            }
+
+            SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+            mEditor.putBoolean("isLogin",false);
+            mEditor.commit();
 
             Intent intent = new Intent();
             intent.setClass(SettingActivity.this, LoginActivity.class);
@@ -647,6 +657,19 @@ public class SettingActivity extends BaseActivity {
                             headerPath = String.format("%s/%s", FileUtil.dirPath(mAppContext, K.kHTMLDirName), K.kCachedHeaderConfigFileName);
                             new File(headerPath).delete();
 
+                            String adUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
+                            String offUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
+
+                            if (new File(adUserPermissionPath).exists()){
+                                new File(adUserPermissionPath).delete();
+                            }
+
+                            if (new File(offUserPermissionPath).exists()){
+                                new File(offUserPermissionPath).delete();
+                            }
+
+                            downloadUserJs();
+
                             /*
                              * Umeng Device Token 重新上传服务器
                              */
@@ -705,6 +728,31 @@ public class SettingActivity extends BaseActivity {
             }).start();
         }
     };
+
+    public void downloadUserJs() {
+        try {
+            String userConfigPath = String.format("%s/%s", FileUtil.basePath(SettingActivity.this), K.kUserConfigFileName);
+            JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+            String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
+            final String assetsPath = FileUtil.sharedPath(SettingActivity.this);
+            Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
+            final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
+            final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, outPath, headers);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(outPath).exists()) {
+                        String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
+                        FileUtil.copyFile(outPath, newPath);
+                    } else {
+                        Toast.makeText(SettingActivity.this, "用户权限js文件下载失败", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
     /*
      *  Switch 锁屏开关

@@ -824,6 +824,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 						if (!loadUrl.equals("")) {
 							mWebView.loadUrl("file://" + loadUrl);
 						}
+					}else if (link.startsWith("offline:///")){
+						mWebView.loadUrl((String) urlStack.get(0));
 					}
 				}
 			});

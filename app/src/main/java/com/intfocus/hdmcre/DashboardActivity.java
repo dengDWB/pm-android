@@ -1,9 +1,5 @@
 package com.intfocus.hdmcre;
 
-import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -11,13 +7,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -33,7 +27,6 @@ import com.intfocus.hdmcre.util.HttpUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
-import com.intfocus.hdmcre.view.RedPointView;
 import com.intfocus.hdmcre.view.TabView;
 import com.pgyersdk.update.PgyUpdateManager;
 import com.readystatesoftware.viewbadger.BadgeView;
@@ -188,10 +181,6 @@ public class DashboardActivity extends BaseActivity {
     }
 
     private void dealSendMessage() {
-        Intent intent = getIntent();
-        if (intent.getStringExtra("pushMessage") == null) {
-            jumpTab(mTabAnalyse);
-        }
         currentUIVersion = URLs.currentUIVersion(mAppContext);
         String pushMessagePath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPushMessageFileName);
         JSONObject pushMessageJSON = FileUtil.readConfigFile(pushMessagePath);
@@ -202,31 +191,31 @@ public class DashboardActivity extends BaseActivity {
             if (pushMessageJSON.has("type")) {
                 String type = pushMessageJSON.getString("type");
                 switch (type) {
-                    case "report":
-                        Intent subjectIntent = new Intent(this, SubjectActivity.class);
-                        subjectIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        subjectIntent.putExtra(URLs.kLink, pushMessageJSON.getString("url"));
-                        subjectIntent.putExtra(URLs.kBannerName, pushMessageJSON.getString("title"));
-                        subjectIntent.putExtra(URLs.kObjectId, pushMessageJSON.getInt("object_id"));
-                        subjectIntent.putExtra(URLs.kObjectType, pushMessageJSON.getInt("object_type"));
-                        startActivity(subjectIntent);
-                        break;
-                    case "analyse":
-                        jumpTab(mTabAnalyse);
-                        urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
-                        break;
-//					case "app":
-//						jumpTab(mTabAPP);
-//						urlString = String.format(K.kAppMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId));
-//						break;
-                    case "message":
-                        jumpTab(mTabMessage);
-                        urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(kGroupId), user.getString(kUserId));
-                        break;
-                    case "thursday_say":
-                        Intent blogLinkIntent = new Intent(DashboardActivity.this, ThursdaySayActivity.class);
-                        startActivity(blogLinkIntent);
-                        break;
+//                    case "report":
+//                        Intent subjectIntent = new Intent(this, SubjectActivity.class);
+//                        subjectIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                        subjectIntent.putExtra(URLs.kLink, pushMessageJSON.getString("url"));
+//                        subjectIntent.putExtra(URLs.kBannerName, pushMessageJSON.getString("title"));
+//                        subjectIntent.putExtra(URLs.kObjectId, pushMessageJSON.getInt("object_id"));
+//                        subjectIntent.putExtra(URLs.kObjectType, pushMessageJSON.getInt("object_type"));
+//                        startActivity(subjectIntent);
+//                        break;
+//                    case "analyse":
+//                        jumpTab(mTabAnalyse);
+//                        urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
+//                        break;
+////					case "app":
+////						jumpTab(mTabAPP);
+////						urlString = String.format(K.kAppMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId));
+////						break;
+//                    case "message":
+//                        jumpTab(mTabMessage);
+//                        urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(kGroupId), user.getString(kUserId));
+//                        break;
+//                    case "thursday_say":
+//                        Intent blogLinkIntent = new Intent(DashboardActivity.this, ThursdaySayActivity.class);
+//                        startActivity(blogLinkIntent);
+//                        break;
                     default:
                         jumpTab(mTabAnalyse);
                         urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
@@ -363,43 +352,43 @@ public class DashboardActivity extends BaseActivity {
     private class NotificationBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            receiveNotification();
+//            receiveNotification();
         }
     }
 
     /*
      * 通知显示判断逻辑，在 Activity 显示和接收到广播时都会调用
      */
-    private void receiveNotification() {
-        try {
-            String noticePath = FileUtil.dirPath(mAppContext, K.kConfigDirName, K.kLocalNotificationConfigFileName);
-            notificationJSON = FileUtil.readConfigFile(noticePath);
-            kpiNotifition = notificationJSON.getInt(URLs.kTabKpi);
-            analyseNotifition = notificationJSON.getInt(URLs.kTabAnalyse);
-            appNotifition = notificationJSON.getInt(URLs.kTabApp);
-            messageNotifition = notificationJSON.getInt(URLs.kTabMessage);
-
-            if (kpiNotifition > 0 && objectType != 1) {
-                RedPointView.showRedPoint(mAppContext, kTab, bvKpi);
-            }
-            if (analyseNotifition > 0 && objectType != 2) {
-                RedPointView.showRedPoint(mAppContext, kTab, bvAnalyse);
-            }
-//			if (appNotifition > 0 && objectType != 3) {
-//				RedPointView.showRedPoint(mAppContext, kTab, bvApp);
-//			}
-            if (messageNotifition > 0 && objectType != 3) {
-                RedPointView.showRedPoint(mAppContext, kTab, bvMessage);
-            }
-            if (notificationJSON.getInt(URLs.kSetting) > 0) {
-                RedPointView.showRedPoint(mAppContext, URLs.kSetting, bvBannerSetting);
-            } else {
-                bvBannerSetting.setVisibility(View.GONE);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void receiveNotification() {
+//        try {
+//            String noticePath = FileUtil.dirPath(mAppContext, K.kConfigDirName, K.kLocalNotificationConfigFileName);
+//            notificationJSON = FileUtil.readConfigFile(noticePath);
+//            kpiNotifition = notificationJSON.getInt(URLs.kTabKpi);
+//            analyseNotifition = notificationJSON.getInt(URLs.kTabAnalyse);
+//            appNotifition = notificationJSON.getInt(URLs.kTabApp);
+//            messageNotifition = notificationJSON.getInt(URLs.kTabMessage);
+//
+//            if (kpiNotifition > 0 && objectType != 1) {
+//                RedPointView.showRedPoint(mAppContext, kTab, bvKpi);
+//            }
+//            if (analyseNotifition > 0 && objectType != 2) {
+//                RedPointView.showRedPoint(mAppContext, kTab, bvAnalyse);
+//            }
+////			if (appNotifition > 0 && objectType != 3) {
+////				RedPointView.showRedPoint(mAppContext, kTab, bvApp);
+////			}
+//            if (messageNotifition > 0 && objectType != 3) {
+//                RedPointView.showRedPoint(mAppContext, kTab, bvMessage);
+//            }
+//            if (notificationJSON.getInt(URLs.kSetting) > 0) {
+//                RedPointView.showRedPoint(mAppContext, URLs.kSetting, bvBannerSetting);
+//            } else {
+//                bvBannerSetting.setVisibility(View.GONE);
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     /*
      * 配置 mWebView
@@ -575,7 +564,7 @@ public class DashboardActivity extends BaseActivity {
                         objectType = 2;
                         urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
 
-                        bvAnalyse.setVisibility(View.GONE);
+//                        bvAnalyse.setVisibility(View.GONE);
 //						notificationJSON.put(URLs.kTabAnalyse, 0);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 1);
                         break;
@@ -895,6 +884,18 @@ public class DashboardActivity extends BaseActivity {
         @JavascriptInterface
         public void appBadgeNum(final String type, final String num) {
             Log.i("uploadImg",type + num);
+            if (type.equals("total")){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        bvAnalyse.setBackgroundColor(Color.RED);
+                        bvAnalyse.setText(num);
+                        bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
+                        bvAnalyse.setBadgeMargin(70,0);
+                        bvAnalyse.show();
+                    }
+                });
+            }
         }
 
         @JavascriptInterface
@@ -958,14 +959,16 @@ public class DashboardActivity extends BaseActivity {
                     String userConfigPath = String.format("%s/%s", FileUtil.basePath(DashboardActivity.this), K.kUserConfigFileName);
                     JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
                     String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
-                    String assetsPath = FileUtil.sharedPath(DashboardActivity.this);
+                    final String assetsPath = FileUtil.sharedPath(DashboardActivity.this);
                     Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
-                    String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
+                    final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
                     final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, outPath, headers);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200")) {
+                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(outPath).exists()) {
+                                String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
+                                FileUtil.copyFile(outPath, newPath);
                             } else {
                                 Toast.makeText(DashboardActivity.this, "用户权限js文件下载失败", Toast.LENGTH_SHORT).show();
                             }
