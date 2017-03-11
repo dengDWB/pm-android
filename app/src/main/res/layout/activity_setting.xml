@@ -41,7 +41,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/user_id"
                     android:layout_centerHorizontal="true"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
                     <TextView
                         android:id="@+id/role_id"
@@ -145,7 +146,7 @@
                         android:textSize="12dp"/>
                 </RelativeLayout>
 
-                <RelativeLayout style="@style/SettingGroup">
+                <RelativeLayout style="@style/SettingGroup" android:visibility="gone">
 
                     <TextView
                         style="@style/SettingKey"
@@ -192,7 +193,8 @@
                 </RelativeLayout>
 
                 <RelativeLayout style="@style/SettingGroup"
-                    android:onClick="launchThursdaySayActivity">
+                    android:onClick="launchThursdaySayActivity"
+                    android:visibility="gone">
 
                     <TextView
                         android:id="@+id/check_thursday_say"
@@ -207,13 +209,14 @@
                         android:background="@drawable/icon_thursday_say_pink" />
                 </RelativeLayout>
 
-                <View style="@style/Divider"/>
+                <View style="@style/Divider" android:visibility="gone"/>
 
                 <TextView
                     style="@style/SettingTitle"
-                    android:text="安全策略"/>
+                    android:text="安全策略"
+                    android:visibility="gone"/>
 
-                <RelativeLayout style="@style/SettingGroup">
+                <RelativeLayout style="@style/SettingGroup" android:visibility="gone">
 
                     <TextView
                         style="@style/SettingKey"
@@ -227,7 +230,7 @@
                 </RelativeLayout>
 
 
-                <RelativeLayout style="@style/SettingGroup">
+                <RelativeLayout style="@style/SettingGroup" android:visibility="gone">
 
                     <TextView
                         android:id="@+id/change_lock"
@@ -238,7 +241,8 @@
 
                 <RelativeLayout
                     style="@style/SettingGroup"
-                    android:layout_width="wrap_content">
+                    android:layout_width="wrap_content"
+                    android:visibility="gone">
 
                     <TextView
                         android:id="@+id/change_pwd"
@@ -255,9 +259,9 @@
 
                 <TextView
                     style="@style/SettingTitle"
-                    android:text="辅助功能"/>
+                    android:text="辅助功能" android:visibility="gone"/>
 
-                <RelativeLayout style="@style/SettingGroup">
+                <RelativeLayout style="@style/SettingGroup" android:visibility="gone">
 
                     <TextView
                         style="@style/SettingKey"

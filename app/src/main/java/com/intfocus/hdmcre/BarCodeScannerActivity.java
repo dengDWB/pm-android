@@ -107,6 +107,6 @@ public class BarCodeScannerActivity extends BaseActivity implements ZBarScannerV
      * 返回
      */
     public void dismissActivity(View v) {
-        BarCodeScannerActivity.this.onBackPressed();
+            BarCodeScannerActivity.this.onBackPressed();
     }
 }
