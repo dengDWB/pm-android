@@ -222,6 +222,10 @@ public class DashboardActivity extends BaseActivity {
 					case "thursday_say":
 						Intent blogLinkIntent = new Intent(DashboardActivity.this, ThursdaySayActivity.class);
 						startActivity(blogLinkIntent);
+						break;
+					default:
+						jumpTab(mTabAnalyse);
+						urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
 				}
 			}
 			pushMessageJSON.put("state", true);
