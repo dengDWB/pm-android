@@ -1,5 +1,6 @@
 package com.intfocus.hdmcre;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
@@ -38,6 +40,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
@@ -58,6 +61,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -185,23 +189,19 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			}
 			Log.i("FileType1",fileChooserParams.toString());
 			mUploadMessage1 = filePathCallback;
-//				mSourceIntent = getCameraCapture();
-//				startActivityForResult(mSourceIntent, CODE_RESULT_REQUEST);
-			mSourceIntent = ImageUtil.takeBigPicture();
-			startActivityForResult(mSourceIntent, CODE_RESULT_REQUEST);
-//			getCameraCapture();
+			showOptions();
 			return true;
 		}
 
 		//Android 4.0 以下
 		public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType) {
 			mUploadMessage = uploadMsg;
-//				getCameraCapture();
+			showOptions();
 		}
 		// Android 4.0 - 4.4.4
 		public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType, String capture) {
 			mUploadMessage = uploadMsg;
-//				getCameraCapture();
+			showOptions();
 		}
 	}
 
@@ -468,8 +468,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			// format: /mobile/v1/group/:group_id/template/:template_id/report/:report_id
 			// deprecated
 			// format: /mobile/report/:report_id/group/:group_id
-			templateID = TextUtils.split(link, "/")[7];
-			reportID = TextUtils.split(link, "/")[9];
+			templateID = TextUtils.split(link, "/")[6];
+			reportID = TextUtils.split(link, "/")[8];
 			String urlPath = format(link.replace("%@", "%d"), groupID);
 			urlString = String.format("%s%s", K.kBaseUrl, urlPath);
 			webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -824,6 +824,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 						if (!loadUrl.equals("")) {
 							mWebView.loadUrl("file://" + loadUrl);
 						}
+					}else if (link.startsWith("offline:///")){
+						mWebView.loadUrl((String) urlStack.get(0));
 					}
 				}
 			});
@@ -1017,8 +1019,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	}
 
 	/*
- * 启动拍照并获取图片
- */
+ 	* 启动拍照并获取图片
+ 	*/
 	private void getCameraCapture() {
 		Intent intentFromCapture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -1063,19 +1065,33 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 		switch (requestCode) {
 			case CODE_RESULT_REQUEST: {
-				Log.e("uploadImg", "1.");
 				try {
 					if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 						if (mUploadMessage == null) {
 							return;
 						}
-						Uri uri = intent.getData();
+
+						String sourcePath = ImageUtil.retrievePath(this, mSourceIntent, intent);
+
+						if (TextUtils.isEmpty(sourcePath) || !new File(sourcePath).exists()) {
+							Log.e("uploadImg", "sourcePath empty or not exists.");
+							break;
+						}
+
+						Uri uri = Uri.fromFile(new File(sourcePath));
 						mUploadMessage.onReceiveValue(uri);
+
 					} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 						if (mUploadMessage1 == null) {        // for android 5.0+
 							return;
 						}
+
 						String sourcePath = ImageUtil.retrievePath(this, mSourceIntent, intent);
+
+						if (TextUtils.isEmpty(sourcePath) || !new File(sourcePath).exists()) {
+							Log.e("uploadImg", "sourcePath empty or not exists.");
+							break;
+						}
 
 						Uri uri = Uri.fromFile(new File(sourcePath));
 						mUploadMessage1.onReceiveValue(new Uri[]{uri});
@@ -1086,9 +1102,69 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				break;
 			}
 		}
+	}
 
-//		UMShareAPI.get(this).onActivityResult(requestCode, resultCode, intent);
 
-		super.onActivityResult(requestCode, resultCode, intent);
+
+	public void showOptions() {
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+		alertDialog.setOnCancelListener(new DialogOnCancelListener());
+
+		alertDialog.setTitle("请选择操作");
+		// gallery, camera.
+		String[] options = {"相册", "拍照"};
+
+		alertDialog.setItems(options, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (which == 0) {
+							try {
+								mSourceIntent = ImageUtil.choosePicture();
+								startActivityForResult(mSourceIntent, CODE_RESULT_REQUEST);
+							} catch (Exception e) {
+								e.printStackTrace();
+								Toast.makeText(SubjectActivity.this,
+										"请去\"设置\"中开启本应用的图片媒体访问权限",
+										Toast.LENGTH_SHORT).show();
+								restoreUploadMsg();
+							}
+
+						} else {
+							try {
+								mSourceIntent = ImageUtil.takeBigPicture();
+								startActivityForResult(mSourceIntent, CODE_RESULT_REQUEST);
+
+							} catch (Exception e) {
+								e.printStackTrace();
+								Toast.makeText(SubjectActivity.this,
+										"请去\"设置\"中开启本应用的相机和图片媒体访问权限",
+										Toast.LENGTH_SHORT).show();
+
+								restoreUploadMsg();
+							}
+						}
+					}
+				}
+		);
+
+		alertDialog.show();
+	}
+
+	private class DialogOnCancelListener implements DialogInterface.OnCancelListener {
+		@Override
+		public void onCancel(DialogInterface dialogInterface) {
+			restoreUploadMsg();
+		}
+	}
+
+	private void restoreUploadMsg() {
+		if (mUploadMessage != null) {
+			mUploadMessage.onReceiveValue(null);
+			mUploadMessage = null;
+
+		} else if (mUploadMessage1 != null) {
+			mUploadMessage1.onReceiveValue(null);
+			mUploadMessage1 = null;
+		}
 	}
 }

@@ -59,6 +59,13 @@
 
     </RelativeLayout>
 
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/actionBar"
+        android:background="@color/divider"/>
+
     <LinearLayout
         android:id="@+id/toolBar"
         android:layout_width="match_parent"
@@ -111,7 +118,7 @@
             <WebView
                 android:id="@+id/browserAd"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="120px"
                 android:layerType="software"
                 android:scrollbars="none"
                 android:visibility="visible"/>
