@@ -9,7 +9,6 @@
       <module fileurl="file://$PROJECT_DIR$/libs/pull-to-refresh/pull-to-refresh.iml" filepath="$PROJECT_DIR$/libs/pull-to-refresh/pull-to-refresh.iml" />
       <module fileurl="file://$PROJECT_DIR$/umeng-push/umeng-push.iml" filepath="$PROJECT_DIR$/umeng-push/umeng-push.iml" />
       <module fileurl="file://$PROJECT_DIR$/libs/umeng-social/umeng-social.iml" filepath="$PROJECT_DIR$/libs/umeng-social/umeng-social.iml" />
-      <module fileurl="file://$PROJECT_DIR$/uploadimage/uploadimage.iml" filepath="$PROJECT_DIR$/uploadimage/uploadimage.iml" />
     </modules>
   </component>
 </project>

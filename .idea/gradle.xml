@@ -15,7 +15,6 @@
             <option value="$PROJECT_DIR$/libs/pull-to-refresh" />
             <option value="$PROJECT_DIR$/libs/umeng-social" />
             <option value="$PROJECT_DIR$/umeng-push" />
-            <option value="$PROJECT_DIR$/uploadimage" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
