@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -119,6 +120,9 @@ public class BaseActivity extends Activity {
         //获取当前设备屏幕密度
         displayMetrics = getResources().getDisplayMetrics();
         displayDpi = displayMetrics.densityDpi;
+
+        // 禁止横屏
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         mMyApp = (YHApplication)this.getApplication();
         mAppContext = mMyApp.getAppContext();
@@ -276,29 +280,15 @@ public class BaseActivity extends Activity {
         animLoading = (RelativeLayout) findViewById(R.id.anim_loading);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
         webSettings.setAllowFileAccess(true);
+        webSettings.setAllowContentAccess(true);
+        webSettings.setBlockNetworkImage(true);
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
 
-        mWebView.setWebChromeClient(new WebChromeClient(){
-
-            // Android 5.0 以上
-            @Override
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-                mUploadMessage1 = filePathCallback;
-                return true;
-            }
-
-            //Android 4.0 以下
-            public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType) {
-                mUploadMessage=uploadMsg;
-            }
-            // Android 4.0 - 4.4.4
-            public void openFileChooser(ValueCallback<Uri> uploadMsg,String acceptType, String capture) {
-                mUploadMessage=uploadMsg;
-            }
-        });
         mWebView.setDrawingCacheEnabled(true);
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
@@ -663,7 +653,7 @@ public class BaseActivity extends Activity {
     };
 
     void initColorView(List<ImageView> colorViews) {
-        String[] colors = {"#00ffff", "#ffcd0a", "#fd9053", "#dd0929", "#016a43", "#9d203c", "#093db5", "#6a3906", "#192162", "#000000"};
+        String[] colors = {"#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"};
         String userIDStr = String.format("%d", userID);
         int numDiff = colorViews.size() - userIDStr.length();
         numDiff = numDiff < 0 ? 0 : numDiff;

@@ -4,8 +4,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
@@ -13,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
@@ -38,6 +41,7 @@ public class LoginActivity extends BaseActivity{
     public  String kSuccess      = "success";               // 用户登录验证结果
     private EditText usernameEditText, passwordEditText;
     private String usernameString, passwordString;
+    private Context mContext;
     private final static int CODE_AUTHORITY_REQUEST = 0;
     private static final String[] permissionsArray = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -48,7 +52,12 @@ public class LoginActivity extends BaseActivity{
     @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (checkIsLogin()) {
+            onLoginSuccess();
+        }
         setContentView(R.layout.activity_login);
+
+        mContext = this;
 
         // 使背景填满整个屏幕,包括状态栏
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -91,6 +100,9 @@ public class LoginActivity extends BaseActivity{
         try {
             if (user !=null && user.has("user_num")) {
                 usernameEditText.setText(user.getString("user_num"));
+            }
+            if (user !=null && user.has("password")){
+                passwordEditText.setText(user.getString("password"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -293,6 +305,12 @@ public class LoginActivity extends BaseActivity{
                             assetsPath = FileUtil.dirPath(mAppContext, K.kHTMLDirName);
                             checkVersionUpgrade(assetsPath);
 
+                            // 存储已登录信息
+                            SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                            mEditor.putBoolean("isLogin",true);
+                            mEditor.commit();
+
                             // 跳转至主界面
                             Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -322,5 +340,21 @@ public class LoginActivity extends BaseActivity{
             if (mProgressDialog != null) mProgressDialog.dismiss();
             toast(e.getLocalizedMessage());
         }
+    }
+
+    /*
+     * 判断之前是否已登录
+     */
+    private boolean checkIsLogin() {
+        SharedPreferences mSharedPreferences = getSharedPreferences("loginState", MODE_PRIVATE);
+        return mSharedPreferences.getBoolean("isLogin", false);
+    }
+
+    public void onLoginSuccess() {
+        Intent intent = new Intent(this, DashboardActivity.class);
+        intent.putExtra("URL","file:///android_asset/yhbigscreen/M003-kpi3-1.html");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        LoginActivity.this.startActivity(intent);
+        finish();
     }
 }
