@@ -325,9 +325,6 @@ public class SettingActivity extends BaseActivity {
             Uri imageUri;
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
                 imageUri = FileProvider.getUriForFile(SettingActivity.this, "com.intfocus.hdmcre.fileprovider", new File(Environment.getExternalStorageDirectory(),"icon.jpg"));
-                if (imageUri == null) {
-                    return;
-                }
                 intentFromCapture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intentFromCapture.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }else {
@@ -690,8 +687,6 @@ public class SettingActivity extends BaseActivity {
                                 new File(userPermissionPath).delete();
                             }
 
-                            downloadUserJs();
-
                             /*
                              * Umeng Device Token 重新上传服务器
                              */
@@ -726,6 +721,7 @@ public class SettingActivity extends BaseActivity {
                                     FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
                                     FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
                                     FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
+                                    downloadUserJs();
                                     // FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
 
                                     toast("校正完成");
@@ -752,36 +748,43 @@ public class SettingActivity extends BaseActivity {
     };
 
     public void downloadUserJs() {
-        try {
-            String userConfigPath = String.format("%s/%s", FileUtil.basePath(SettingActivity.this), K.kUserConfigFileName);
-            JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-            String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
-            final String assetsPath = FileUtil.sharedPath(SettingActivity.this);
-            Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
-            final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
-            final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, outPath, headers);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(SettingActivity.this, "用户权限验证失败", Toast.LENGTH_SHORT).show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(SettingActivity.this), K.kUserConfigFileName);
+                    JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+                    String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
+                    final String assetsPath = FileUtil.sharedPath(SettingActivity.this);
+                    Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
+                    final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
+                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, outPath, headers);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-                            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                            mEditor.putBoolean("isLogin",false);
-                            mEditor.commit();
+                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(outPath).exists()) {
+                                String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
+                                String userPermissionPath = FileUtil.dirPath(SettingActivity.this, "config","user_permission.js");
+                                FileUtil.copyFile(outPath, newPath);
+                                FileUtil.copyFile(outPath, userPermissionPath);
+                            } else {
+                                Toast.makeText(SettingActivity.this, "用户权限验证失败", Toast.LENGTH_SHORT).show();
+                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                                SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                                mEditor.putBoolean("isLogin",false);
+                                mEditor.commit();
 
-                            Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
-                            startActivity(intent);
-                            finish();
+                                Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
                         }
                     });
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            });
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            }
+        }).start();
     }
 
     /*
