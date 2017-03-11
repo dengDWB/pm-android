@@ -258,7 +258,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		bannerName = intent.getStringExtra(URLs.kBannerName);
 		objectID = intent.getIntExtra(URLs.kObjectId, -1);
 		objectType = intent.getIntExtra(URLs.kObjectType, -1);
-//		mTitle.setText(bannerName);
+		mTitle.setText(bannerName);
 
 		if (link.toLowerCase().endsWith(".pdf")) {
 			mPDFView = (PDFView) findViewById(R.id.pdfview);
