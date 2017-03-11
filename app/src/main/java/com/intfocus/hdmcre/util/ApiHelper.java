@@ -34,7 +34,7 @@ public class ApiHelper {
      * 用户登录验证
      * params: {device: {name, platform, os, os_version, uuid}}
      */
-    public static String authentication(Context context, String username, String password) {
+    public static String authentication(Context context, String username, String password, String type) {
         String responseState = "success", urlString = String.format(K.kUserAuthenticateAPIPath, K.kBaseUrl, "android", username, password);
         try {
             JSONObject device = new JSONObject();
@@ -43,6 +43,9 @@ public class ApiHelper {
             device.put("os", android.os.Build.MODEL);
             device.put("os_version", Build.VERSION.RELEASE);
             device.put("uuid", OpenUDID_manager.getOpenUDID());
+
+            JSONObject loginType = new JSONObject();
+            loginType.put("type", type);
 
             JSONObject params = new JSONObject();
             params.put("device", device);
@@ -53,6 +56,7 @@ public class ApiHelper {
             Map<String, String> response = HttpUtil.httpPost(urlString, params);
             String userConfigPath = String.format("%s/%s", FileUtil.basePath(context), K.kUserConfigFileName);
             JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+            userJSON.put("loginType",type);
             userJSON.put(URLs.kPassword, password);
             userJSON.put(URLs.kIsLogin, response.get(URLs.kCode).equals("200"));
 

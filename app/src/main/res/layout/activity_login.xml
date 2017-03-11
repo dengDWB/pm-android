@@ -107,7 +107,7 @@
             android:layout_below="@+id/linearPassword" />
 
         <Button
-            android:id="@+id/btn_login"
+            android:id="@+id/btn_login_tenant"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/forgetPasswordTv"
@@ -115,8 +115,22 @@
             android:layout_marginRight="15dp"
             android:layout_marginTop="10dp"
             android:background="@drawable/btn_style"
-            android:onClick="actionSubmit"
-            android:text="@string/login_submit"
+            android:onClick="onTenantLogin"
+            android:text="@string/login_tenant"
+            android:textColor="#FFFFFF"
+            android:textSize="20dip" />
+
+        <Button
+            android:id="@+id/btn_login_market"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_login_tenant"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/btn_style"
+            android:onClick="onMarketLogin"
+            android:text="@string/login_market"
             android:textColor="#FFFFFF"
             android:textSize="20dip" />
 

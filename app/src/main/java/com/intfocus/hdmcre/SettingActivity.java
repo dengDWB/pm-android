@@ -653,7 +653,7 @@ public class SettingActivity extends BaseActivity {
                 @Override
                 public void run() {
                     try {
-                        String info = ApiHelper.authentication(SettingActivity.this, user.getString(URLs.kUserNum), user.getString(URLs.kPassword));
+                        String info = ApiHelper.authentication(SettingActivity.this, user.getString(URLs.kUserNum), user.getString(URLs.kPassword),user.getString(URLs.kPassword));
                         if (!info.isEmpty() && info.equals("success")) {
                             /*
                              * 用户报表数据 js 文件存放在公共区域

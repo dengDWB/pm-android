@@ -138,8 +138,8 @@ public class LoginActivity extends BaseActivity{
         }
 
         RelativeLayout loginLayout = (RelativeLayout) findViewById(R.id.login_layout);
-        Button mSubmit = (Button) findViewById(R.id.btn_login);
-        controlKeyboardLayout(loginLayout, mSubmit);
+        Button mMarketLogin = (Button) findViewById(R.id.btn_login_market);
+        controlKeyboardLayout(loginLayout, mMarketLogin);
 
         /*
          * 检测登录界面，版本是否升级
@@ -264,10 +264,18 @@ public class LoginActivity extends BaseActivity{
                 });
     }
 
+    public void onTenantLogin(View v) {
+        actionSubmit("tenant");
+    }
+
+    public void onMarketLogin(View v) {
+        actionSubmit("tenant");
+    }
+
     /*
      * 登录按钮点击事件
      */
-    public void actionSubmit(View v) {
+    public void actionSubmit(final String type) {
         try {
             usernameString = usernameEditText.getText().toString();
             passwordString = passwordEditText.getText().toString();
@@ -292,7 +300,7 @@ public class LoginActivity extends BaseActivity{
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final String info = ApiHelper.authentication(mAppContext, usernameString, passwordString);
+                    final String info = ApiHelper.authentication(mAppContext, usernameString, passwordString, type);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -355,8 +363,7 @@ public class LoginActivity extends BaseActivity{
 
     public void onLoginSuccess() {
         Intent intent = new Intent(this, DashboardActivity.class);
-        intent.putExtra("URL","file:///android_asset/yhbigscreen/M003-kpi3-1.html");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         LoginActivity.this.startActivity(intent);
         finish();
     }

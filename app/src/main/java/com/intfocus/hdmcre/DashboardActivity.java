@@ -89,7 +89,7 @@ public class DashboardActivity extends BaseActivity {
 		/*
          * 通过解屏进入界面后，进行用户验证
      	 */
-        checkWhetherFromScreenLockActivity();
+//        checkWhetherFromScreenLockActivity();
 
 		/*
          * 检测服务器静态资源是否更新，并下载
@@ -420,33 +420,33 @@ public class DashboardActivity extends BaseActivity {
      * 通过解屏进入界面后，进行用户验证
      */
     public void checkWhetherFromScreenLockActivity() {
-        Intent intent = getIntent();
-        if (intent.hasExtra("from_activity")) {
-            checkVersionUpgrade(assetsPath);
-
-            new Thread(new Runnable() {
-                @Override
-                public synchronized void run() {
-                    try {
-                        String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
-                        JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-
-                        String info = ApiHelper.authentication(mAppContext, userJSON.getString("user_num"), userJSON.getString(URLs.kPassword));
-                        if (!info.isEmpty() && (info.contains("用户") || info.contains("密码"))) {
-                            // 解锁验证信息失败,也只变化登录状态,其余状况保持登录状态
-                            JSONObject configJSON = new JSONObject();
-                            configJSON.put("is_login", false);
-
-                            modifiedUserConfig(configJSON);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        } else {
-            mWebView.clearCache(true);
-        }
+//        Intent intent = getIntent();
+//        if (intent.hasExtra("from_activity")) {
+//            checkVersionUpgrade(assetsPath);
+//
+//            new Thread(new Runnable() {
+//                @Override
+//                public synchronized void run() {
+//                    try {
+//                        String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
+//                        JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+//
+//                        String info = ApiHelper.authentication(mAppContext, userJSON.getString("user_num"), userJSON.getString(URLs.kPassword));
+//                        if (!info.isEmpty() && (info.contains("用户") || info.contains("密码"))) {
+//                            // 解锁验证信息失败,也只变化登录状态,其余状况保持登录状态
+//                            JSONObject configJSON = new JSONObject();
+//                            configJSON.put("is_login", false);
+//
+//                            modifiedUserConfig(configJSON);
+//                        }
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }).start();
+//        } else {
+//            mWebView.clearCache(true);
+//        }
     }
 
     /*
