@@ -1137,7 +1137,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 							} catch (Exception e) {
 								e.printStackTrace();
 								Toast.makeText(SubjectActivity.this,
-										"请去\"设置\"中开启本应用的相机和图片媒体访问权限",
+										"相机调用失败, 请尝试从相册上传图片。",
 										Toast.LENGTH_SHORT).show();
 
 								restoreUploadMsg();

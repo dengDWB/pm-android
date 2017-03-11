@@ -4,6 +4,7 @@
     <color name="black_overlay">#66000000</color>
 
     <color name="actionBar">#FFFFFF</color>
+    <color name="loading">#8C0122</color>
     <color name="bannerText">#8C0122</color>
 
     <color name="colors0">#ffffff</color>
