@@ -157,7 +157,6 @@ public class YHApplication extends Application {
         public void dealWithCustomAction(Context context, UMessage uMessage) {
             super.dealWithCustomAction(context, uMessage);
             try {
-                Log.e("dealsend","is ok");
                 String pushMessagePath = String.format("%s/%s", FileUtil.basePath(appContext), K.kPushMessageFileName);
                 JSONObject pushMessageJSON = new JSONObject();
                 pushMessageJSON.put("state", false);
@@ -181,7 +180,6 @@ public class YHApplication extends Application {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         } catch (JSONException | IOException e) {
-                Log.e("dealsend",e.toString());
                 e.printStackTrace();
             }
         }
