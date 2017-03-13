@@ -1050,6 +1050,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		super.onActivityResult(requestCode, resultCode, intent);
 		if (resultCode != Activity.RESULT_OK) {
 			if (mUploadMessage != null) {
 				mUploadMessage.onReceiveValue(null);

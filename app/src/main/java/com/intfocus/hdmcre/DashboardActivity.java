@@ -964,12 +964,6 @@ public class DashboardActivity extends BaseActivity {
                     String fileNameMd5 = String.format(K.kFileNameMd5APIPath, K.kBaseUrl, userJSON.getString("user_num"));
                     final String assetsPath = FileUtil.sharedPath(mAppContext);
                     Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
-<<<<<<< HEAD
-                        final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), "user_permission.js");
-                        final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
-                        final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
-                        runOnUiThread(new Runnable() {
-=======
                     final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js");
                     final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
                     final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
@@ -983,7 +977,6 @@ public class DashboardActivity extends BaseActivity {
                     }
                     final String finalMd5 = md5;
                     runOnUiThread(new Runnable() {
->>>>>>> ac81fe22a66ab01ad225b8f8ada474d2e9fc6c9d
                         @Override
                         public void run() {
                             boolean flag = false;
