@@ -126,7 +126,7 @@ public class FileUtil {
             String line;
             StringBuilder stringBuilder = new StringBuilder();
             while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line + "\n");
+                stringBuilder.append(line);
                 stringBuilder.append("\n");
             }
             bufferedReader.close();
@@ -315,7 +315,7 @@ public class FileUtil {
     }
 
 
-    private static String MD5(InputStream inputStream) {
+    public static String MD5(InputStream inputStream) {
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");
 
@@ -402,6 +402,22 @@ public class FileUtil {
     public static void copyAssetFile(Context mContext, String assetName, String outputPath) {
         try {
             InputStream in = mContext.getApplicationContext().getAssets().open(assetName);
+            FileOutputStream out = new FileOutputStream(outputPath);
+            byte[] buffer = new byte[1024];
+            int readPos;
+            while ((readPos = in.read(buffer)) != -1) {
+                out.write(buffer, 0, readPos);
+            }
+            in.close();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void copyZipFile(String filePath, String outputPath) {
+        try {
+            InputStream in = new FileInputStream(filePath);
             FileOutputStream out = new FileOutputStream(outputPath);
             byte[] buffer = new byte[1024];
             int readPos;

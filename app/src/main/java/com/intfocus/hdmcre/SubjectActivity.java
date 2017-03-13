@@ -1,6 +1,5 @@
 package com.intfocus.hdmcre;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -9,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
@@ -61,7 +59,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -508,7 +505,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 						new Thread(mRunnableForPDF).start();
 					} else {
 						String loadUrl = urlTempFile(urlString);
-						Log.i("11", loadUrl);
 						if (!loadUrl.equals("")) {
 							mWebView.loadUrl("file:///" + loadUrl);
 						} else {
@@ -550,9 +546,10 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		staticUrlMap.put("opers.html", "运营巡检记录");
 		staticUrlMap.put("repair.execute.html", "设备维修");
 		staticUrlMap.put("repair.signin.html", "设备维修新建");
-		staticUrlMap.put("repair.new.html", "设备维修明细");
+		staticUrlMap.put("repair.new.html", "新建设备维修");
 		staticUrlMap.put("repair.view.html", "设备维修明细");
 		staticUrlMap.put("repairs.html", "设备维修列表");
+		staticUrlMap.put("repair.new-from-device.execute.html", "新建设备维修");
 		staticUrlMap.put("sales.input.execute.html", "销售录入审批");
 		staticUrlMap.put("notice.view.html", "公告明细");
 		staticUrlMap.put("notices.html", "公告");
