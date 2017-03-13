@@ -73,6 +73,7 @@ import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -861,7 +862,7 @@ public class BaseActivity extends Activity {
         checkAssetUpdated(shouldReloadUIThread, URLs.kJavaScripts, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kBarCodeScan, false);
         checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePages, false);
-        // checkAssetUpdated(shouldReloadUIThread, URLs.kAdvertisement, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kAdvertisement, false);
     }
 
     private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
@@ -883,7 +884,8 @@ public class BaseActivity extends Activity {
             LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
             // execute this when the downloader must be fired
             final DownloadAssetsTask downloadTask = new DownloadAssetsTask(mAppContext, shouldReloadUIThread, assetName, isInAssets);
-            downloadTask.execute(String.format(K.kDownloadAssetsAPIPath, K.kBaseUrl, assetName), assetZipPath);
+            final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), String.format("%s.zip",assetName));
+            downloadTask.execute(String.format(K.kDownloadAssetsAPIPath, K.kBaseUrl, assetName), downloadPath);
 
             return true;
         } catch (JSONException e) {
@@ -913,6 +915,7 @@ public class BaseActivity extends Activity {
         private final boolean isReloadUIThread;
         private final String assetFilename;
         private final boolean isInAssets;
+        private String downloadPath = "";
 
         public DownloadAssetsTask(Context context, boolean shouldReloadUIThread, String assetFilename, boolean isInAssets) {
             this.context = context;
@@ -942,6 +945,7 @@ public class BaseActivity extends Activity {
                 int fileLength = connection.getContentLength();
                 input = connection.getInputStream();
                 output = new FileOutputStream(params[1]);
+                downloadPath = params[1];
 
                 byte data[] = new byte[4096];
                 long total = 0;
@@ -999,6 +1003,10 @@ public class BaseActivity extends Activity {
             if (result != null) {
                 Toast.makeText(context, String.format("静态资源更新失败(%s)", result), Toast.LENGTH_LONG).show();
             } else {
+                String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
+                if (new File(downloadPath).exists()){
+                    FileUtil.copyFile(downloadPath, assetZipPath);
+                }
                 FileUtil.checkAssets(mAppContext, assetFilename, isInAssets);
                 if (isReloadUIThread) {
                     new Thread(mRunnableForDetecting).start();

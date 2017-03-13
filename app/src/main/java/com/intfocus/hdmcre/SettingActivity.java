@@ -1,6 +1,7 @@
 package com.intfocus.hdmcre;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -168,6 +169,9 @@ public class SettingActivity extends BaseActivity {
     protected void onDestroy() {
         PgyUpdateManager.unregister(); // 解除注册蒲公英版本更新检查
         popupWindow = null;
+        if (mProgressDialog != null){
+            mProgressDialog.dismiss();
+        }
         super.onDestroy();
     }
     /*
@@ -657,6 +661,7 @@ public class SettingActivity extends BaseActivity {
     private final View.OnClickListener mCheckAssetsListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            mProgressDialog = ProgressDialog.show(SettingActivity.this, "稍等", "加载中");
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -671,6 +676,9 @@ public class SettingActivity extends BaseActivity {
                             headerPath = String.format("%s/%s", FileUtil.dirPath(mAppContext, K.kHTMLDirName), K.kCachedHeaderConfigFileName);
                             new File(headerPath).delete();
 
+                            /*
+                             *用户权限表删除
+                             */
                             String adUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
                             String offUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
                             String userPermissionPath = FileUtil.dirPath(SettingActivity.this, "config","user_permission.js");
@@ -705,25 +713,27 @@ public class SettingActivity extends BaseActivity {
                             gravatarImgPath = FileUtil.dirPath(mAppContext, K.kConfigDirName, gravatarImgName);
 
                             /*
-                         * 检测服务器静态资源是否更新，并下载
-                         */
+                             * 检测服务器静态资源是否更新，并下载
+                             */
                             runOnUiThread(new Runnable() {
                                 @Override public void run() {
                                     new DownloadGravatar().execute(); //校正头像,必须在主线程运行
 
                                     checkAssetsUpdated(false);
 
-                                    FileUtil.checkAssets(mAppContext, URLs.kAssets, false);
-                                    FileUtil.checkAssets(mAppContext, URLs.kLoding, false);
-                                    FileUtil.checkAssets(mAppContext, URLs.kFonts, true);
-                                    FileUtil.checkAssets(mAppContext, URLs.kImages, true);
-                                    FileUtil.checkAssets(mAppContext, URLs.kStylesheets, true);
-                                    FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
-                                    FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
-                                    FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kAssets, false);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kLoding, false);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kFonts, true);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kImages, true);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kStylesheets, true);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
+//                                    FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
+//                                    FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
                                     downloadUserJs();
-                                    // FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
-
+                                    if (mProgressDialog != null){
+                                        mProgressDialog.dismiss();
+                                    }
                                     toast("校正完成");
                                 }
                             });
@@ -732,6 +742,9 @@ public class SettingActivity extends BaseActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    if (mProgressDialog != null){
+                                        mProgressDialog.dismiss();
+                                    }
                                     Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
                                     startActivity(intent);
                                     finish();
@@ -740,6 +753,9 @@ public class SettingActivity extends BaseActivity {
                         }
 
                     } catch (JSONException | IOException e) {
+                        if (mProgressDialog != null){
+                            mProgressDialog.dismiss();
+                        }
                         e.printStackTrace();
                     }
                 }
@@ -752,23 +768,25 @@ public class SettingActivity extends BaseActivity {
             @Override
             public void run() {
                 try {
-                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(SettingActivity.this), K.kUserConfigFileName);
+                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
                     JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
                     String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
-                    final String assetsPath = FileUtil.sharedPath(SettingActivity.this);
+                    final String assetsPath = FileUtil.sharedPath(mAppContext);
                     Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
+                    final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), "user_permission.js");
                     final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
-                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, outPath, headers);
+                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(outPath).exists()) {
+                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
                                 String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
-                                String userPermissionPath = FileUtil.dirPath(SettingActivity.this, "config","user_permission.js");
-                                FileUtil.copyFile(outPath, newPath);
-                                FileUtil.copyFile(outPath, userPermissionPath);
+                                String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
+                                FileUtil.copyFile(downloadPath, outPath);
+                                FileUtil.copyFile(downloadPath, newPath);
+                                FileUtil.copyFile(downloadPath, userPermissionPath);
                             } else {
-                                Toast.makeText(SettingActivity.this, "用户权限验证失败", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
                                 SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
                                 SharedPreferences.Editor mEditor = mSharedPreferences.edit();
                                 mEditor.putBoolean("isLogin",false);
