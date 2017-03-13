@@ -269,7 +269,7 @@ public class LoginActivity extends BaseActivity{
     }
 
     public void onMarketLogin(View v) {
-        actionSubmit("tenant");
+        actionSubmit("market");
     }
 
     /*

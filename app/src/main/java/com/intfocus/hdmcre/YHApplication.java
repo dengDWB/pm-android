@@ -93,7 +93,7 @@ public class YHApplication extends Application {
         FileUtil.checkAssets(appContext, URLs.kJavaScripts, true);
         FileUtil.checkAssets(appContext, URLs.kBarCodeScan, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePages,false);
-         FileUtil.checkAssets(appContext, URLs.kAdvertisement, false);
+        FileUtil.checkAssets(appContext, URLs.kAdvertisement, false);
 
         /*
          *  手机待机再激活时发送开屏广播
@@ -157,7 +157,12 @@ public class YHApplication extends Application {
         public void dealWithCustomAction(Context context, UMessage uMessage) {
             super.dealWithCustomAction(context, uMessage);
             try {
+//                if (uMessage.custom.equals(null) ||uMessage.custom.equals("")) {
+//                    Toast.makeText(appContext,"推送没有携带消息",Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
                 String pushMessagePath = String.format("%s/%s", FileUtil.basePath(appContext), K.kPushMessageFileName);
+//                JSONObject pushMessageJSON = new JSONObject(uMessage.custom);
                 JSONObject pushMessageJSON = new JSONObject();
                 pushMessageJSON.put("state", false);
                 FileUtil.writeFile(pushMessagePath, pushMessageJSON.toString());
@@ -175,9 +180,10 @@ public class YHApplication extends Application {
                     if (activityName.equals("LoginActivity") || activityName.equals("ConfirmPassCodeActivity")) {
                         return;
                     }
-                    intent = new Intent (appContext,DashboardActivity.class);
+
+                    intent = new Intent (appContext,LoginActivity.class);
                 }
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         } catch (JSONException | IOException e) {
                 e.printStackTrace();
