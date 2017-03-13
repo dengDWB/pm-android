@@ -367,4 +367,5 @@ public class LoginActivity extends BaseActivity{
         LoginActivity.this.startActivity(intent);
         finish();
     }
+
 }

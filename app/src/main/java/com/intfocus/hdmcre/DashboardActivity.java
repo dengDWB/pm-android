@@ -36,7 +36,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -957,26 +960,60 @@ public class DashboardActivity extends BaseActivity {
                 try {
                     String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
                     JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-                    String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
+                    final String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
+                    String fileNameMd5 = String.format(K.kFileNameMd5APIPath, K.kBaseUrl, userJSON.getString("user_num"));
                     final String assetsPath = FileUtil.sharedPath(mAppContext);
                     Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
+<<<<<<< HEAD
                         final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), "user_permission.js");
                         final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
                         final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
                         runOnUiThread(new Runnable() {
+=======
+                    final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js");
+                    final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
+                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
+                    final Map<String, String> md5Response = HttpUtil.httpGet(fileNameMd5, new HashMap<String, String>());
+                    String md5 = "";
+                    if (md5Response.containsKey("code") && md5Response.get(URLs.kCode).equals("200")){
+                        JSONObject bodyJs =  new JSONObject(md5Response.get("body"));
+                        if (bodyJs.has("filemd5")){
+                            md5 = bodyJs.getString("filemd5");
+                        }
+                    }
+                    final String finalMd5 = md5;
+                    runOnUiThread(new Runnable() {
+>>>>>>> ac81fe22a66ab01ad225b8f8ada474d2e9fc6c9d
                         @Override
                         public void run() {
+                            boolean flag = false;
                             if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
-                                String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
-                                String userPermissionPath = FileUtil.dirPath(mAppContext, "config", "user_permission.js");
-                                FileUtil.copyFile(downloadPath, outPath);
-                                FileUtil.copyFile(downloadPath, newPath);
-                                FileUtil.copyFile(downloadPath, userPermissionPath);
+                                try {
+                                    InputStream zipStream = new FileInputStream(downloadPath);
+                                    String md5String = FileUtil.MD5(zipStream);
+                                    Log.d("md52",finalMd5 + " : " + md5String);
+                                    if (finalMd5.equals(md5String)){
+                                        String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
+                                        String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
+                                        FileUtil.copyFile(downloadPath, outPath);
+                                        FileUtil.copyFile(downloadPath, newPath);
+                                        FileUtil.copyFile(downloadPath, userPermissionPath);
+                                    }else {
+                                        flag = true;
+                                    }
+                                } catch (FileNotFoundException e) {
+                                    flag = true;
+                                    e.printStackTrace();
+                                }
                             } else {
+                                flag = true;
+                            }
+
+                            if (flag) {
                                 Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
-                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState", MODE_PRIVATE);
+                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
                                 SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                                mEditor.putBoolean("isLogin", false);
+                                mEditor.putBoolean("isLogin",false);
                                 mEditor.commit();
 
                                 Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);

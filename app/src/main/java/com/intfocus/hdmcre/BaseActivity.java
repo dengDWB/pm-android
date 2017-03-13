@@ -64,6 +64,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -884,7 +886,7 @@ public class BaseActivity extends Activity {
             LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
             // execute this when the downloader must be fired
             final DownloadAssetsTask downloadTask = new DownloadAssetsTask(mAppContext, shouldReloadUIThread, assetName, isInAssets);
-            final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), String.format("%s.zip",assetName));
+            final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), String.format("%s.zip",assetName));
             downloadTask.execute(String.format(K.kDownloadAssetsAPIPath, K.kBaseUrl, assetName), downloadPath);
 
             return true;
@@ -1003,14 +1005,58 @@ public class BaseActivity extends Activity {
             if (result != null) {
                 Toast.makeText(context, String.format("静态资源更新失败(%s)", result), Toast.LENGTH_LONG).show();
             } else {
-                String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
-                if (new File(downloadPath).exists()){
-                    FileUtil.copyFile(downloadPath, assetZipPath);
-                }
-                FileUtil.checkAssets(mAppContext, assetFilename, isInAssets);
-                if (isReloadUIThread) {
-                    new Thread(mRunnableForDetecting).start();
-                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String fileNameMd5 = String.format(K.kZipMd5APIPath, K.kBaseUrl, String.format("%s.zip",assetFilename));
+                            final Map<String, String> md5Response = HttpUtil.httpGet(fileNameMd5, new HashMap<String, String>());
+                            String md5 = "";
+                            if (md5Response.containsKey("code") && md5Response.get(URLs.kCode).equals("200")){
+                                JSONObject bodyJs =  new JSONObject(md5Response.get("body"));
+                                if (bodyJs.has("filemd5")){
+                                    md5 = bodyJs.getString("filemd5");
+                                }
+                            }
+                            String finalMd5 = md5;
+                            String md5String  = "";
+                            if (new File(downloadPath).exists()){
+                                InputStream zipStream = new FileInputStream(downloadPath);
+                                md5String = FileUtil.MD5(zipStream);
+                            }
+                            Log.d("md51",finalMd5 + " : " + md5String);
+                            if (finalMd5.equals(md5String)){
+                                String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
+                                if (new File(downloadPath).exists()){
+                                    if(new File(assetZipPath).exists()){
+                                        new File(assetZipPath).delete();
+                                    }
+                                    FileUtil.copyZipFile(downloadPath, assetZipPath);
+//                                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
+//                                    JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+//                                    String localKeyName = String.format("local_%s_md5", assetFilename);
+//                                    if(userJSON.has(localKeyName)){
+//                                        userJSON.put(localKeyName, finalMd5);
+//                                        FileUtil.writeFile(userConfigPath, userJSON.toString());
+//                                    }
+                                }
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        FileUtil.checkAssets(mAppContext, assetFilename, isInAssets);
+                                        if (isReloadUIThread) {
+                                            new Thread(mRunnableForDetecting).start();
+                                        }
+                                    }
+                                });
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         }
     }
