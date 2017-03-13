@@ -958,26 +958,28 @@ public class DashboardActivity extends BaseActivity {
             @Override
             public void run() {
                 try {
-                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(DashboardActivity.this), K.kUserConfigFileName);
+                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
                     JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
                     String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
-                    final String assetsPath = FileUtil.sharedPath(DashboardActivity.this);
+                    final String assetsPath = FileUtil.sharedPath(mAppContext);
                     Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
+                    final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), "user_permission.js");
                     final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
-                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, outPath, headers);
+                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(outPath).exists()) {
+                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
                                 String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
-                                String userPermissionPath = FileUtil.dirPath(DashboardActivity.this, "config","user_permission.js");
-                                FileUtil.copyFile(outPath, newPath);
-                                FileUtil.copyFile(outPath, userPermissionPath);
+                                String userPermissionPath = FileUtil.dirPath(mAppContext, "config", "user_permission.js");
+                                FileUtil.copyFile(downloadPath, outPath);
+                                FileUtil.copyFile(downloadPath, newPath);
+                                FileUtil.copyFile(downloadPath, userPermissionPath);
                             } else {
-                                Toast.makeText(DashboardActivity.this, "用户权限验证失败", Toast.LENGTH_SHORT).show();
-                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                                Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
+                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState", MODE_PRIVATE);
                                 SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                                mEditor.putBoolean("isLogin",false);
+                                mEditor.putBoolean("isLogin", false);
                                 mEditor.commit();
 
                                 Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
