@@ -190,7 +190,6 @@ public class DashboardActivity extends BaseActivity {
         JSONObject pushMessageJSON = FileUtil.readConfigFile(pushMessagePath);
 
         try {
-            Log.i("dealsend", pushMessageJSON.getBoolean("state") + "");
             if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state")) {
                 return;
             }
