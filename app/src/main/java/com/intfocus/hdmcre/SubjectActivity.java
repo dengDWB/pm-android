@@ -508,7 +508,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 						new Thread(mRunnableForPDF).start();
 					} else {
 						String loadUrl = urlTempFile(urlString);
-						Log.i("11", loadUrl);
 						if (!loadUrl.equals("")) {
 							mWebView.loadUrl("file:///" + loadUrl);
 						} else {

@@ -960,10 +960,10 @@ public class DashboardActivity extends BaseActivity {
                     String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
                     final String assetsPath = FileUtil.sharedPath(mAppContext);
                     Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
-                    final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), "user_permission.js");
-                    final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
-                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
-                    runOnUiThread(new Runnable() {
+                        final String downloadPath = FileUtil.dirPath(mAppContext, String.format("%d", new Date().getTime()), "user_permission.js");
+                        final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
+                        final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
+                        runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
