@@ -34,6 +34,11 @@ public class URLs implements Serializable {
     public final static String kBarCodeScan              = "BarCodeScan";
     public final static String kOfflinePages             = "offline_pages";
     public final static String kAdvertisement            = "advertisement";
+    public final static String kOfflinePagesHtml         = "offline_pages_html";
+    public final static String kOfflinePagesImages       = "offline_pages_images";
+    public final static String kOfflinePagesJavascripts  = "offline_pages_javascripts";
+    public final static String kOfflinePagesStylesheets  = "offline_pages_stylesheets";
+
 
     public final static String kAction                   = "action";
     public final static String kPassword                 = "password";

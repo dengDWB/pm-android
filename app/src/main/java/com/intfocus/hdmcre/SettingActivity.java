@@ -734,6 +734,7 @@ public class SettingActivity extends BaseActivity {
 //                                    FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
 //                                    FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
                                     downloadUserJs();
+                                    offLineUpdate();
                                     if (mProgressDialog != null){
                                         mProgressDialog.dismiss();
                                     }
@@ -765,6 +766,70 @@ public class SettingActivity extends BaseActivity {
             }).start();
         }
     };
+
+    public void offLineUpdate(){
+        String htmlMd5Api = String.format(K.kZipMd5APIPath, K.kBaseUrl, "offline_pages_html.zip");
+        String imagesMd5Api = String.format(K.kZipMd5APIPath, K.kBaseUrl, "offline_pages_images.zip");
+        String javascriptsMd5Api = String.format(K.kZipMd5APIPath, K.kBaseUrl, "offline_pages_javascripts.zip");
+        String stylesheetsMd5Api = String.format(K.kZipMd5APIPath, K.kBaseUrl, "offline_pages_stylesheets.zip");
+        String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
+        JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+        try {
+            JSONObject offlineResourcesMd5 = userJSON.getJSONObject("offline_pages");
+            final Map<String, String> htmlMd5Response = HttpUtil.httpGet(htmlMd5Api, new HashMap<String, String>());
+            if (htmlMd5Response.containsKey("code") && htmlMd5Response.get(URLs.kCode).equals("200")){
+                JSONObject bodyJs =  new JSONObject(htmlMd5Response.get("body"));
+                if (bodyJs.has("filemd5")){
+                    String htmlMd5 = bodyJs.getString("filemd5");
+                    if (offlineResourcesMd5.has("html_md5")){
+                        if (htmlMd5.equals(offlineResourcesMd5.getString("html_md5"))){
+
+                        }
+                    }
+                }
+            }
+            final Map<String, String> imagesMd5Response = HttpUtil.httpGet(imagesMd5Api, new HashMap<String, String>());
+            if (imagesMd5Response.containsKey("code") && imagesMd5Response.get(URLs.kCode).equals("200")){
+                JSONObject bodyJs =  new JSONObject(imagesMd5Response.get("body"));
+                if (bodyJs.has("filemd5")){
+                    String htmlMd5 = bodyJs.getString("filemd5");
+                    if (offlineResourcesMd5.has("images_md5")){
+                        if (htmlMd5.equals(offlineResourcesMd5.getString("html_md5"))){
+
+                        }
+                    }
+                }
+            }
+            final Map<String, String> javascriptsMd5Response = HttpUtil.httpGet(javascriptsMd5Api, new HashMap<String, String>());
+            if (javascriptsMd5Response.containsKey("code") && javascriptsMd5Response.get(URLs.kCode).equals("200")){
+                JSONObject bodyJs =  new JSONObject(javascriptsMd5Response.get("body"));
+                if (bodyJs.has("filemd5")){
+                    String htmlMd5 = bodyJs.getString("filemd5");
+                    if (offlineResourcesMd5.has("javascripts_md5")){
+                        if (htmlMd5.equals(offlineResourcesMd5.getString("javascripts_md5"))){
+
+                        }
+                    }
+                }
+            }
+            final Map<String, String> stylesheetsMd5Response = HttpUtil.httpGet(stylesheetsMd5Api, new HashMap<String, String>());
+            if (stylesheetsMd5Response.containsKey("code") && stylesheetsMd5Response.get(URLs.kCode).equals("200")){
+                JSONObject bodyJs =  new JSONObject(stylesheetsMd5Response.get("body"));
+                if (bodyJs.has("filemd5")){
+                    String htmlMd5 = bodyJs.getString("filemd5");
+                    if (offlineResourcesMd5.has("stylesheets_md5")){
+                        if (htmlMd5.equals(offlineResourcesMd5.getString("stylesheets_md5"))){
+
+                        }
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
     public void downloadUserJs() {
         new Thread(new Runnable() {

@@ -370,6 +370,15 @@ public class FileUtil {
                 String folderPath = sharedPath;
                 if (isInAssets) {
                     folderPath = String.format("%s/assets/%s/", sharedPath, fileName);
+                } else if (fileName.contains("offline_pages_html")){
+                    folderPath = String.format("%s/offline_pages", sharedPath);
+
+                } else if (fileName.contains("offline_pages_images")){
+                    folderPath = String.format("%s/offline_pages/static/%s", sharedPath, "images");
+                } else if (fileName.contains("offline_pages_javascripts")){
+                    folderPath = String.format("%s/offline_pages/static/%s", sharedPath, "js");
+                } else if (fileName.contains("offline_pages_stylesheets")){
+                    folderPath = String.format("%s/offline_pages/static/%s", sharedPath, "css");
                 } else {
                     File file = new File(zipFolderPath);
                     if (file.exists()) {
