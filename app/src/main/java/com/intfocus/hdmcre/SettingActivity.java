@@ -767,72 +767,93 @@ public class SettingActivity extends BaseActivity {
     };
 
     public void downloadUserJs() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
-                    JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-                    final String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, userJSON.getString("user_num"));
-                    String fileNameMd5 = String.format(K.kFileNameMd5APIPath, K.kBaseUrl, userJSON.getString("user_num"));
-                    final String assetsPath = FileUtil.sharedPath(mAppContext);
-                    Map<String, String> headers = ApiHelper.checkResponseHeader(urlString, assetsPath);
-                    final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js");
-                    final String outPath = assetsPath + "/offline_pages/static/js/user_permission.js";
-                    final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, headers);
-                    final Map<String, String> md5Response = HttpUtil.httpGet(fileNameMd5, new HashMap<String, String>());
-                    String md5 = "";
-                    if (md5Response.containsKey("code") && md5Response.get(URLs.kCode).equals("200")){
-                        JSONObject bodyJs =  new JSONObject(md5Response.get("body"));
-                        if (bodyJs.has("filemd5")){
-                            md5 = bodyJs.getString("filemd5");
-                        }
-                    }
-                    final String finalMd5 = md5;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean flag = false;
-                            if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
-                                try {
-                                    InputStream zipStream = new FileInputStream(downloadPath);
-                                    String md5String = FileUtil.MD5(zipStream);
-                                    Log.d("md53",finalMd5 + " : " + md5String);
-                                    if (finalMd5.equals(md5String)){
-                                        String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
-                                        String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
-                                        FileUtil.copyFile(downloadPath, outPath);
-                                        FileUtil.copyFile(downloadPath, newPath);
-                                        FileUtil.copyFile(downloadPath, userPermissionPath);
-                                    }else {
-                                        flag = true;
-                                    }
-                                } catch (FileNotFoundException e) {
-                                    flag = true;
-                                    e.printStackTrace();
-                                }
-                            } else {
-                                flag = true;
-                            }
+        boolean isException = false;
+        try {
+            boolean isDownload = true;
+            final String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, user.getString("user_num"));
+            final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js");
 
-                            if (flag) {
-                                Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
-                                SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-                                SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                                mEditor.putBoolean("isLogin",false);
-                                mEditor.commit();
-
-                                Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
-                                startActivity(intent);
-                                finish();
-                            }
-                        }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
+            if (new File(userPermissionPath).exists() && user.has("userPermissionMd5")){
+                InputStream zipStream = new FileInputStream(userPermissionPath);
+                String md5String = FileUtil.MD5(zipStream);
+                if (md5String.equals(user.getString("userPermissionMd5"))){
+                    isDownload = false;
                 }
             }
-        }).start();
+
+            if (isDownload){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean isDownloadSuccess = false;
+                        final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, new HashMap<String, String>());
+                        if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
+                            /*
+                             *通过 MD5 值对比,判断文件的完整性
+                             */
+                            try {
+                                InputStream zipStream = new FileInputStream(downloadPath);
+                                String md5String = FileUtil.MD5(zipStream);
+                                if (md5String.equals(user.getString("userPermissionMd5"))){
+                                    String outPath = sharedPath + "/offline_pages/static/js/user_permission.js";
+                                    String newPath = sharedPath + "/advertisement/assets/javascripts/user_permission.js";
+                                    String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
+                                    FileUtil.copyFile(downloadPath, outPath);
+                                    FileUtil.copyFile(downloadPath, newPath);
+                                    FileUtil.copyFile(downloadPath, userPermissionPath);
+                                    isDownloadSuccess = true;
+                                }
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        if (!isDownloadSuccess){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
+                                    SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                                    SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                                    mEditor.putBoolean("isLogin",false);
+                                    mEditor.commit();
+
+                                    Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            });
+                        }
+                    }
+                }).start();
+            }
+        } catch (JSONException e) {
+            isException = true;
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            isException = true;
+            e.printStackTrace();
+        }
+
+        if (isException){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
+                    SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
+                    SharedPreferences.Editor mEditor = mSharedPreferences.edit();
+                    mEditor.putBoolean("isLogin",false);
+                    mEditor.commit();
+
+                    Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
+        }
     }
 
     /*

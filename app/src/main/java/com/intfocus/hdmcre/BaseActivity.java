@@ -856,14 +856,18 @@ public class BaseActivity extends Activity {
      * 检测服务器端静态文件是否更新
      * to do
      */
-    void checkAssetsUpdated(boolean shouldReloadUIThread) {
+    synchronized void checkAssetsUpdated(boolean shouldReloadUIThread) {
         checkAssetUpdated(shouldReloadUIThread, kLoading, false);
         checkAssetUpdated(shouldReloadUIThread, URLs.kFonts, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kImages, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kStylesheets, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kJavaScripts, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kBarCodeScan, false);
-        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePages, false);
+//        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePages, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesHtml , false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesImages , false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesJavascripts , false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesStylesheets , false);
         checkAssetUpdated(shouldReloadUIThread, URLs.kAdvertisement, false);
     }
 
@@ -877,7 +881,12 @@ public class BaseActivity extends Activity {
             JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
             String localKeyName = String.format("local_%s_md5", assetName);
             String keyName = String.format("%s_md5", assetName);
-            isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(userJSON.getString(keyName));
+            if (assetName.contains("offline_pages_")){
+                JSONObject jsonObject = userJSON.getJSONObject("offline_pages");
+                isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(jsonObject.getString(keyName));
+            }else {
+                isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(userJSON.getString(keyName));
+            }
 
             if (!isShouldUpdateAssets) {
                 return false;
@@ -1032,13 +1041,13 @@ public class BaseActivity extends Activity {
                                         new File(assetZipPath).delete();
                                     }
                                     FileUtil.copyZipFile(downloadPath, assetZipPath);
-//                                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
-//                                    JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-//                                    String localKeyName = String.format("local_%s_md5", assetFilename);
-//                                    if(userJSON.has(localKeyName)){
-//                                        userJSON.put(localKeyName, finalMd5);
-//                                        FileUtil.writeFile(userConfigPath, userJSON.toString());
-//                                    }
+                                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
+                                    JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+                                    String localKeyName = String.format("local_%s_md5", assetFilename);
+                                    if(userJSON.has(localKeyName)){
+                                        userJSON.put(localKeyName, finalMd5);
+                                        FileUtil.writeFile(userConfigPath, userJSON.toString());
+                                    }
                                 }
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -1053,6 +1062,8 @@ public class BaseActivity extends Activity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
