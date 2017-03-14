@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -419,8 +418,6 @@ public class DashboardActivity extends BaseActivity {
         browserAd.requestFocus();
         browserAd.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
         browserAd.setWebViewClient(new WebViewClient());
-        browserAd.setWebChromeClient(new WebChromeClient() {
-        });
     }
 
     /*

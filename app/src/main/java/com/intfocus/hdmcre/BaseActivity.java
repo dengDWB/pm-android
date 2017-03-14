@@ -872,6 +872,8 @@ public class BaseActivity extends Activity {
 
     private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
         try {
+            String localKeyName ="";
+            String keyName = "";
             boolean isShouldUpdateAssets = false;
             String localKeyName ="";
             String keyName = "";

@@ -806,7 +806,7 @@ public class SettingActivity extends BaseActivity {
                                 }
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
-                            } catch (JSONException e) {
+                            }catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }

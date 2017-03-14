@@ -92,6 +92,7 @@ public class YHApplication extends Application {
         FileUtil.checkAssets(appContext, URLs.kStylesheets, true);
         FileUtil.checkAssets(appContext, URLs.kJavaScripts, true);
         FileUtil.checkAssets(appContext, URLs.kBarCodeScan, false);
+        FileUtil.checkAssets(appContext, URLs.kAdvertisement, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePages,false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePagesHtml, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePagesImages, false);
@@ -190,7 +191,6 @@ public class YHApplication extends Application {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         } catch (JSONException | IOException e) {
-                Log.e("dealsend",e.toString());
                 e.printStackTrace();
             }
         }

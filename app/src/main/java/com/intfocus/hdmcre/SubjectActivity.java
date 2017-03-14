@@ -507,7 +507,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 						new Thread(mRunnableForPDF).start();
 					} else {
 						String loadUrl = urlTempFile(urlString);
-						Log.i("11", loadUrl);
 						if (!loadUrl.equals("")) {
 							mWebView.loadUrl("file:///" + loadUrl);
 						} else {
@@ -1112,6 +1111,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		super.onActivityResult(requestCode, resultCode, intent);
 		if (resultCode != Activity.RESULT_OK) {
 			if (mUploadMessage != null) {
 				mUploadMessage.onReceiveValue(null);
