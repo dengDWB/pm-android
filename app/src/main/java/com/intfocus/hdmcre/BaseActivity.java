@@ -873,14 +873,21 @@ public class BaseActivity extends Activity {
 
     private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
         try {
+            String localKeyName ="";
+            String keyName = "";
             boolean isShouldUpdateAssets = false;
             String assetZipPath = String.format("%s/%s.zip", sharedPath, assetName);
             isShouldUpdateAssets = !(new File(assetZipPath)).exists();
 
             String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
             JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-            String localKeyName = String.format("local_%s_md5", assetName);
-            String keyName = String.format("%s_md5", assetName);
+            if (assetName.contains("offline_pages_")){
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName.replace("offline_pages_",""));
+            }else {
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName);
+            }
             if (assetName.contains("offline_pages_")){
                 JSONObject jsonObject = userJSON.getJSONObject("offline_pages");
                 isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(jsonObject.getString(keyName));

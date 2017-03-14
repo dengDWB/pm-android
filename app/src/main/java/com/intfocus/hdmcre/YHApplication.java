@@ -92,6 +92,7 @@ public class YHApplication extends Application {
         FileUtil.checkAssets(appContext, URLs.kStylesheets, true);
         FileUtil.checkAssets(appContext, URLs.kJavaScripts, true);
         FileUtil.checkAssets(appContext, URLs.kBarCodeScan, false);
+        FileUtil.checkAssets(appContext, URLs.kAdvertisement, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePages,false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePagesHtml, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePagesImages, false);

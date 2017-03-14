@@ -365,8 +365,8 @@ public class FileUtil {
                 isShouldUnZip = !(userJSON.has(keyName) && userJSON.getString(keyName).equals(md5String));
             }
 
-            if (isShouldUnZip) {
-                Log.i("checkAssets", String.format("%s[%s] != %s", zipFileName, keyName, md5String));
+                if (isShouldUnZip) {
+                    Log.i("checkAssets", String.format("%s[%s] != %s", zipFileName, keyName, md5String));
 
                 String folderPath = sharedPath;
                 if (isInAssets) {
