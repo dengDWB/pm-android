@@ -98,7 +98,7 @@ public class DashboardActivity extends BaseActivity {
 		/*
          * 检测服务器静态资源是否更新，并下载
      	 */
-        checkAssetsUpdated(true);
+//        checkAssetsUpdated(true);
 
         /*
          * 初始化本地通知
