@@ -21,7 +21,6 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.handmark.pulltorefresh.library.PullToRefreshWebView;
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.HttpUtil;
@@ -69,6 +68,8 @@ public class DashboardActivity extends BaseActivity {
 
     private Context mContext;
     private int loadCount = 0;
+    boolean waitDouble = false;
+
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
@@ -193,7 +194,6 @@ public class DashboardActivity extends BaseActivity {
         JSONObject pushMessageJSON = FileUtil.readConfigFile(pushMessagePath);
 
         try {
-            Log.i("dealsend", pushMessageJSON.getBoolean("state") + "");
             if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state")) {
                 return;
             }
@@ -400,9 +400,11 @@ public class DashboardActivity extends BaseActivity {
      * 配置 mWebView
      */
     public void loadWebView() {
-        pullToRefreshWebView = (PullToRefreshWebView) findViewById(R.id.browser);
-        initPullWebView();
-        setPullToRefreshWebView(true);
+//        pullToRefreshWebView = (PullToRefreshWebView) findViewById(R.id.browser);
+//        initPullWebView();
+        mWebView = (WebView) findViewById(R.id.browser);
+        initSubWebView();
+//        setPullToRefreshWebView(true);
         mWebView.requestFocus();
         mWebView.getSettings().setDomStorageEnabled(true);
         mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
@@ -540,7 +542,30 @@ public class DashboardActivity extends BaseActivity {
         public void onClick(View v) {
             if (v == mCurrentTab) {
                 return;
+//                if ( waitDouble == false )
+//                {
+//                    waitDouble = true;
+//                    Thread thread = new Thread() {
+//                        @Override
+//                        public void run() {
+//                            try {
+//                                sleep(500);
+//                                if ( waitDouble == false ) {
+//                                    waitDouble = true;
+//                                    Log.d("waitDouble1", waitDouble +"");
+//                                    return;
+//                                }
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    };
+//                    thread.start();
+//                } else {
+//                    waitDouble = true;
+//                }
             }
+            Log.d("waitDouble", waitDouble +"");
 			/*
 		     * 判断是否允许浏览器复制
 		 	 */
@@ -990,7 +1015,7 @@ public class DashboardActivity extends BaseActivity {
                                     Log.d("md52",finalMd5 + " : " + md5String);
                                     if (finalMd5.equals(md5String)){
                                         String newPath = assetsPath + "/advertisement/assets/javascripts/user_permission.js";
-                                        String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
+                                        String userPermissionPath = FileUtil.dirPath(mAppContext, "configs","user_permission.js");
                                         FileUtil.copyFile(downloadPath, outPath);
                                         FileUtil.copyFile(downloadPath, newPath);
                                         FileUtil.copyFile(downloadPath, userPermissionPath);

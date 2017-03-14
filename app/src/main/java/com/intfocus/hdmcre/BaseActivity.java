@@ -65,7 +65,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -874,13 +873,20 @@ public class BaseActivity extends Activity {
     private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
         try {
             boolean isShouldUpdateAssets = false;
+            String localKeyName ="";
+            String keyName = "";
             String assetZipPath = String.format("%s/%s.zip", sharedPath, assetName);
             isShouldUpdateAssets = !(new File(assetZipPath)).exists();
 
             String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
             JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-            String localKeyName = String.format("local_%s_md5", assetName);
-            String keyName = String.format("%s_md5", assetName);
+            if (assetName.contains("offline_pages_")){
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName.replace("offline_pages_",""));
+            }else {
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName);
+            }
             if (assetName.contains("offline_pages_")){
                 JSONObject jsonObject = userJSON.getJSONObject("offline_pages");
                 isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(jsonObject.getString(keyName));
@@ -892,7 +898,7 @@ public class BaseActivity extends Activity {
                 return false;
             }
 
-            LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
+//            LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
             // execute this when the downloader must be fired
             final DownloadAssetsTask downloadTask = new DownloadAssetsTask(mAppContext, shouldReloadUIThread, assetName, isInAssets);
             final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), String.format("%s.zip",assetName));
@@ -1018,36 +1024,35 @@ public class BaseActivity extends Activity {
                     @Override
                     public void run() {
                         try {
-                            String fileNameMd5 = String.format(K.kZipMd5APIPath, K.kBaseUrl, String.format("%s.zip",assetFilename));
-                            final Map<String, String> md5Response = HttpUtil.httpGet(fileNameMd5, new HashMap<String, String>());
-                            String md5 = "";
-                            if (md5Response.containsKey("code") && md5Response.get(URLs.kCode).equals("200")){
-                                JSONObject bodyJs =  new JSONObject(md5Response.get("body"));
-                                if (bodyJs.has("filemd5")){
-                                    md5 = bodyJs.getString("filemd5");
-                                }
-                            }
-                            String finalMd5 = md5;
+                            String keyName = "";
                             String md5String  = "";
+                            String offonlineMd5String = "";
                             if (new File(downloadPath).exists()){
                                 InputStream zipStream = new FileInputStream(downloadPath);
                                 md5String = FileUtil.MD5(zipStream);
                             }
-                            Log.d("md51",finalMd5 + " : " + md5String);
-                            if (finalMd5.equals(md5String)){
+                            if (assetFilename.contains("offline_pages_")){
+                                keyName = String.format("%s_md5", assetFilename.replace("offline_pages_",""));
+                            }else {
+                                keyName = String.format("%s_md5", assetFilename);
+                            }
+
+                            if (assetFilename.contains("offline_pages_")){
+                                JSONObject jsonObject = user.getJSONObject("offline_pages");
+                                offonlineMd5String = jsonObject.getString(keyName);
+                            }else {
+                                offonlineMd5String = user.getString(keyName);
+                            }
+                            Log.d("1111", offonlineMd5String+":"+md5String);
+                            Log.d("111", assetFilename+":"+keyName);
+                            if (offonlineMd5String.equals(md5String)){
                                 String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
                                 if (new File(downloadPath).exists()){
                                     if(new File(assetZipPath).exists()){
                                         new File(assetZipPath).delete();
                                     }
                                     FileUtil.copyZipFile(downloadPath, assetZipPath);
-                                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
-                                    JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-                                    String localKeyName = String.format("local_%s_md5", assetFilename);
-                                    if(userJSON.has(localKeyName)){
-                                        userJSON.put(localKeyName, finalMd5);
-                                        FileUtil.writeFile(userConfigPath, userJSON.toString());
-                                    }
+
                                 }
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -1060,8 +1065,6 @@ public class BaseActivity extends Activity {
                                 });
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         } catch (IOException e) {
                             e.printStackTrace();

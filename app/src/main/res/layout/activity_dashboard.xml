@@ -116,10 +116,17 @@
                 android:scrollbars="none"
                 android:visibility="visible"/>
 
-            <com.handmark.pulltorefresh.library.PullToRefreshWebView
+            <!--<com.handmark.pulltorefresh.library.PullToRefreshWebView-->
+                <!--android:id="@+id/browser"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"/>-->
+
+            <WebView
                 android:id="@+id/browser"
+                android:visibility="visible"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:layerType="software" />
         </LinearLayout>
 
         <RelativeLayout

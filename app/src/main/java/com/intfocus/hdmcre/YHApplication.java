@@ -97,6 +97,7 @@ public class YHApplication extends Application {
         FileUtil.checkAssets(appContext, URLs.kOfflinePagesImages, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePagesJavascripts, false);
         FileUtil.checkAssets(appContext, URLs.kOfflinePagesStylesheets, false);
+        FileUtil.checkAssets(appContext, URLs.kAdvertisement, false);
 
         /*
          *  手机待机再激活时发送开屏广播

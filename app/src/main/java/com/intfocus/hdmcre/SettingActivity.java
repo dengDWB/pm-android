@@ -774,10 +774,10 @@ public class SettingActivity extends BaseActivity {
             final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js");
 
             String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
-            if (new File(userPermissionPath).exists() && user.has("userPermissionMd5")){
+            if (new File(userPermissionPath).exists() && user.has("permission_javascript_md5")){
                 InputStream zipStream = new FileInputStream(userPermissionPath);
                 String md5String = FileUtil.MD5(zipStream);
-                if (md5String.equals(user.getString("userPermissionMd5"))){
+                if (md5String.equals(user.getString("permission_javascript_md5"))){
                     isDownload = false;
                 }
             }
@@ -795,10 +795,10 @@ public class SettingActivity extends BaseActivity {
                             try {
                                 InputStream zipStream = new FileInputStream(downloadPath);
                                 String md5String = FileUtil.MD5(zipStream);
-                                if (md5String.equals(user.getString("userPermissionMd5"))){
+                                if (md5String.equals(user.getString("permission_javascript_md5"))){
                                     String outPath = sharedPath + "/offline_pages/static/js/user_permission.js";
                                     String newPath = sharedPath + "/advertisement/assets/javascripts/user_permission.js";
-                                    String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
+                                    String userPermissionPath = FileUtil.dirPath(mAppContext, "configs","user_permission.js");
                                     FileUtil.copyFile(downloadPath, outPath);
                                     FileUtil.copyFile(downloadPath, newPath);
                                     FileUtil.copyFile(downloadPath, userPermissionPath);
