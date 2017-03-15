@@ -63,15 +63,14 @@ public class DashboardActivity extends BaseActivity {
 
     private Context mContext;
     private int loadCount = 0;
-    boolean waitDouble = false;
-
+    boolean waitDouble = true;
+    boolean isRefresh = false;
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
-
         mContext = this;
 
         initUrlStrings();
@@ -122,11 +121,13 @@ public class DashboardActivity extends BaseActivity {
         dealSendMessage();
 
         displayAdOrNot(true);
-
 		/*
 		 * 判断是否允许浏览器复制
 		 */
         isAllowBrowerCopy();
+        if (urlString.contains("list.html")){
+            mWebView.loadUrl(urlString);
+        }
 
         super.onResume();
     }
@@ -134,6 +135,11 @@ public class DashboardActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
     }
 
     @Override
@@ -397,31 +403,25 @@ public class DashboardActivity extends BaseActivity {
         @Override
         public void onClick(View v) {
             if (v == mCurrentTab) {
-                return;
-//                if ( waitDouble == false )
-//                {
-//                    waitDouble = true;
-//                    Thread thread = new Thread() {
-//                        @Override
-//                        public void run() {
-//                            try {
-//                                sleep(500);
-//                                if ( waitDouble == false ) {
-//                                    waitDouble = true;
-//                                    Log.d("waitDouble1", waitDouble +"");
-//                                    return;
-//                                }
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    };
-//                    thread.start();
-//                } else {
-//                    waitDouble = true;
-//                }
+                if (waitDouble){
+                    waitDouble = false;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Thread.sleep(300);
+                                waitDouble = true;
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                    return;
+                }else {
+                    waitDouble = true;
+                }
             }
-            Log.d("waitDouble", waitDouble +"");
+
 			/*
 		     * 判断是否允许浏览器复制
 		 	 */
