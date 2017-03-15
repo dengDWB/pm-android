@@ -596,7 +596,7 @@ public class SettingActivity extends BaseActivity {
             mEditor.commit();
 
             Intent intent = new Intent();
-            intent.setClass(SettingActivity.this, LoginActivity.class);
+            intent.setClass(SettingActivity.this, LaunchActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
 
