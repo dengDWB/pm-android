@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.intfocus.hdmcre"
-    android:versionCode="56"
-    android:versionName="0.56">
+    android:versionCode="62"
+    android:versionName="0.62">
 
     <!-- 扫描条形码或二维码 -->
     <uses-permission android:name="android.permission.CAMERA" />
@@ -62,7 +62,7 @@
             android:enabled="false" />
         -->
         <activity
-            android:name="com.intfocus.hdmcre.LoginActivity"
+            android:name="com.intfocus.hdmcre.LaunchActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme">
@@ -72,6 +72,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.intfocus.hdmcre.LoginActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme" />
         <activity
             android:name="com.intfocus.hdmcre.ForgetPasswordActivity"
             android:screenOrientation="portrait"

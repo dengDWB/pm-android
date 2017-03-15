@@ -393,6 +393,7 @@ public class FileUtil {
                 Log.i("unZip", String.format("%s, %s", zipFileName, md5String));
 
                 userJSON.put(keyName, md5String);
+                    Log.d("11111t", keyName+":"+md5String);
                 FileUtil.writeFile(userConfigPath, userJSON.toString());
             }
 
@@ -608,64 +609,6 @@ public class FileUtil {
                     FileUtil.writeFile(behaviorPath,dashboardJson.toString());
                 }
             }
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void initLocalNotifications(Context mContext) {
-        try {
-            String noticePath = FileUtil.dirPath(mContext, K.kConfigDirName, K.kLocalNotificationConfigFileName);
-            JSONObject notificationJSON = FileUtil.readConfigFile(noticePath);
-			/*
-			 * 版本迭代的问题：
-			 * 1. 动态添加新字段
-			 * 2. 不可影响已存在字段存放的数据
-			 */
-            if (!notificationJSON.has("app")) {
-                notificationJSON.put("app", -1);
-            }
-            if (!notificationJSON.has(URLs.kTabKpi)) {
-                notificationJSON.put(URLs.kTabKpi, -1);
-            }
-            if (!notificationJSON.has("tab_kpi_last")) {
-                notificationJSON.put("tab_kpi_last", -1);
-            }
-            if (!notificationJSON.has(URLs.kTabAnalyse)) {
-                notificationJSON.put(URLs.kTabAnalyse, -1);
-            }
-            if (!notificationJSON.has("tab_analyse_last")) {
-                notificationJSON.put("tab_analyse_last", -1);
-            }
-            if (!notificationJSON.has(URLs.kTabApp)) {
-                notificationJSON.put(URLs.kTabApp, -1);
-            }
-            if (!notificationJSON.has("tab_app_last")) {
-                notificationJSON.put("tab_app_last", -1);
-            }
-            if (!notificationJSON.has(URLs.kTabMessage)) {
-                notificationJSON.put(URLs.kTabMessage, -1);
-            }
-            if (!notificationJSON.has("tab_message_last")) {
-                notificationJSON.put("tab_message_last", -1);
-            }
-            if (!notificationJSON.has(URLs.kSetting)) {
-                notificationJSON.put(URLs.kSetting, -1);
-            }
-            if (!notificationJSON.has(URLs.kSettingPgyer)) {
-                notificationJSON.put(URLs.kSettingPgyer, -1);
-            }
-            if (!notificationJSON.has(URLs.kSettingPassword)) {
-                notificationJSON.put(URLs.kSettingPassword, -1);
-            }
-            if (!notificationJSON.has(URLs.kSettingThursdaySay)) {
-                notificationJSON.put(URLs.kSettingThursdaySay, -1);
-            }
-            if (!notificationJSON.has("setting_thursday_say_last")) {
-                notificationJSON.put("setting_thursday_say_last", -1);
-            }
-
-            FileUtil.writeFile(noticePath, notificationJSON.toString());
         } catch (JSONException | IOException e) {
             e.printStackTrace();
         }

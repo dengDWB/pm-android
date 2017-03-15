@@ -33,7 +33,8 @@ public class ImageUtil {
      */
     public static final Intent takeBigPicture() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, newPictureUri(getNewPhotoPath()));
+        Uri uri = newPictureUri(getNewPhotoPath());
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         return intent;
     }
 
@@ -77,7 +78,7 @@ public class ImageUtil {
                 }
             }
 
-            FileUtil.saveImage(picPath,losslessScale(picPath,50));
+            FileUtil.saveImage(picPath,losslessScale(picPath,30));
 
             return picPath;
         } finally {

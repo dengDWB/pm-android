@@ -13,12 +13,14 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -56,7 +58,7 @@ public class ApiHelper {
             Map<String, String> response = HttpUtil.httpPost(urlString, params);
             String userConfigPath = String.format("%s/%s", FileUtil.basePath(context), K.kUserConfigFileName);
             JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-            userJSON.put("loginType",type);
+            userJSON.put("loginType", type);
             userJSON.put(URLs.kPassword, password);
             userJSON.put(URLs.kIsLogin, response.get(URLs.kCode).equals("200"));
 
@@ -70,15 +72,20 @@ public class ApiHelper {
                 return response.get(URLs.kBody);
             }
             // FileUtil.dirPath 需要优先写入登录用户信息
-            if (response.containsKey("csrftoken")){
+            if (response.containsKey("csrftoken")) {
                 response.remove("csrftoken");
             }
-            if (response.containsKey("sessionid")){
+            if (response.containsKey("sessionid")) {
                 response.remove("sessionid");
             }
             JSONObject responseJSON = new JSONObject(response.get(URLs.kBody));
             userJSON = ApiHelper.mergeJson(userJSON, responseJSON);
             FileUtil.writeFile(userConfigPath, userJSON.toString());
+
+            Boolean isChecked = downloadUserJs(context, FileUtil.sharedPath(context), userJSON);
+            if (!isChecked) {
+               return "用户权限验证失败";
+            }
 
             String settingsConfigPath = FileUtil.dirPath(context, K.kConfigDirName, K.kSettingConfigFileName);
             if ((new File(settingsConfigPath)).exists()) {
@@ -148,7 +155,7 @@ public class ApiHelper {
             String contentDis = response.get("Content-Disposition");
 
             //获取的内容为 group_%s_template_%s_report_%s.js.zip
-            String subContentDis = contentDis.substring(contentDis.indexOf("\"")+1, contentDis.lastIndexOf("\""));
+            String subContentDis = contentDis.substring(contentDis.indexOf("\"") + 1, contentDis.lastIndexOf("\""));
 
             jsFileName = subContentDis.replace(".zip", "");
             String javascriptPath = String.format("%s/assets/javascripts/%s", assetsPath, jsFileName);
@@ -160,7 +167,7 @@ public class ApiHelper {
             zipStream.close();
             String jsFilePath = FileUtil.dirPath(context, K.kCachedDirName, jsFileName);
             File jsFile = new File(jsFilePath);
-            if(jsFile.exists()) {
+            if (jsFile.exists()) {
                 FileUtil.copyFile(jsFilePath, javascriptPath);
                 jsFile.delete();
             }
@@ -168,7 +175,7 @@ public class ApiHelper {
 
             String searchItemsPath = String.format("%s.search_items", javascriptPath);
             File searchItemsFile = new File(searchItemsPath);
-            if(searchItemsFile.exists()) {
+            if (searchItemsFile.exists()) {
                 searchItemsFile.delete();
             }
         } catch (IOException e) {
@@ -183,7 +190,7 @@ public class ApiHelper {
      */
     public static void writeComment(int userID, int objectType, int objectID, Map params) throws UnsupportedEncodingException {
         String urlString = String.format(K.kCommentAPIPath, K.kBaseUrl, userID, objectID,
-            objectType);
+                objectType);
 
         Map<String, String> response = HttpUtil.httpPost(urlString, params);
         Log.i("WriteComment", response.get("code"));
@@ -270,7 +277,7 @@ public class ApiHelper {
     /**
      * 从缓存头文件中，获取指定链接的ETag/Last-Modified
      *
-     * @param urlKey 链接
+     * @param urlKey     链接
      * @param assetsPath 缓存头文件相对文件夹
      */
     public static Map<String, String> checkResponseHeader(String urlKey, String assetsPath) {
@@ -305,9 +312,9 @@ public class ApiHelper {
     /**
      * 把服务器响应的ETag/Last-Modified存入本地
      *
-     * @param urlKey 链接
+     * @param urlKey     链接
      * @param assetsPath 缓存头文件相对文件夹
-     * @param response 服务器响应的ETag/Last-Modifiede
+     * @param response   服务器响应的ETag/Last-Modifiede
      */
     public static void storeResponseHeader(String urlKey, String assetsPath, Map<String, String> response) {
         try {
@@ -337,7 +344,7 @@ public class ApiHelper {
     /**
      * 合并两个JSONObject
      *
-     * @param obj JSONObject
+     * @param obj   JSONObject
      * @param other JSONObject
      * @return 合并后的JSONObject
      */
@@ -358,8 +365,8 @@ public class ApiHelper {
     /**
      * 下载文件
      *
-     * @param context 上下文
-     * @param urlString 下载链接
+     * @param context    上下文
+     * @param urlString  下载链接
      * @param outputFile 写入本地文件路径
      */
     public static void downloadFile(Context context, String urlString, File outputFile) {
@@ -403,8 +410,8 @@ public class ApiHelper {
 
     /**
      * 上传锁屏信息
-     * @param state 是否启用锁屏
      *
+     * @param state    是否启用锁屏
      * @param deviceID 设备标识
      * @param password 锁屏密码
      */
@@ -423,7 +430,7 @@ public class ApiHelper {
      * 上传用户行为
      *
      * @param context 上下文
-     * @param param 用户行为
+     * @param param   用户行为
      */
     public static void actionLog(Context context, JSONObject param) {
         try {
@@ -445,7 +452,7 @@ public class ApiHelper {
             userParams.put("user_pass", userJSON.getString(URLs.kPassword));
             params.put("user", userParams);
 
-            Log.i("logger",params.toString());
+            Log.i("logger", params.toString());
             String urlString = String.format(K.kActionLogAPIPath, K.kBaseUrl);
             HttpUtil.httpPost(urlString, params);
         } catch (JSONException | PackageManager.NameNotFoundException e) {
@@ -454,19 +461,19 @@ public class ApiHelper {
     }
 
     /**
-     *  消息推送， 设备标识
+     * 消息推送， 设备标识
      *
-     *  @param deviceUUID  设备ID
-     *
-     *  @return 服务器是否更新成功
+     * @param deviceUUID 设备ID
+     * @return 服务器是否更新成功
      */
     private static boolean pushDeviceToken(Context context, String deviceUUID) {
         try {
             String pushConfigPath = String.format("%s/%s", FileUtil.basePath(context), K.kPushConfigFileName);
             JSONObject pushJSON = FileUtil.readConfigFile(pushConfigPath);
 
-            if(!pushJSON.has(K.kPushDeviceToken) || pushJSON.getString(K.kPushDeviceToken).length() != 44) return false;
-            if(pushJSON.has(K.kPushIsValid) && pushJSON.getBoolean(K.kPushIsValid)) return true;
+            if (!pushJSON.has(K.kPushDeviceToken) || pushJSON.getString(K.kPushDeviceToken).length() != 44)
+                return false;
+            if (pushJSON.has(K.kPushIsValid) && pushJSON.getBoolean(K.kPushIsValid)) return true;
 
             /**
              *  必须符合以下两条件:
@@ -489,16 +496,16 @@ public class ApiHelper {
     }
 
     /**
-     *  二维码扫描
+     * 二维码扫描
      *
-     *  @param groupID    群组ID
-     *  @param roleID     角色ID
-     *  @param userNum    用户编号
-     *  @param storeID    门店ID
-     *  @param codeInfo   条形码信息
-     *  @param codeType   条形码或二维码
+     * @param groupID  群组ID
+     * @param roleID   角色ID
+     * @param userNum  用户编号
+     * @param storeID  门店ID
+     * @param codeInfo 条形码信息
+     * @param codeType 条形码或二维码
      */
-    public static Map<String,String> barCodeScan(String groupID, String roleID, String userNum, String storeID, String codeInfo, String codeType) {
+    public static Map<String, String> barCodeScan(String groupID, String roleID, String userNum, String storeID, String codeInfo, String codeType) {
         try {
             JSONObject params = new JSONObject();
             params.put(URLs.kCodeInfo, codeInfo);
@@ -508,9 +515,57 @@ public class ApiHelper {
             // Map<String, String> response = HttpUtil.httpPost(urlString, params);
 
             return (Map<String, String>) HttpUtil.httpGet(urlString, new HashMap());
-        } catch(JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static Boolean checkUserPermisson(Context context, JSONObject user) {
+        try {
+            // 获取本地 user_permission 的 MD5 值
+            String userPermissionPath = FileUtil.dirPath(context, "config", "user_permission.js");
+            if (new File(userPermissionPath).exists() && user.has("permission_javascript_md5")) {
+                InputStream zipStream = new FileInputStream(userPermissionPath);
+                String oldMd5String = FileUtil.MD5(zipStream);
+                if (oldMd5String.equals(user.getString("permission_javascript_md5"))) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (JSONException | FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static Boolean downloadUserJs(Context context, String sharedPath, JSONObject user) {
+        try {
+            if (!checkUserPermisson(context, user)) {
+                final String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, user.getString("user_num"));  // 下载链接
+                final String downloadPath = FileUtil.dirPath(context, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js"); // 临时存储地址
+
+                final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, new HashMap<String, String>());
+                if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
+                    /*
+                     *通过 MD5 值对比,判断文件的完整性
+                     */
+                    InputStream zipStream = new FileInputStream(downloadPath);
+                    String md5String = FileUtil.MD5(zipStream);
+                    if (md5String.equals(user.getString("permission_javascript_md5"))) {
+                        String pagePath = sharedPath + "/offline_pages/static/js/user_permission.js";
+                        String adPath = sharedPath + "/advertisement/assets/javascripts/user_permission.js";
+                        String userPermissionPath = FileUtil.dirPath(context, "config", "user_permission.js");
+                        FileUtil.copyFile(downloadPath, pagePath);
+                        FileUtil.copyFile(downloadPath, adPath);
+                        FileUtil.copyFile(downloadPath, userPermissionPath);
+                    }
+                }
+            }
+            return true;
+        } catch (FileNotFoundException | JSONException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
