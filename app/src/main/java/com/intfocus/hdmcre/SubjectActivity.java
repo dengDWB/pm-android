@@ -546,9 +546,10 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		staticUrlMap.put("opers.html", "运营巡检记录");
 		staticUrlMap.put("repair.execute.html", "设备维修");
 		staticUrlMap.put("repair.signin.html", "设备维修新建");
-		staticUrlMap.put("repair.new.html", "新建设备维修");
+		staticUrlMap.put("repair.new.html", "设备维修新建");
 		staticUrlMap.put("repair.view.html", "设备维修明细");
 		staticUrlMap.put("repairs.html", "设备维修列表");
+		staticUrlMap.put("repair.new.without-back.html", "设备维修新建");
 		staticUrlMap.put("repair.new-from-device.execute.html", "新建设备维修");
 		staticUrlMap.put("sales.input.execute.html", "销售录入审批");
 		staticUrlMap.put("notice.view.html", "公告明细");
