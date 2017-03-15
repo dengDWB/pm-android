@@ -122,7 +122,6 @@ public class DashboardActivity extends BaseActivity {
         mWebView.loadUrl(urlString);
 
         checkUserModifiedInitPassword();
-        downloadUserJs();
     }
 
     protected void onResume() {
@@ -193,7 +192,7 @@ public class DashboardActivity extends BaseActivity {
         JSONObject pushMessageJSON = FileUtil.readConfigFile(pushMessagePath);
 
         try {
-            if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state")) {
+            if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state") || pushMessageJSON == null) {
                 return;
             }
 //            if (pushMessageJSON.has("type")) {
