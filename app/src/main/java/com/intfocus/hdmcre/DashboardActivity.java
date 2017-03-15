@@ -2,11 +2,9 @@ package com.intfocus.hdmcre;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
@@ -55,10 +53,8 @@ public class DashboardActivity extends BaseActivity {
     private TabView mCurrentTab;
     private ArrayList<String> urlStrings;
     private ArrayList<HashMap<String, Object>> listItem;
-    private JSONObject notificationJSON;
     private BadgeView bvKpi, bvAnalyse, bvApp, bvMessage, bvBannerSetting;
-    private int objectType, kpiNotifition, analyseNotifition, appNotifition, messageNotifition;
-    private NotificationBroadcastReceiver notificationBroadcastReceiver;
+    private int objectType;
     private TabView mTabKPI, mTabAnalyse, mTabMessage;
     private WebView browserAd;
     private int mAnimationTime;
@@ -100,10 +96,6 @@ public class DashboardActivity extends BaseActivity {
      	 */
 //        checkAssetsUpdated(true);
 
-        /*
-         * 初始化本地通知
-         */
-        FileUtil.initLocalNotifications(mAppContext);
 
 		/*
 		 * 语音播报初始化
@@ -113,7 +105,6 @@ public class DashboardActivity extends BaseActivity {
 		/*
          * 动态注册广播用于接收通知
 		 */
-//		initNotificationService();
 
         if (urlStrings.get(2).equals(urlString)) {
             setWebViewLongListener(false);
@@ -127,10 +118,6 @@ public class DashboardActivity extends BaseActivity {
 
     protected void onResume() {
         mMyApp.setCurrentActivity(this);
-		/*
-		 * 启动 Activity 时也需要判断小红点是否显示
-		 */
-//		receiveNotification();
 
         dealSendMessage();
 
@@ -161,7 +148,6 @@ public class DashboardActivity extends BaseActivity {
         mWebView = null;
         user = null;
         PgyUpdateManager.unregister(); // 解除注册蒲公英版本更新检查
-//		unregisterReceiver(notificationBroadcastReceiver);
         super.onDestroy();
     }
 
@@ -188,50 +174,15 @@ public class DashboardActivity extends BaseActivity {
     }
 
     private void dealSendMessage() {
-        currentUIVersion = URLs.currentUIVersion(mAppContext);
         String pushMessagePath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPushMessageFileName);
         JSONObject pushMessageJSON = FileUtil.readConfigFile(pushMessagePath);
-
         try {
-            if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state")) {
-                return;
+            if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state") == false){
+                jumpTab(mTabAnalyse);
+                urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
+                pushMessageJSON.put("state", true);
+                FileUtil.writeFile(pushMessagePath, pushMessageJSON.toString());
             }
-//            if (pushMessageJSON.has("type")) {
-//                String type = pushMessageJSON.getString("type");
-//                switch (type) {
-//                    case "report":
-//                        Intent subjectIntent = new Intent(this, SubjectActivity.class);
-//                        subjectIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//                        subjectIntent.putExtra(URLs.kLink, pushMessageJSON.getString("url"));
-//                        subjectIntent.putExtra(URLs.kBannerName, pushMessageJSON.getString("title"));
-//                        subjectIntent.putExtra(URLs.kObjectId, pushMessageJSON.getInt("object_id"));
-//                        subjectIntent.putExtra(URLs.kObjectType, pushMessageJSON.getInt("object_type"));
-//                        startActivity(subjectIntent);
-//                        break;
-//                    case "analyse":
-//                        jumpTab(mTabAnalyse);
-//                        urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
-//                        break;
-////					case "app":
-////						jumpTab(mTabAPP);
-////						urlString = String.format(K.kAppMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId));
-////						break;
-//                    case "message":
-//                        jumpTab(mTabMessage);
-//                        urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(kGroupId), user.getString(kUserId));
-//                        break;
-//                    case "thursday_say":
-//                        Intent blogLinkIntent = new Intent(DashboardActivity.this, ThursdaySayActivity.class);
-//                        startActivity(blogLinkIntent);
-//                        break;
-//                    default:
-                        jumpTab(mTabAnalyse);
-                        urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
-//                        break;
-//                }
-//            }
-            pushMessageJSON.put("state", true);
-            FileUtil.writeFile(pushMessagePath, pushMessageJSON.toString());
         } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
@@ -337,65 +288,6 @@ public class DashboardActivity extends BaseActivity {
     }
 
     /*
-     * 动态注册广播用于接收通知
-     */
-    private void initNotificationService() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_UPDATENOTIFITION);
-        notificationBroadcastReceiver = new NotificationBroadcastReceiver();
-        registerReceiver(notificationBroadcastReceiver, filter);
-		/*
-		 * 打开通知服务, 用于发送通知
-         */
-        Intent intent = new Intent(this, LocalNotificationService.class);
-        startService(intent);
-    }
-
-    /*
-     * 定义广播接收器（内部类），接收到后调用是否显示通知的判断逻辑
-     */
-    private class NotificationBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-//            receiveNotification();
-        }
-    }
-
-    /*
-     * 通知显示判断逻辑，在 Activity 显示和接收到广播时都会调用
-     */
-//    private void receiveNotification() {
-//        try {
-//            String noticePath = FileUtil.dirPath(mAppContext, K.kConfigDirName, K.kLocalNotificationConfigFileName);
-//            notificationJSON = FileUtil.readConfigFile(noticePath);
-//            kpiNotifition = notificationJSON.getInt(URLs.kTabKpi);
-//            analyseNotifition = notificationJSON.getInt(URLs.kTabAnalyse);
-//            appNotifition = notificationJSON.getInt(URLs.kTabApp);
-//            messageNotifition = notificationJSON.getInt(URLs.kTabMessage);
-//
-//            if (kpiNotifition > 0 && objectType != 1) {
-//                RedPointView.showRedPoint(mAppContext, kTab, bvKpi);
-//            }
-//            if (analyseNotifition > 0 && objectType != 2) {
-//                RedPointView.showRedPoint(mAppContext, kTab, bvAnalyse);
-//            }
-////			if (appNotifition > 0 && objectType != 3) {
-////				RedPointView.showRedPoint(mAppContext, kTab, bvApp);
-////			}
-//            if (messageNotifition > 0 && objectType != 3) {
-//                RedPointView.showRedPoint(mAppContext, kTab, bvMessage);
-//            }
-//            if (notificationJSON.getInt(URLs.kSetting) > 0) {
-//                RedPointView.showRedPoint(mAppContext, URLs.kSetting, bvBannerSetting);
-//            } else {
-//                bvBannerSetting.setVisibility(View.GONE);
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    /*
      * 配置 mWebView
      */
     public void loadWebView() {
@@ -418,39 +310,6 @@ public class DashboardActivity extends BaseActivity {
         browserAd.requestFocus();
         browserAd.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
         browserAd.setWebViewClient(new WebViewClient());
-    }
-
-    /*
-     * 通过解屏进入界面后，进行用户验证
-     */
-    public void checkWhetherFromScreenLockActivity() {
-//        Intent intent = getIntent();
-//        if (intent.hasExtra("from_activity")) {
-//            checkVersionUpgrade(assetsPath);
-//
-//            new Thread(new Runnable() {
-//                @Override
-//                public synchronized void run() {
-//                    try {
-//                        String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
-//                        JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-//
-//                        String info = ApiHelper.authentication(mAppContext, userJSON.getString("user_num"), userJSON.getString(URLs.kPassword));
-//                        if (!info.isEmpty() && (info.contains("用户") || info.contains("密码"))) {
-//                            // 解锁验证信息失败,也只变化登录状态,其余状况保持登录状态
-//                            JSONObject configJSON = new JSONObject();
-//                            configJSON.put("is_login", false);
-//
-//                            modifiedUserConfig(configJSON);
-//                        }
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }).start();
-//        } else {
-//            mWebView.clearCache(true);
-//        }
     }
 
     /*
@@ -584,32 +443,20 @@ public class DashboardActivity extends BaseActivity {
                                 kGroupId), user.getString(URLs.kRoleId));
 
                         bvKpi.setVisibility(View.GONE);
-//						notificationJSON.put(URLs.kTabKpi, 0);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 0);
                         break;
                     case R.id.tabAnalyse:
                         objectType = 2;
                         urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
-
-//                        bvAnalyse.setVisibility(View.GONE);
-//						notificationJSON.put(URLs.kTabAnalyse, 0);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 1);
                         break;
-//					case R.id.tabApp:
-//						objectType = 3;
-//						urlString = String.format(K.kAppMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId));
-//
-//						bvApp.setVisibility(View.GONE);
-//						notificationJSON.put(URLs.kTabApp, 0);
-//						FileUtil.writeBehaviorFile(mAppContext,urlString,2);
-//						break;
+
                     case R.id.tabMessage:
                         objectType = 3;
                         urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(
                                 kGroupId), user.getString(kUserId));
 
                         bvMessage.setVisibility(View.GONE);
-//						notificationJSON.put(URLs.kTabMessage, 0);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 2);
                         setWebViewLongListener(false);
                         break;
@@ -619,16 +466,11 @@ public class DashboardActivity extends BaseActivity {
                                 kGroupId), user.getString(URLs.kRoleId));
 
                         bvKpi.setVisibility(View.GONE);
-//						notificationJSON.put(URLs.kTabKpi, 0);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 0);
                         break;
                 }
 
-//				String notificationPath = FileUtil.dirPath(mAppContext, K.kCachedDirName, K.kLocalNotificationConfigFileName);
-//				FileUtil.writeFile(notificationPath, notificationJSON.toString());
-
                 mWebView.loadUrl(urlString);
-//				new Thread(mRunnableForDetecting).start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -669,11 +511,6 @@ public class DashboardActivity extends BaseActivity {
                             mCurrentTab.setActive(true);
                             objectType = 2;
                             break;
-//						case 2:
-//							mCurrentTab = mTabAPP;
-//							mCurrentTab.setActive(true);
-//							objectType = 3;
-//							break;
                         case 2:
                             mCurrentTab = mTabMessage;
                             mCurrentTab.setActive(true);
@@ -772,12 +609,9 @@ public class DashboardActivity extends BaseActivity {
                     kGroupId), user.getString(URLs.kRoleId));
             urlStrings.add(tmpString);
             tmpString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
-//			tmpString = String.format(K.kAppMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId));
             urlStrings.add(tmpString);
             tmpString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(
                     kGroupId), user.getString(kUserId));
-            urlStrings.add(tmpString);
-            tmpString = String.format(K.kThursdaySayMobilePath, K.kBaseUrl, currentUIVersion);
             urlStrings.add(tmpString);
         } catch (JSONException e) {
             e.printStackTrace();

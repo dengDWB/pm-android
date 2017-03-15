@@ -872,8 +872,6 @@ public class BaseActivity extends Activity {
 
     private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
         try {
-            String localKeyName ="";
-            String keyName = "";
             boolean isShouldUpdateAssets = false;
             String localKeyName ="";
             String keyName = "";
@@ -1042,6 +1040,7 @@ public class BaseActivity extends Activity {
                             if (assetFilename.contains("offline_pages_")){
                                 JSONObject jsonObject = user.getJSONObject("offline_pages");
                                 offonlineMd5String = jsonObject.getString(keyName);
+                                Log.d("11111","jinru");
                             }else {
                                 offonlineMd5String = user.getString(keyName);
                             }
