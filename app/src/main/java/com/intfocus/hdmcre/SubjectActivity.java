@@ -86,6 +86,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
 	private Intent mSourceIntent;
+	AlertDialog.Builder builder;
+	String offlineLink = "";
 
 	/* 请求识别码 */
 	private static final int CODE_RESULT_REQUEST = 0xa2;
@@ -159,11 +161,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			public void onPageFinished(WebView view, String url) {
 				super.onPageFinished(view, url);
 				animLoading.setVisibility(View.GONE);
-				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-					CookieSyncManager.getInstance().sync();
-				} else {
-					CookieManager.getInstance().flush();
-				}
 				LogUtil.d("onPageFinished", String.format("%s - %s", URLs.timestamp(), url));
 			}
 
@@ -556,6 +553,9 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		staticUrlMap.put("sales.input.execute.html", "销售录入审批");
 		staticUrlMap.put("notice.view.html", "公告明细");
 		staticUrlMap.put("notices.html", "公告");
+		staticUrlMap.put("repair.new.html", "设备维修新建");
+		staticUrlMap.put("repair.new.without-back.html", "设备维修新建");
+		staticUrlMap.put("repair.new-from-device.execute.html", "新建设备维修");
 	}
 
 	public boolean synCookie(String url, String cookie) {
@@ -846,6 +846,56 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			}
 		}
 
+		@JavascriptInterface
+		public void showAlertAndRedirect(final String title, final String content, final String redirect_url, String cleanStack){
+			Log.d("pages1", title+":"+content+":"+redirect_url);
+			if (cleanStack == "yes"){
+				urlStack.clear();
+			}
+			if (!(title.equals("")) && !(content.equals(""))){
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						builder = new AlertDialog.Builder(SubjectActivity.this);
+						builder.setTitle(title)
+								.setMessage(content)
+								.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										dialog.dismiss();
+										if (redirect_url.startsWith("offline:////")){
+											finish();
+										}else if (redirect_url.startsWith("offline:///")){
+											mWebView.loadUrl((String) urlStack.get(0));
+										}else if (redirect_url.startsWith("offline://")) {
+											String loadUrl = urlTempFile(link);
+											Log.i("pageUrlString", link + "2");
+											if (!loadUrl.equals("")) {
+												mWebView.loadUrl("file://" + loadUrl);
+											}
+										}
+									}
+								});
+						builder.show();
+					}
+				});
+
+			}else {
+				if (redirect_url.startsWith("offline:////")){
+					finish();
+				}else if (redirect_url.startsWith("offline:///")){
+					mWebView.loadUrl((String) urlStack.get(0));
+				}else if (redirect_url.startsWith("offline://")) {
+					String loadUrl = urlTempFile(link);
+					Log.i("pageUrlString", link + "2");
+					if (!loadUrl.equals("")) {
+						mWebView.loadUrl("file://" + loadUrl);
+					}
+				}
+			}
+
+		}
+
 		/*
 		 * JS 接口，暴露给JS的方法使用@JavascriptInterface装饰
 		 */
@@ -950,16 +1000,25 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 
 		@JavascriptInterface
-		public void showAlert(String title, String content) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(SubjectActivity.this);
-			builder.setTitle(title)
-					.setMessage(content)
-					.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-						}
-					});
-			builder.show();
+		public void showAlert(final String title, final String content) {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					builder = new AlertDialog.Builder(SubjectActivity.this);
+					builder.setTitle(title)
+							.setMessage(content)
+							.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.dismiss();
+									if (offlineLink.startsWith("offline:////")){
+										finish();
+									}
+								}
+							});
+					builder.show();
+				}
+			});
 		}
 
 		@JavascriptInterface
@@ -1180,4 +1239,12 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			mUploadMessage1 = null;
 		}
 	}
+
+//	@Override
+//	protected void onDestroy() {
+//		super.onDestroy();
+//		if(builder!=null){
+//			builder.
+//		}
+//	}
 }

@@ -564,7 +564,6 @@ public class ApiHelper {
             }
             return true;
         } catch (FileNotFoundException | JSONException e) {
-            Log.i("checkuser",e.toString());
             e.printStackTrace();
             return false;
         }

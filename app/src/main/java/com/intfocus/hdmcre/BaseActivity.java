@@ -65,7 +65,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -287,7 +286,6 @@ public class BaseActivity extends Activity {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
-        webSettings.setBlockNetworkImage(false);
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
@@ -875,9 +873,9 @@ public class BaseActivity extends Activity {
 
     private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
         try {
-            String localKeyName = "";
-            String keyName = "";
             boolean isShouldUpdateAssets = false;
+            String localKeyName ="";
+            String keyName = "";
             String assetZipPath = String.format("%s/%s.zip", sharedPath, assetName);
             isShouldUpdateAssets = !(new File(assetZipPath)).exists();
 
@@ -901,7 +899,7 @@ public class BaseActivity extends Activity {
                 return false;
             }
 
-            LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
+//            LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
             // execute this when the downloader must be fired
             final DownloadAssetsTask downloadTask = new DownloadAssetsTask(mAppContext, shouldReloadUIThread, assetName, isInAssets);
             final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), String.format("%s.zip", assetName));
@@ -1031,12 +1029,29 @@ public class BaseActivity extends Activity {
                     @Override
                     public void run() {
                         try {
-                            String md5String = "";
-                            if (new File(downloadPath).exists()) {
+                            String keyName = "";
+                            String md5String  = "";
+                            String offonlineMd5String = "";
+                            if (new File(downloadPath).exists()){
                                 InputStream zipStream = new FileInputStream(downloadPath);
                                 md5String = FileUtil.MD5(zipStream);
                             }
-                            if (user.getString("permission_javascript_md5").equals(md5String)) {
+                            if (assetFilename.contains("offline_pages_")){
+                                keyName = String.format("%s_md5", assetFilename.replace("offline_pages_",""));
+                            }else {
+                                keyName = String.format("%s_md5", assetFilename);
+                            }
+
+                            if (assetFilename.contains("offline_pages_")){
+                                JSONObject jsonObject = user.getJSONObject("offline_pages");
+                                offonlineMd5String = jsonObject.getString(keyName);
+                                Log.d("11111","jinru");
+                            }else {
+                                offonlineMd5String = user.getString(keyName);
+                            }
+                            Log.d("1111", offonlineMd5String+":"+md5String);
+                            Log.d("111", assetFilename+":"+keyName);
+                            if (offonlineMd5String.equals(md5String)){
                                 String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
                                 if (new File(downloadPath).exists()) {
                                     if (new File(assetZipPath).exists()) {
@@ -1044,13 +1059,6 @@ public class BaseActivity extends Activity {
                                     }
                                     FileUtil.copyZipFile(downloadPath, assetZipPath);
 
-                                    String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
-                                    JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-                                    String localKeyName = String.format("local_%s_md5", assetFilename);
-                                    if (userJSON.has(localKeyName)) {
-                                        userJSON.put(localKeyName, md5String);
-                                        FileUtil.writeFile(userConfigPath, userJSON.toString());
-                                    }
                                 }
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -1063,8 +1071,6 @@ public class BaseActivity extends Activity {
                                 });
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         } catch (IOException e) {
                             e.printStackTrace();
