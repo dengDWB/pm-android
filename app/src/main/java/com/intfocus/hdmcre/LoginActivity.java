@@ -15,7 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
+
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
@@ -23,12 +23,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.intfocus.hdmcre.screen_lock.ConfirmPassCodeActivity;
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
-import com.intfocus.hdmcre.util.HttpUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.URLs;
 import com.pgyersdk.update.PgyUpdateManager;
@@ -36,17 +32,9 @@ import com.pgyersdk.update.PgyUpdateManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static com.intfocus.hdmcre.util.URLs.kUserNum;
 
 public class LoginActivity extends BaseActivity {
     public String kFromActivity = "from_activity";         // APP 启动标识
@@ -86,6 +74,14 @@ public class LoginActivity extends BaseActivity {
         usernameEditText = (EditText) findViewById(R.id.etUsername);
         passwordEditText = (EditText) findViewById(R.id.etPassword);
         TextView versionTv = (TextView) findViewById(R.id.versionTv);
+
+        try {
+            if (user.has(URLs.kUserNum)) {
+                usernameEditText.setText(user.getString(URLs.kUserNum));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         /*
          * 显示当前应用版本号
