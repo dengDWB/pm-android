@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
@@ -22,11 +23,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.intfocus.hdmcre.screen_lock.ConfirmPassCodeActivity;
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.K;
+import com.intfocus.hdmcre.util.URLs;
 import com.pgyersdk.update.PgyUpdateManager;
 
 import org.json.JSONException;
@@ -35,25 +35,27 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LoginActivity extends BaseActivity{
-    public  String kFromActivity = "from_activity";         // APP 启动标识
-    public  String kSuccess      = "success";               // 用户登录验证结果
+
+public class LoginActivity extends BaseActivity {
+    public String kFromActivity = "from_activity";         // APP 启动标识
+    public String kSuccess = "success";               // 用户登录验证结果
     private EditText usernameEditText, passwordEditText;
-    private String usernameString, passwordString;
+    private String usernameString, passwordString, loginTypeString;
     private Context mContext;
+    private SharedPreferences mSharedPreferences;
+    private SharedPreferences.Editor mEditor;
     private final static int CODE_AUTHORITY_REQUEST = 0;
     private static final String[] permissionsArray = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.CAMERA };
+            Manifest.permission.CAMERA};
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (checkIsLogin()) {
-            onLoginSuccess();
-        }
+        mSharedPreferences = getSharedPreferences("loginState", MODE_PRIVATE);
+        mEditor = mSharedPreferences.edit();
         setContentView(R.layout.activity_login);
 
         mContext = this;
@@ -61,63 +63,25 @@ public class LoginActivity extends BaseActivity{
         // 使背景填满整个屏幕,包括状态栏
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-//            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         }
+
 
         /*
-         *  如果是从触屏界面过来，则直接进入主界面如
-         *  不是的话，相当于直接启动应用，则检测是否有设置锁屏
+         *  检测版本更新
          */
-        Intent intent = getIntent();
-        if (intent.hasExtra(kFromActivity) && intent.getStringExtra(kFromActivity).equals("ConfirmPassCodeActivity")) {
-            intent = new Intent(LoginActivity.this, DashboardActivity.class);
-            intent.putExtra(kFromActivity, intent.getStringExtra(kFromActivity));
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            LoginActivity.this.startActivity(intent);
-
-            finish();
-        }
-        else if (FileUtil.checkIsLocked(mAppContext)) {
-            intent = new Intent(this, ConfirmPassCodeActivity.class);
-            intent.putExtra("is_from_login", true);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.startActivity(intent);
-
-            finish();
-        }
-        else {
-            /*
-             *  检测版本更新
-             *    1. 与锁屏界面互斥；取消解屏时，返回登录界面，则不再检测版本更新；
-             *    2. 原因：如果解屏成功，直接进入MainActivity,会在BaseActivity#finishLoginActivityWhenInMainAcitivty中结束LoginActivity,若此时有AlertDialog，会报错误:Activity has leaked window com.android.internal.policy.impl.PhoneWindow$DecorView@44f72ff0 that was originally added here
-             */
-            checkPgyerVersionUpgrade(LoginActivity.this,false);
-        }
+        checkPgyerVersionUpgrade(LoginActivity.this, false);
 
         usernameEditText = (EditText) findViewById(R.id.etUsername);
         passwordEditText = (EditText) findViewById(R.id.etPassword);
+        TextView versionTv = (TextView) findViewById(R.id.versionTv);
+
         try {
-            if (user !=null && user.has("user_num")) {
-                usernameEditText.setText(user.getString("user_num"));
-            }
-            if (user !=null && user.has("password")){
-                passwordEditText.setText(user.getString("password"));
+            if (user.has(URLs.kUserNum)) {
+                usernameEditText.setText(user.getString(URLs.kUserNum));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        if (true){
-            findViewById(R.id.forgetPasswordTv).setVisibility(View.GONE);
-//            findViewById(R.id.forgetPasswordTv).setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Intent intent = new Intent (LoginActivity.this, ForgetPasswordActivity.class);
-//                    startActivity(intent);
-//                }
-//            });
-        }
-
-        TextView versionTv = (TextView) findViewById(R.id.versionTv);
 
         /*
          * 显示当前应用版本号
@@ -150,7 +114,7 @@ public class LoginActivity extends BaseActivity{
 
     protected void onResume() {
         mMyApp.setCurrentActivity(this);
-        if(mProgressDialog != null)  {
+        if (mProgressDialog != null) {
             mProgressDialog.dismiss();
         }
         super.onResume();
@@ -204,7 +168,7 @@ public class LoginActivity extends BaseActivity{
                 permissionsList.add(permission);
             }
         }
-        if (!permissionsList.isEmpty() && permissionsList != null){
+        if (!permissionsList.isEmpty() && permissionsList != null) {
             ActivityCompat.requestPermissions(LoginActivity.this, permissionsList.toArray(new String[permissionsList.size()]), CODE_AUTHORITY_REQUEST);
         }
     }
@@ -218,7 +182,7 @@ public class LoginActivity extends BaseActivity{
 
             case CODE_AUTHORITY_REQUEST:
                 boolean flag = false;
-                if (grantResults.length > 0){
+                if (grantResults.length > 0) {
                     for (int i = 0; i < permissions.length; i++) {
                         if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                         } else {
@@ -275,32 +239,21 @@ public class LoginActivity extends BaseActivity{
     /*
      * 登录按钮点击事件
      */
-    public void actionSubmit(final String type) {
+    public void actionSubmit(String type) {
         try {
             usernameString = usernameEditText.getText().toString();
             passwordString = passwordEditText.getText().toString();
+            loginTypeString = type;
             if (usernameString.isEmpty() || passwordString.isEmpty()) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        toast("请输入用户名与密码");
-                    }
-                });
-
+                toast("请输入用户名与密码");
                 return;
             }
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mProgressDialog = ProgressDialog.show(LoginActivity.this, "稍等", "验证用户信息...");
-                }
-            });
+            mProgressDialog = ProgressDialog.show(LoginActivity.this, "稍等", "验证用户信息...");
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final String info = ApiHelper.authentication(mAppContext, usernameString, passwordString, type);
+                    final String info = ApiHelper.authentication(mAppContext, usernameString, passwordString, loginTypeString);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -317,9 +270,10 @@ public class LoginActivity extends BaseActivity{
                             checkVersionUpgrade(assetsPath);
 
                             // 存储已登录信息
-                            SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-                            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                            mEditor.putBoolean("isLogin",true);
+                            mEditor.putString("userName", usernameString);
+                            mEditor.putString("passWord", passwordString);
+                            mEditor.putString("loginType", loginTypeString);
+                            mEditor.putBoolean("isLogin", true);
                             mEditor.commit();
 
                             // 跳转至主界面
@@ -352,20 +306,4 @@ public class LoginActivity extends BaseActivity{
             toast(e.getLocalizedMessage());
         }
     }
-
-    /*
-     * 判断之前是否已登录
-     */
-    private boolean checkIsLogin() {
-        SharedPreferences mSharedPreferences = getSharedPreferences("loginState", MODE_PRIVATE);
-        return mSharedPreferences.getBoolean("isLogin", false);
-    }
-
-    public void onLoginSuccess() {
-        Intent intent = new Intent(this, DashboardActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        LoginActivity.this.startActivity(intent);
-        finish();
-    }
-
 }

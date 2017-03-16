@@ -596,7 +596,7 @@ public class SettingActivity extends BaseActivity {
             mEditor.commit();
 
             Intent intent = new Intent();
-            intent.setClass(SettingActivity.this, LoginActivity.class);
+            intent.setClass(SettingActivity.this, LaunchActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
 
@@ -679,24 +679,24 @@ public class SettingActivity extends BaseActivity {
                             headerPath = String.format("%s/%s", FileUtil.dirPath(mAppContext, K.kHTMLDirName), K.kCachedHeaderConfigFileName);
                             new File(headerPath).delete();
 
-                            /*
-                             *用户权限表删除
-                             */
-                            String adUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
-                            String offUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
-                            String userPermissionPath = FileUtil.dirPath(SettingActivity.this, "config","user_permission.js");
-
-                            if (new File(adUserPermissionPath).exists()){
-                                new File(adUserPermissionPath).delete();
-                            }
-
-                            if (new File(offUserPermissionPath).exists()){
-                                new File(offUserPermissionPath).delete();
-                            }
-
-                            if (new File(userPermissionPath).exists()){
-                                new File(userPermissionPath).delete();
-                            }
+//                            /*
+//                             *用户权限表删除
+//                             */
+//                            String adUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
+//                            String offUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
+//                            String userPermissionPath = FileUtil.dirPath(SettingActivity.this, "config","user_permission.js");
+//
+//                            if (new File(adUserPermissionPath).exists()){
+//                                new File(adUserPermissionPath).delete();
+//                            }
+//
+//                            if (new File(offUserPermissionPath).exists()){
+//                                new File(offUserPermissionPath).delete();
+//                            }
+//
+//                            if (new File(userPermissionPath).exists()){
+//                                new File(userPermissionPath).delete();
+//                            }
 
                             /*
                              * Umeng Device Token 重新上传服务器
@@ -724,16 +724,6 @@ public class SettingActivity extends BaseActivity {
 
                                     checkAssetsUpdated(false);
 
-//                                    FileUtil.checkAssets(mAppContext, URLs.kAssets, false);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kLoding, false);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kFonts, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kImages, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kStylesheets, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
-//                                    FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
-                                    downloadUserJs();
                                     if (mProgressDialog != null){
                                         mProgressDialog.dismiss();
                                     }
@@ -766,95 +756,6 @@ public class SettingActivity extends BaseActivity {
         }
     };
 
-    public void downloadUserJs() {
-        boolean isException = false;
-        try {
-            boolean isDownload = true;
-            final String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, user.getString("user_num"));
-            final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js");
-
-            String userPermissionPath = FileUtil.dirPath(mAppContext, "config","user_permission.js");
-            if (new File(userPermissionPath).exists() && user.has("permission_javascript_md5")){
-                InputStream zipStream = new FileInputStream(userPermissionPath);
-                String md5String = FileUtil.MD5(zipStream);
-                if (md5String.equals(user.getString("permission_javascript_md5"))){
-                    isDownload = false;
-                }
-            }
-
-            if (isDownload){
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        boolean isDownloadSuccess = false;
-                        final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, new HashMap<String, String>());
-                        if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
-                            /*
-                             *通过 MD5 值对比,判断文件的完整性
-                             */
-                            try {
-                                InputStream zipStream = new FileInputStream(downloadPath);
-                                String md5String = FileUtil.MD5(zipStream);
-                                if (md5String.equals(user.getString("permission_javascript_md5"))){
-                                    String outPath = sharedPath + "/offline_pages/static/js/user_permission.js";
-                                    String newPath = sharedPath + "/advertisement/assets/javascripts/user_permission.js";
-                                    String userPermissionPath = FileUtil.dirPath(mAppContext, "configs","user_permission.js");
-                                    FileUtil.copyFile(downloadPath, outPath);
-                                    FileUtil.copyFile(downloadPath, newPath);
-                                    FileUtil.copyFile(downloadPath, userPermissionPath);
-                                    isDownloadSuccess = true;
-                                }
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
-                            }catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        if (!isDownloadSuccess){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
-                                    SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-                                    SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                                    mEditor.putBoolean("isLogin",false);
-                                    mEditor.commit();
-
-                                    Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            });
-                        }
-                    }
-                }).start();
-            }
-        } catch (JSONException e) {
-            isException = true;
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            isException = true;
-            e.printStackTrace();
-        }
-
-        if (isException){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mAppContext, "用户权限验证失败", Toast.LENGTH_SHORT).show();
-                    SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-                    SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-                    mEditor.putBoolean("isLogin",false);
-                    mEditor.commit();
-
-                    Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-        }
-    }
 
     /*
      *  Switch 锁屏开关

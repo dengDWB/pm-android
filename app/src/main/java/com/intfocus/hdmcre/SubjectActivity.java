@@ -19,7 +19,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -90,6 +89,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 	/* 请求识别码 */
 	private static final int CODE_RESULT_REQUEST = 0xa2;
+	private static final int CODE_CAMERA_REQUEST = 0xa1;
+	private static final int CODE_CAMERA_RESULT = 0xa0;
 
 	@Override
 	@SuppressLint("SetJavaScriptEnabled")
@@ -158,11 +159,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			public void onPageFinished(WebView view, String url) {
 				super.onPageFinished(view, url);
 				animLoading.setVisibility(View.GONE);
-				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-					CookieSyncManager.getInstance().sync();
-				} else {
-					CookieManager.getInstance().flush();
-				}
 				LogUtil.d("onPageFinished", String.format("%s - %s", URLs.timestamp(), url));
 			}
 
@@ -556,6 +552,9 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		staticUrlMap.put("sales.input.execute.html", "销售录入审批");
 		staticUrlMap.put("notice.view.html", "公告明细");
 		staticUrlMap.put("notices.html", "公告");
+		staticUrlMap.put("repair.new.html", "设备维修新建");
+		staticUrlMap.put("repair.new.without-back.html", "设备维修新建");
+		staticUrlMap.put("repair.new-from-device.execute.html", "新建设备维修");
 	}
 
 	public boolean synCookie(String url, String cookie) {
@@ -1088,32 +1087,19 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
          */
 		if (hasSdcard()) {
 			Uri imageUri;
-			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-				imageUri = FileProvider.getUriForFile(SubjectActivity.this, "com.intfocus.shengyiplus.fileprovider", new File(Environment.getExternalStorageDirectory(), "icon.jpg"));
-				intentFromCapture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-				intentFromCapture.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-			} else {
-				imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "icon.jpg"));
-			}
+			imageUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), "upload.jpg"));
 			intentFromCapture.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-		} else {
-			try {
-				logParams = new JSONObject();
-				logParams.put("action", "头像/拍照");
-				logParams.put("obj_title", "功能: \"头像上传，拍照\",报错: \"not find SdCard\"");
-				new Thread(mRunnableForLogger).start();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 		}
 
-		startActivityForResult(intentFromCapture, CODE_RESULT_REQUEST);
+		startActivityForResult(intentFromCapture, CODE_CAMERA_RESULT);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
+		Log.e("uploadImg", resultCode + "");
 		if (resultCode != Activity.RESULT_OK) {
+			toast("上传图片失败, 请尝试其他方式上传图片");
 			if (mUploadMessage != null) {
 				mUploadMessage.onReceiveValue(null);
 			}
@@ -1124,6 +1110,32 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			return;
 		}
 		switch (requestCode) {
+			case CODE_CAMERA_RESULT:
+				try {
+					if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+						if (mUploadMessage == null) {
+							return;
+						}
+
+						File cameraFile = new File(Environment.getExternalStorageDirectory(),"upload.jpg");
+
+						Uri uri = Uri.fromFile(cameraFile);
+						mUploadMessage.onReceiveValue(uri);
+
+					} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+						if (mUploadMessage1 == null) {        // for android 5.0+
+							return;
+						}
+
+						File cameraFile = new File(Environment.getExternalStorageDirectory(),"upload.jpg");
+
+						Uri uri = Uri.fromFile(cameraFile);
+						mUploadMessage1.onReceiveValue(new Uri[]{uri});
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				break;
 			case CODE_RESULT_REQUEST: {
 				try {
 					if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -1191,8 +1203,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 						} else {
 							try {
-								mSourceIntent = ImageUtil.takeBigPicture();
-								startActivityForResult(mSourceIntent, CODE_RESULT_REQUEST);
+								getCameraCapture();
 
 							} catch (Exception e) {
 								e.printStackTrace();

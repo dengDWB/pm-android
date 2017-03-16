@@ -126,7 +126,7 @@ public class BaseActivity extends Activity {
         // 禁止横屏
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        mMyApp = (YHApplication)this.getApplication();
+        mMyApp = (YHApplication) this.getApplication();
         mAppContext = mMyApp.getAppContext();
         sp = getSharedPreferences("cookie", MODE_PRIVATE);
 
@@ -151,8 +151,8 @@ public class BaseActivity extends Activity {
             }
         }
 
-    // RefWatcher refWatcher = YHApplication.getRefWatcher(mContext);
-    // refWatcher.watch(this);
+        // RefWatcher refWatcher = YHApplication.getRefWatcher(mContext);
+        // refWatcher.watch(this);
     }
 
     protected void onDestroy() {
@@ -166,13 +166,13 @@ public class BaseActivity extends Activity {
     @Override
     public Resources getResources() {
         Resources res = super.getResources();
-        Configuration config=new Configuration();
+        Configuration config = new Configuration();
         config.setToDefaults();
-        res.updateConfiguration(config,res.getDisplayMetrics());
+        res.updateConfiguration(config, res.getDisplayMetrics());
         return res;
     }
 
-    private void clearReferences(){
+    private void clearReferences() {
         String currActivity = mMyApp.getCurrentActivity();
         if (this.equals(currActivity)) {
             mMyApp.setCurrentActivity(null);
@@ -189,7 +189,7 @@ public class BaseActivity extends Activity {
             return;
         }
 
-        String [] arr = new String[]{"mCurRootView", "mServedView", "mNextServedView"};
+        String[] arr = new String[]{"mCurRootView", "mServedView", "mNextServedView"};
         Field f = null;
         Object obj_get = null;
         for (String param : arr) {
@@ -286,7 +286,6 @@ public class BaseActivity extends Activity {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
-        webSettings.setBlockNetworkImage(false);
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setDefaultTextEncodingName("utf-8");
         webSettings.setDomStorageEnabled(true);
@@ -384,9 +383,9 @@ public class BaseActivity extends Activity {
                 String urlKey = urlString.contains("?") ? TextUtils.split(urlString, "?")[0] : urlString;
                 ApiHelper.clearResponseHeader(urlKey, assetsPath);
             }
-            if (urlString.contains("file:///")){
+            if (urlString.contains("file:///")) {
 
-            }else {
+            } else {
                 new Thread(mRunnableForDetecting).start();
             }
 
@@ -409,7 +408,7 @@ public class BaseActivity extends Activity {
             super.onPostExecute(aVoid);
             // Call onRefreshComplete when the list has been refreshed. 如果没有下面的函数那么刷新将不会停
             pullToRefreshWebView.onRefreshComplete();
-            if (urlString.contains("file:///")){
+            if (urlString.contains("file:///")) {
                 mWebView.loadUrl(urlString);
             }
         }
@@ -472,7 +471,8 @@ public class BaseActivity extends Activity {
 
         private void showWebViewForWithoutNetwork() {
             mWebView.post(new Runnable() {
-                @Override public void run() {
+                @Override
+                public void run() {
                     String urlStringForLoading = loadingPath("400");
                     mWebView.loadUrl(urlStringForLoading);
                 }
@@ -539,7 +539,7 @@ public class BaseActivity extends Activity {
         @Override
         public void handleMessage(Message message) {
             BaseActivity activity = weakActivity.get();
-            if (activity == null)  return;
+            if (activity == null) return;
 
             switch (message.what) {
                 case 200:
@@ -573,7 +573,7 @@ public class BaseActivity extends Activity {
             weakActivity = new WeakReference<>(activity);
         }
 
-        public void setVariables(WebView webView, String sharedPath, String assetsPath ) {
+        public void setVariables(WebView webView, String sharedPath, String assetsPath) {
             mWebView = webView;
             mSharedPath = sharedPath;
             mAssetsPath = assetsPath;
@@ -585,7 +585,8 @@ public class BaseActivity extends Activity {
 
         private void showWebViewForWithoutNetwork() {
             mWebView.post(new Runnable() {
-                @Override public void run() {
+                @Override
+                public void run() {
                     String urlStringForLoading = loadingPath("400");
                     mWebView.loadUrl(urlStringForLoading);
                 }
@@ -634,12 +635,12 @@ public class BaseActivity extends Activity {
         }
     }
 
-    final Runnable  mRunnableForLogger = new Runnable() {
+    final Runnable mRunnableForLogger = new Runnable() {
         @Override
         public void run() {
             try {
                 String action = logParams.getString(URLs.kAction);
-                if(action == null) {
+                if (action == null) {
                     return;
                 }
                 if (!action.contains("登录") && !action.equals("解屏") && !action.equals("点击/主页面/浏览器")) {
@@ -713,7 +714,7 @@ public class BaseActivity extends Activity {
                 try {
                     final AppBean appBean = getAppBeanFromString(result);
 
-                    if(result == null || result.isEmpty()) {
+                    if (result == null || result.isEmpty()) {
                         return;
                     }
 
@@ -725,7 +726,7 @@ public class BaseActivity extends Activity {
 
                     JSONObject responseVersionJSON = response.getJSONObject(URLs.kData);
                     int newVersionCode = responseVersionJSON.getInt(kVersionCode);
-                    Log.i("1111", newVersionCode+"");
+                    Log.i("1111", newVersionCode + "");
                     String newVersionName = responseVersionJSON.getString("versionName");
 
                     if (currentVersionCode >= newVersionCode) {
@@ -779,7 +780,7 @@ public class BaseActivity extends Activity {
 
             @Override
             public void onNoUpdateAvailable() {
-                if(isShowToast) {
+                if (isShowToast) {
                     toast("已是最新版本");
                 }
             }
@@ -789,9 +790,9 @@ public class BaseActivity extends Activity {
     }
 
     /*
-	 * 标题栏设置按钮下拉菜单样式
+     * 标题栏设置按钮下拉菜单样式
 	 */
-    public void initDropMenu(SimpleAdapter adapter,AdapterView.OnItemClickListener itemClickListener) {
+    public void initDropMenu(SimpleAdapter adapter, AdapterView.OnItemClickListener itemClickListener) {
         View contentView = LayoutInflater.from(this).inflate(R.layout.menu_dialog, null);
 
         ListView listView = (ListView) contentView.findViewById(R.id.list_dropmenu);
@@ -828,8 +829,8 @@ public class BaseActivity extends Activity {
                                 assetsPath, K.kCachedHeaderConfigFileName));
 
                 /*
-                 * 用户报表数据js文件存放在公共区域
-                 */
+                * 用户报表数据js文件存放在公共区域
+                        */
                 String headerPath = String.format("%s/%s", sharedPath, K.kCachedHeaderConfigFileName);
                 File headerFile = new File(headerPath);
                 if (headerFile.exists()) {
@@ -839,7 +840,7 @@ public class BaseActivity extends Activity {
                 FileUtil.writeFile(versionConfigPath, packageInfo.versionName);
 
                 // 抢着消息配置，重新上传服务器
-                String pushConfigPath = String.format("%s/%s", FileUtil.basePath(BaseActivity.this), K.kPushConfigFileName );
+                String pushConfigPath = String.format("%s/%s", FileUtil.basePath(BaseActivity.this), K.kPushConfigFileName);
                 JSONObject pushJSON = FileUtil.readConfigFile(pushConfigPath);
                 pushJSON.put(K.kPushIsValid, false);
                 FileUtil.writeFile(pushConfigPath, pushJSON.toString());
@@ -863,10 +864,10 @@ public class BaseActivity extends Activity {
         checkAssetUpdated(shouldReloadUIThread, URLs.kJavaScripts, true);
         checkAssetUpdated(shouldReloadUIThread, URLs.kBarCodeScan, false);
 //        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePages, false);
-        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesHtml , false);
-        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesImages , false);
-        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesJavascripts , false);
-        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesStylesheets , false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesHtml, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesImages, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesJavascripts, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesStylesheets, false);
         checkAssetUpdated(shouldReloadUIThread, URLs.kAdvertisement, false);
     }
 
@@ -880,17 +881,17 @@ public class BaseActivity extends Activity {
 
             String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
             JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
-            if (assetName.contains("offline_pages_")){
+            if (assetName.contains("offline_pages_")) {
                 localKeyName = String.format("local_%s_md5", assetName);
-                keyName = String.format("%s_md5", assetName.replace("offline_pages_",""));
-            }else {
+                keyName = String.format("%s_md5", assetName.replace("offline_pages_", ""));
+            } else {
                 localKeyName = String.format("local_%s_md5", assetName);
                 keyName = String.format("%s_md5", assetName);
             }
-            if (assetName.contains("offline_pages_")){
+            if (assetName.contains("offline_pages_")) {
                 JSONObject jsonObject = userJSON.getJSONObject("offline_pages");
                 isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(jsonObject.getString(keyName));
-            }else {
+            } else {
                 isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(userJSON.getString(keyName));
             }
 
@@ -901,7 +902,7 @@ public class BaseActivity extends Activity {
 //            LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
             // execute this when the downloader must be fired
             final DownloadAssetsTask downloadTask = new DownloadAssetsTask(mAppContext, shouldReloadUIThread, assetName, isInAssets);
-            final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), String.format("%s.zip",assetName));
+            final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), String.format("%s.zip", assetName));
             downloadTask.execute(String.format(K.kDownloadAssetsAPIPath, K.kBaseUrl, assetName), downloadPath);
 
             return true;
@@ -912,18 +913,22 @@ public class BaseActivity extends Activity {
         return false;
     }
 
-    protected void toast(String info) {
-        try {
-            if (null == toast) {
-                toast = Toast.makeText(mAppContext, info, Toast.LENGTH_SHORT);
+    protected void toast(final String info) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (null == toast) {
+                        toast = Toast.makeText(mAppContext, info, Toast.LENGTH_SHORT);
+                    } else {
+                        toast.setText(info); //若当前已有 Toast 在显示,则直接修改当前 Toast 显示的内容
+                    }
+                    toast.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            else {
-                toast.setText(info); //若当前已有 Toast 在显示,则直接修改当前 Toast 显示的内容
-            }
-            toast.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     class DownloadAssetsTask extends AsyncTask<String, Integer, String> {
@@ -1048,8 +1053,8 @@ public class BaseActivity extends Activity {
                             Log.d("111", assetFilename+":"+keyName);
                             if (offonlineMd5String.equals(md5String)){
                                 String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
-                                if (new File(downloadPath).exists()){
-                                    if(new File(assetZipPath).exists()){
+                                if (new File(downloadPath).exists()) {
+                                    if (new File(assetZipPath).exists()) {
                                         new File(assetZipPath).delete();
                                     }
                                     FileUtil.copyZipFile(downloadPath, assetZipPath);
@@ -1088,9 +1093,10 @@ public class BaseActivity extends Activity {
         @JavascriptInterface
         public void openURLWithSystemBrowser(final String url) {
             runOnUiThread(new Runnable() {
-                @Override public void run() {
+                @Override
+                public void run() {
                     if (url == null || (!url.startsWith("http://") && !url.startsWith("https://"))) {
-                        toast(String.format("无效链接: %s",  url));
+                        toast(String.format("无效链接: %s", url));
                         return;
                     }
                     Intent browserIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url));
@@ -1098,6 +1104,7 @@ public class BaseActivity extends Activity {
                 }
             });
         }
+
     }
 
     public void isAllowBrowerCopy() {
@@ -1124,7 +1131,7 @@ public class BaseActivity extends Activity {
         });
     }
 
-    public void setAlertDialog(Context context, String message){
+    public void setAlertDialog(Context context, String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("温馨提示")
                 .setMessage(message)
