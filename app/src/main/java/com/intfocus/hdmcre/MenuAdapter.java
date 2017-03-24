@@ -8,11 +8,8 @@ import android.widget.TextView;
 
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.K;
-import com.intfocus.hdmcre.util.URLs;
-import com.intfocus.hdmcre.view.RedPointView;
 import com.readystatesoftware.viewbadger.BadgeView;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -49,10 +46,10 @@ public class MenuAdapter extends SimpleAdapter {
 				BadgeView bvUser = new BadgeView(mContext, itemName);
 				bvUser.setVisibility(View.GONE);
 
-				if (notificationJSON.getInt(URLs.kSetting) > 0) {
-					RedPointView.showRedPoint(mContext, "user", bvUser);
-				}
-			} catch (JSONException e) {
+//				if (notificationJSON.getInt(URLs.kSetting) > 0) {
+//					RedPointView.showRedPoint(mContext, "user", bvUser);
+//				}
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

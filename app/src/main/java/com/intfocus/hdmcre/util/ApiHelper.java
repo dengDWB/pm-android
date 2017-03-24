@@ -46,13 +46,11 @@ public class ApiHelper {
             device.put("os_version", Build.VERSION.RELEASE);
             device.put("uuid", OpenUDID_manager.getOpenUDID());
 
-            JSONObject loginType = new JSONObject();
-            loginType.put("type", type);
-
             JSONObject params = new JSONObject();
             params.put("device", device);
             PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             params.put(K.kAppVersion, String.format("a%s", packageInfo.versionName));
+            params.put("logintype", type);
             Log.i("DeviceParams", params.toString());
 
             Map<String, String> response = HttpUtil.httpPost(urlString, params);
@@ -84,6 +82,7 @@ public class ApiHelper {
 
             Boolean isChecked = downloadUserJs(context, FileUtil.sharedPath(context), userJSON);
             if (!isChecked) {
+                Log.d("111","用户权限验证失败");
                return "用户权限验证失败";
             }
 

@@ -50,10 +50,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -191,7 +188,7 @@ public class SettingActivity extends BaseActivity {
         }
 
         try {
-            mUserID.setText(user.getString("user_name"));
+            mUserID.setText(user.getString("user_name") + "(" + user.getString("loginType") + ")");
             mRoleID.setText(user.getString("role_name"));
             mGroupID.setText(user.getString("group_name"));
             mAppName.setText(getApplicationName(SettingActivity.this));
@@ -590,10 +587,15 @@ public class SettingActivity extends BaseActivity {
                 new File(userPermissionPath).delete();
             }
 
-            SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-            mEditor.putBoolean("isLogin",false);
-            mEditor.commit();
+            String adPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
+            if (new File(adPath).exists()){
+                new File(adPath).delete();
+            }
+
+            String configPath = FileUtil.dirPath(SettingActivity.this, "config", "user_permission.js");
+            if (new File(configPath).exists()){
+                new File(configPath).delete();
+            }
 
             Intent intent = new Intent();
             intent.setClass(SettingActivity.this, LaunchActivity.class);

@@ -257,7 +257,7 @@ public class LoginActivity extends BaseActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (info.compareTo(kSuccess) > 0 || info.compareTo(kSuccess) < 0) {
+                            if (!info.equals("success")) {
                                 if (mProgressDialog != null) {
                                     mProgressDialog.dismiss();
                                 }

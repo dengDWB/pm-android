@@ -57,9 +57,7 @@ import com.umeng.socialize.media.UMImage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -131,6 +129,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	}
 
 	public void initWebView() {
+		animLoading = (RelativeLayout) findViewById(R.id.anim_loading);
 		mWebView = (WebView) findViewById(R.id.browser);
 		initSubWebView();
 		mWebView.setWebChromeClient(new mWebChromeClient());
@@ -218,7 +217,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			}
 		}
 		Log.i("urlStack1", urlStack.toString());
-		setBannerName((String) urlStack.peek());
+//		setBannerName((String) urlStack.peek());
 	}
 
 	public void setBannerName(String url) {
@@ -504,6 +503,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 					} else {
 						String loadUrl = urlTempFile(urlString);
 						if (!loadUrl.equals("")) {
+//							String htmlPath = FileUtil.sharedPath(mContext) + "/offline_pages/" + "complaints1.html";
 							mWebView.loadUrl("file:///" + loadUrl);
 						} else {
 							/*
@@ -742,7 +742,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		if (urlStack.size() > 1) {
 			urlStack.pop();
 			mWebView.getSettings().setDomStorageEnabled(true);
-			mWebView.loadUrl((String) urlStack.pop());
+			mWebView.loadUrl((String) urlStack.peek());
 		} else {
 			finish();
 		}
@@ -789,6 +789,16 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+			}else {
+				urlString = link;
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (urlString.toLowerCase().endsWith(".pdf")) {
+							new Thread(mRunnableForPDF).start();
+						}
+					}
+				});
 			}
 
 			return null;
@@ -797,7 +807,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		@Override
 		protected void onPostExecute(Void aVoid) {
 			super.onPostExecute(aVoid);
-			loadHtml();
+			String url = (String) urlStack.peek();
+			if (url.contains("offline_pages") && url.contains("file")) {
+				mWebView.getSettings().setDomStorageEnabled(true);
+				mWebView.loadUrl(url);
+			}
 		}
 	}
 
@@ -843,6 +857,19 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		@JavascriptInterface
+		public void setBannerTitle(final String bannerTitle){
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (!bannerTitle.equals("")){
+						mTitle.setText(bannerTitle);
+					}else {
+						mTitle.setText("");
+					}
+				}
+			});
 		}
 
 		@JavascriptInterface
@@ -1037,32 +1064,20 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		if (url.startsWith("offline://")) {
 			String newLink = url.replace("offline://", "");
 			String htmlPath = FileUtil.sharedPath(mContext) + "/offline_pages/" + newLink;
-			String htmlContent = readFile(new File(htmlPath));
-
-			String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
-			newHtmlPath = String.format("%s.tmp", htmlPath);
-			try {
-				FileUtil.writeFile(newHtmlPath, newHtmlContent.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
+			String htmlContent = FileUtil.readFile(new File(htmlPath));
+			if (htmlContent.equals("")){
+				toast("离线文件未存在");
+			}else {
+				String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
+				newHtmlPath = String.format("%s.tmp.html", htmlPath);
+				try {
+					FileUtil.writeFile(newHtmlPath, newHtmlContent.toString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		return newHtmlPath;
-	}
-
-	public String readFile(File file){
-		StringBuilder result = new StringBuilder();
-		try{
-			BufferedReader br = new BufferedReader(new FileReader(file));//构造一个BufferedReader类来读取文件
-			String s = null;
-			while((s = br.readLine())!=null){//使用readLine方法，一次读一行
-				result.append(System.lineSeparator()+s);
-			}
-			br.close();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		return result.toString();
 	}
 
 //	public void getCameraCapture() {

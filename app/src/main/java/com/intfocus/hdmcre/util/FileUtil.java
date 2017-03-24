@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -191,9 +192,16 @@ public class FileUtil {
         if (file.exists()) { file.delete(); }
 
         file.createNewFile();
-        FileOutputStream out = new FileOutputStream(file, true);
-        out.write(content.getBytes("utf-8"));
-        out.close();
+
+        byte bt[] = new byte[1024];
+        bt = content.getBytes();
+        FileOutputStream in = new FileOutputStream(file);
+        in.write(bt, 0, bt.length);
+        in.close();
+//        FileOutputStream out = new FileOutputStream(file, true);
+//        out.write(content.getBytes("utf-8"));
+//        out.close();
+
     }
 
     /*
@@ -612,6 +620,21 @@ public class FileUtil {
         } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String readFile(File file){
+        StringBuilder result = new StringBuilder();
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(file));//构造一个BufferedReader类来读取文件
+            String s = null;
+            while((s = br.readLine())!=null){//使用readLine方法，一次读一行
+                result.append(System.lineSeparator()+s);
+            }
+            br.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return result.toString();
     }
 
     //以下代码，原本uri返回的是file:///...，由于android4.4返回的是content:///... 需要转化格式
