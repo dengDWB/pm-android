@@ -5,22 +5,19 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
-import com.intfocus.hdmcre.util.HttpUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
@@ -32,15 +29,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.intfocus.hdmcre.util.URLs.kGroupId;
 
@@ -93,7 +86,7 @@ public class DashboardActivity extends BaseActivity {
 		/*
          * 检测服务器静态资源是否更新，并下载
      	 */
-//        checkAssetsUpdated(true);
+        checkAssetsUpdated(false);
 
 
 		/*
@@ -119,12 +112,13 @@ public class DashboardActivity extends BaseActivity {
 
         dealSendMessage();
 
-        displayAdOrNot(true);
+//        displayAdOrNot(true);
 		/*
 		 * 判断是否允许浏览器复制
 		 */
         isAllowBrowerCopy();
         if (urlString.contains("list.html")){
+            mWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
             mWebView.loadUrl(urlString);
         }
 
@@ -265,9 +259,19 @@ public class DashboardActivity extends BaseActivity {
         if (!K.kDashboardAd) {
             return;
         }
+
         String adIndexBasePath = FileUtil.sharedPath(this) + "/advertisement/index";
         String adIndexPath = adIndexBasePath + ".html";
         String adIndexWithTimestampPath = adIndexBasePath + ".timestamp.html";
+
+        boolean isShouldDisplayAd = mCurrentTab == mTabKPI && new File(adIndexPath).exists();
+        if (isShouldDisplayAd) {
+            browserAd.setVisibility(View.VISIBLE);
+        } else {
+            browserAd.setVisibility(View.GONE);
+            return;
+        }
+
         if (new File(adIndexPath).exists()) {
             String htmlContent = FileUtil.readFile(adIndexPath);
             htmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
@@ -284,12 +288,6 @@ public class DashboardActivity extends BaseActivity {
             browserAd.loadUrl(String.format("file:///%s", adIndexWithTimestampPath));
         }
 
-        boolean isShouldDisplayAd = mCurrentTab == mTabKPI && new File(adIndexPath).exists();
-        if (isShouldDisplayAd) {
-            browserAd.setVisibility(View.VISIBLE);
-        } else {
-            browserAd.setVisibility(View.GONE);
-        }
     }
 
     /*
@@ -312,6 +310,7 @@ public class DashboardActivity extends BaseActivity {
         browserAd.getSettings().setJavaScriptEnabled(true);
         browserAd.setOverScrollMode(View.OVER_SCROLL_NEVER);
         browserAd.getSettings().setDefaultTextEncodingName("utf-8");
+        browserAd.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         browserAd.requestFocus();
         browserAd.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
         browserAd.setWebViewClient(new WebViewClient());
@@ -433,7 +432,7 @@ public class DashboardActivity extends BaseActivity {
             animLoading.setVisibility(View.VISIBLE);
             String currentUIVersion = URLs.currentUIVersion(mAppContext);
 
-            displayAdOrNot(false);
+            displayAdOrNot(true);
             try {
                 switch (v.getId()) {
                     case R.id.tabKPI:
@@ -748,11 +747,13 @@ public class DashboardActivity extends BaseActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        bvAnalyse.setBackgroundColor(Color.RED);
-                        bvAnalyse.setText(num);
-                        bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
-                        bvAnalyse.setBadgeMargin(66,0);
-                        bvAnalyse.show();
+                        if (Integer.valueOf(num) > 0){
+                            bvAnalyse.setBackgroundColor(Color.RED);
+                            bvAnalyse.setText(num);
+                            bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
+                            bvAnalyse.setBadgeMargin(66,0);
+                            bvAnalyse.show();
+                        }
                     }
                 });
             }

@@ -50,10 +50,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -191,7 +188,7 @@ public class SettingActivity extends BaseActivity {
         }
 
         try {
-            mUserID.setText(user.getString("user_name"));
+            mUserID.setText(user.getString("user_name") + "(" + user.getString("loginType") + ")");
             mRoleID.setText(user.getString("role_name"));
             mGroupID.setText(user.getString("group_name"));
             mAppName.setText(getApplicationName(SettingActivity.this));
@@ -590,10 +587,15 @@ public class SettingActivity extends BaseActivity {
                 new File(userPermissionPath).delete();
             }
 
-            SharedPreferences mSharedPreferences = mContext.getSharedPreferences("loginState",MODE_PRIVATE);
-            SharedPreferences.Editor mEditor = mSharedPreferences.edit();
-            mEditor.putBoolean("isLogin",false);
-            mEditor.commit();
+            String adPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
+            if (new File(adPath).exists()){
+                new File(adPath).delete();
+            }
+
+            String configPath = FileUtil.dirPath(SettingActivity.this, "config", "user_permission.js");
+            if (new File(configPath).exists()){
+                new File(configPath).delete();
+            }
 
             Intent intent = new Intent();
             intent.setClass(SettingActivity.this, LaunchActivity.class);
@@ -679,24 +681,24 @@ public class SettingActivity extends BaseActivity {
                             headerPath = String.format("%s/%s", FileUtil.dirPath(mAppContext, K.kHTMLDirName), K.kCachedHeaderConfigFileName);
                             new File(headerPath).delete();
 
-                            /*
-                             *用户权限表删除
-                             */
-                            String adUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
-                            String offUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
-                            String userPermissionPath = FileUtil.dirPath(SettingActivity.this, "config","user_permission.js");
-
-                            if (new File(adUserPermissionPath).exists()){
-                                new File(adUserPermissionPath).delete();
-                            }
-
-                            if (new File(offUserPermissionPath).exists()){
-                                new File(offUserPermissionPath).delete();
-                            }
-
-                            if (new File(userPermissionPath).exists()){
-                                new File(userPermissionPath).delete();
-                            }
+//                            /*
+//                             *用户权限表删除
+//                             */
+//                            String adUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
+//                            String offUserPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
+//                            String userPermissionPath = FileUtil.dirPath(SettingActivity.this, "config","user_permission.js");
+//
+//                            if (new File(adUserPermissionPath).exists()){
+//                                new File(adUserPermissionPath).delete();
+//                            }
+//
+//                            if (new File(offUserPermissionPath).exists()){
+//                                new File(offUserPermissionPath).delete();
+//                            }
+//
+//                            if (new File(userPermissionPath).exists()){
+//                                new File(userPermissionPath).delete();
+//                            }
 
                             /*
                              * Umeng Device Token 重新上传服务器
@@ -723,16 +725,6 @@ public class SettingActivity extends BaseActivity {
 //                                    new DownloadGravatar().execute(); //校正头像,必须在主线程运行
 
                                     checkAssetsUpdated(false);
-
-//                                    FileUtil.checkAssets(mAppContext, URLs.kAssets, false);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kLoding, false);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kFonts, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kImages, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kStylesheets, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kJavaScripts, true);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kBarCodeScan, false);
-//                                    FileUtil.checkAssets(mAppContext, URLs.kOfflinePages, false);
-//                                    FileUtil.checkAssets(mContext, URLs.kAdvertisement, false);
                                     if (mProgressDialog != null){
                                         mProgressDialog.dismiss();
                                     }

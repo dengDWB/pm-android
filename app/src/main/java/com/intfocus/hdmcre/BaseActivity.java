@@ -306,6 +306,7 @@ public class BaseActivity extends Activity {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), url));
+                Log.d("loadState", "开始加载网页");
             }
 
             @Override
@@ -314,6 +315,13 @@ public class BaseActivity extends Activity {
                 animLoading.setVisibility(View.GONE);
                 isWeiXinShared = true;
                 LogUtil.d("onPageFinished", String.format("%s - %s", URLs.timestamp(), url));
+                Log.d("loadState", "加载网页结束");
+            }
+
+            @Override
+            public void onLoadResource(WebView view, String url) {
+                super.onLoadResource(view, url);
+                Log.d("loadState", "加载资源");
             }
 
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
@@ -1035,8 +1043,8 @@ public class BaseActivity extends Activity {
                             if (new File(downloadPath).exists()){
                                 InputStream zipStream = new FileInputStream(downloadPath);
                                 md5String = FileUtil.MD5(zipStream);
-                            }
                             if (assetFilename.contains("offline_pages_")){
+                            }
                                 keyName = String.format("%s_md5", assetFilename.replace("offline_pages_",""));
                             }else {
                                 keyName = String.format("%s_md5", assetFilename);
