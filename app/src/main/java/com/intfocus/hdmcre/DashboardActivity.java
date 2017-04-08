@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 
 import com.intfocus.hdmcre.util.FileUtil;
+import com.intfocus.hdmcre.util.HttpUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
@@ -34,8 +35,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.intfocus.hdmcre.util.URLs.kGroupId;
+import static com.intfocus.hdmcre.util.URLs.kRoleId;
 
 public class DashboardActivity extends BaseActivity {
     private final static String kTab = "tab";
@@ -111,6 +116,7 @@ public class DashboardActivity extends BaseActivity {
         mMyApp.setCurrentActivity(this);
 
         dealSendMessage();
+        getQeuryCount();
 
 //        displayAdOrNot(true);
 		/*
@@ -198,8 +204,8 @@ public class DashboardActivity extends BaseActivity {
      */
     private void initDropMenuItem() {
         listItem = new ArrayList<>();
-        int[] imgID = {R.drawable.icon_scan, R.drawable.icon_user};
-        String[] itemName = {"扫一扫", "个人信息"};
+        int[] imgID = {R.drawable.tab_message,R.drawable.icon_scan, R.drawable.icon_user};
+        String[] itemName = {"消息", "扫一扫", "个人信息"};
         for (int i = 0; i < itemName.length; i++) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("ItemImage", imgID[i]);
@@ -451,8 +457,8 @@ public class DashboardActivity extends BaseActivity {
 
                     case R.id.tabMessage:
                         objectType = 3;
-                        urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(
-                                kGroupId), user.getString(kUserId));
+                        urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, user.getString(URLs.kGroupId), user.getString(
+                                kRoleId));
 
                         bvMessage.setVisibility(View.GONE);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 2);
@@ -608,8 +614,8 @@ public class DashboardActivity extends BaseActivity {
             urlStrings.add(tmpString);
             tmpString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
             urlStrings.add(tmpString);
-            tmpString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(
-                    kGroupId), user.getString(kUserId));
+            tmpString = String.format(K.kMessageMobilePath, K.kBaseUrl, user.getString(URLs.kGroupId), user.getString(
+                    kRoleId));
             urlStrings.add(tmpString);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -810,5 +816,68 @@ public class DashboardActivity extends BaseActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void getQeuryCount(){
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                String postUrl = "http://cre4.test.hd123.cn:8280/cre-agency-app-server/rest/1/task/query";
+                int count = 0;
+                Map<String, String> siginResponse = HttpUtil.httpPost1(postUrl, getQeuryParams("to_sign_in"));
+                if (siginResponse.get("code").equals("200")){
+                    try {
+                        JSONObject js = new JSONObject(siginResponse.get("body"));
+                        if (js.has("body") && !js.getString("body").equals(null)){
+                            String[] stringArray = js.getString("body").split("\\,");
+                            count += stringArray.length;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                Map<String, String> executeResponse = HttpUtil.httpPost1(postUrl, getQeuryParams("to_execute"));
+                if (executeResponse.get("code").equals("200")){
+                    try {
+                        JSONObject js = new JSONObject(executeResponse.get("body"));
+                        if (js.has("body") && !js.getString("body").equals(null)){
+                            String[] stringArray = js.getString("body").split("\\,");
+                            count += stringArray.length;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("count111",count+"");
+                if (count > 0){
+                    final int num = count;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            bvAnalyse.setBackgroundColor(Color.RED);
+                            bvAnalyse.setText(num);
+                            bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
+                            bvAnalyse.setBadgeMargin(66,0);
+                            bvAnalyse.show();
+                        }
+                    });
+                }
+            }
+        }, 10*1000, 60*1000);
+    }
+
+    public JSONObject getQeuryParams(String taskType){
+        JSONObject params = new JSONObject();
+        try {
+            params.put("pageSize", 10000000);
+            params.put("page", 0);
+            params.put("userId", user.getString("user_num"));
+            params.put("taskType", taskType);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return params;
     }
 }

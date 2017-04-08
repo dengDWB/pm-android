@@ -304,6 +304,68 @@ public class HttpUtil {
         return retMap;
     }
 
+    public static Map<String, String> httpPost1(String urlString, JSONObject params) {
+        LogUtil.d("POST2", urlString);
+        Map<String, String> retMap = new HashMap<>();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build();
+        Request request;
+        Response response;
+        Request.Builder requestBuilder = new Request.Builder();
+
+        if (params != null) {
+            requestBuilder.post(RequestBody.create(JSON, params.toString()));
+            LogUtil.d("PARAM", params.toString());
+        }
+        try {
+            request = requestBuilder
+                    .url(urlString)
+                    .addHeader(kAccept, kApplicationJson)
+                    .addHeader(kContentType, kApplicationJson)
+                    .addHeader(kUserAgent, HttpUtil.webViewUserAgent())
+                    .addHeader("Authorization", "Basic eW91cmFwcC1uYW1lOnlvdXJhcHAtcGFzc3dvcmQ=")
+                    .build();
+            response = client.newCall(request).execute();
+            Headers responseHeaders = response.headers();
+            for (int i = 0, headerSize = responseHeaders.size(); i < headerSize; i++) {
+                retMap.put(responseHeaders.name(i), responseHeaders.value(i));
+                LogUtil.d("HEADER", String.format("Key : %s, Value: %s", responseHeaders.name(i),
+                        responseHeaders.value(i)));
+            }
+            retMap.put(URLs.kCode, String.format("%d", response.code()));
+            retMap.put("body", response.body().string());
+
+            LogUtil.d("code", retMap.get("code"));
+            LogUtil.d("responseBody", retMap.get("body"));
+        } catch (UnknownHostException e) {
+            if(e != null && e.getMessage() != null) {
+                LogUtil.d("UnknownHostException2", e.getMessage());
+            }
+            retMap.put(URLs.kCode, "400");
+            retMap.put(URLs.kBody, "{\"info\": \"请检查网络环境！\"}");
+        } catch (Exception e) {
+            retMap.put(URLs.kCode, "400");
+            retMap.put(URLs.kBody, "{\"info\": \"请检查网络环境！\"}");
+
+            if(e != null && e.getMessage() != null) {
+                String errorMessage = e.getMessage().toLowerCase();
+                LogUtil.d("Exception2", errorMessage);
+                if (errorMessage.contains(kUnableToResolveHost) || errorMessage.contains("failed to connect to")) {
+                    retMap.put(URLs.kCode, "400");
+                    retMap.put(URLs.kBody, "{\"info\": \"请检查网络环境！\"}");
+                } else if (errorMessage.contains(kUnauthorized)) {
+                    retMap.put(URLs.kCode, "401");
+                    retMap.put(URLs.kBody, "{\"info\": \"用户名或密码错误\"}");
+                }
+            }
+        }
+        return retMap;
+    }
+
+
     /**
      * ִ执行一个HTTP POST请求，上传文件
      */
