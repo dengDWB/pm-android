@@ -503,7 +503,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 					} else {
 						String loadUrl = urlTempFile(urlString);
 						if (!loadUrl.equals("")) {
-//							String htmlPath = FileUtil.sharedPath(mContext) + "/offline_pages/" + "complaints1.html";
 							mWebView.loadUrl("file:///" + loadUrl);
 						} else {
 							/*
@@ -1071,7 +1070,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
 				newHtmlPath = String.format("%s.tmp.html", htmlPath);
 				try {
-					FileUtil.writeFile(newHtmlPath, newHtmlContent.toString());
+					FileUtil.writeFile1(newHtmlPath, newHtmlContent.toString());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

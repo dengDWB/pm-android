@@ -91,9 +91,9 @@
         <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabMessage"
             style="@style/ToolBarTab"
-            app:active_src="@drawable/tab_message_s"
-            app:src="@drawable/tab_message"
-            app:text="消息"/>
+            app:active_src="@drawable/tab_report"
+            app:src="@drawable/tab_report"
+            app:text="报表"/>
 
     </LinearLayout>
 
@@ -124,8 +124,7 @@
                 android:id="@+id/browser"
                 android:visibility="visible"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layerType="software" />
+                android:layout_height="match_parent" />
         </LinearLayout>
 
         <RelativeLayout

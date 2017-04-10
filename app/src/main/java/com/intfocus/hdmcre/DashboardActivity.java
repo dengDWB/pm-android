@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 
 import com.intfocus.hdmcre.util.FileUtil;
+import com.intfocus.hdmcre.util.HttpUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
@@ -34,8 +35,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.intfocus.hdmcre.util.URLs.kGroupId;
+import static com.intfocus.hdmcre.util.URLs.kRoleId;
 
 public class DashboardActivity extends BaseActivity {
     private final static String kTab = "tab";
@@ -105,6 +110,7 @@ public class DashboardActivity extends BaseActivity {
         mWebView.loadUrl(urlString);
 
         checkUserModifiedInitPassword();
+        getQeuryCount();
     }
 
     protected void onResume() {
@@ -198,8 +204,8 @@ public class DashboardActivity extends BaseActivity {
      */
     private void initDropMenuItem() {
         listItem = new ArrayList<>();
-        int[] imgID = {R.drawable.icon_scan, R.drawable.icon_user};
-        String[] itemName = {"扫一扫", "个人信息"};
+        int[] imgID = {R.drawable.tab_message, R.drawable.icon_scan, R.drawable.icon_user};
+        String[] itemName = {"消息","扫一扫", "个人信息"};
         for (int i = 0; i < itemName.length; i++) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("ItemImage", imgID[i]);
@@ -219,6 +225,10 @@ public class DashboardActivity extends BaseActivity {
                                 long arg3) {
             popupWindow.dismiss();
             switch (listItem.get(arg2).get("ItemText").toString()) {
+                case "消息":
+                    toast("功能待测试");
+                    break;
+
                 case "个人信息":
                     Intent settingIntent = new Intent(mContext, SettingActivity.class);
                     mContext.startActivity(settingIntent);
@@ -300,7 +310,6 @@ public class DashboardActivity extends BaseActivity {
         initSubWebView();
 //        setPullToRefreshWebView(true);
         mWebView.requestFocus();
-        mWebView.getSettings().setDomStorageEnabled(true);
         mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
         animLoading.setVisibility(View.VISIBLE);
 
@@ -445,14 +454,14 @@ public class DashboardActivity extends BaseActivity {
                         break;
                     case R.id.tabAnalyse:
                         objectType = 2;
-                        urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
+                        urlString = urlTempFile(String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html"));
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 1);
                         break;
 
                     case R.id.tabMessage:
                         objectType = 3;
-                        urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(
-                                kGroupId), user.getString(kUserId));
+                        urlString = String.format(K.kReportMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kGroupId), user.getString(
+                                kRoleId));
 
                         bvMessage.setVisibility(View.GONE);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 2);
@@ -606,10 +615,10 @@ public class DashboardActivity extends BaseActivity {
             tmpString = String.format(K.kKPIMobilePath, K.kBaseUrl, currentUIVersion, user.getString(
                     kGroupId), user.getString(URLs.kRoleId));
             urlStrings.add(tmpString);
-            tmpString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
+            tmpString = urlTempFile(String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html"));
             urlStrings.add(tmpString);
-            tmpString = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kRoleId), user.getString(
-                    kGroupId), user.getString(kUserId));
+            tmpString = String.format(K.kReportMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kGroupId), user.getString(
+                    kRoleId));
             urlStrings.add(tmpString);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -753,6 +762,8 @@ public class DashboardActivity extends BaseActivity {
                             bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
                             bvAnalyse.setBadgeMargin(66,0);
                             bvAnalyse.show();
+                        }else {
+                            bvAnalyse.setVisibility(View.GONE);
                         }
                     }
                 });
@@ -810,5 +821,100 @@ public class DashboardActivity extends BaseActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void getQeuryCount(){
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                String postUrl = "http://cre4.test.hd123.cn:8280/cre-agency-app-server/rest/1/task/query";
+                int count = 0;
+                Map<String, String> siginResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_sign_in"));
+                if (siginResponse.get("code").equals("200")){
+                    try {
+                        JSONObject js = new JSONObject(siginResponse.get("body"));
+                        if (js.has("body") && !js.getString("body").equals(null)){
+                            String[] stringArray = js.getString("body").split("\\,");
+                            count += stringArray.length;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                Map<String, String> executeResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_execute"));
+                if (executeResponse.get("code").equals("200")){
+                    try {
+                        JSONObject js = new JSONObject(executeResponse.get("body"));
+                        if (js.has("body") && !js.getString("body").equals(null)){
+                            String[] stringArray = js.getString("body").split("\\,");
+                            count += stringArray.length;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("count111",count+"");
+                if (count > 0){
+                    final int num = count;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            bvAnalyse.setBackgroundColor(Color.RED);
+                            bvAnalyse.setText(String.valueOf(num));
+                            bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
+                            bvAnalyse.setBadgeMargin(66,0);
+                            bvAnalyse.show();
+                        }
+                    });
+                }
+            }
+        }, 5*1000, 30*60*1000);
+    }
+
+    public JSONObject getQeuryParams(String taskType){
+        JSONObject params = new JSONObject();
+        try {
+            params.put("pageSize", 10000000);
+            params.put("page", 0);
+            JSONObject userJson;
+            String userConfigPath = String.format("%s/%s", FileUtil.basePath(DashboardActivity.this), K.kUserConfigFileName);
+            if ((new File(userConfigPath)).exists()) {
+                 userJson = FileUtil.readConfigFile(userConfigPath);
+            }else {
+                userJson = new JSONObject();
+            }
+            if (userJson.has("user_num")){
+                params.put("userId", userJson.getString("user_num"));
+            }else {
+                params.put("userId", "dp");
+            }
+            params.put("taskType", taskType);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return params;
+    }
+
+    public String urlTempFile(String url) {
+        String newHtmlPath = "";
+        if (url.contains("list.html")) {
+            String newLink = url.replace("file:///", "");
+            Log.d("newLink1", newLink);
+            String htmlContent = FileUtil.readFile(new File(newLink));
+            if (htmlContent.equals("")){
+                toast("离线文件未存在");
+            }else {
+                String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
+                newHtmlPath = String.format("%s.tmp.html", newLink);
+                try {
+                    FileUtil.writeFile1(newHtmlPath, newHtmlContent.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "file:///" + newHtmlPath;
     }
 }
