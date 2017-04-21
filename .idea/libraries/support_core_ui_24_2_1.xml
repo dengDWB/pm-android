@@ -1,12 +1,12 @@
 <component name="libraryTable">
   <library name="support-core-ui-24.2.1">
     <ANNOTATIONS>
-      <root url="jar://$USER_HOME$/.android/build-cache/e3c5c15033819ec99ddfa48af09b18ce0b807cc5/output/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.android/build-cache/4dde172ae4441842f0403853ec6e277fb07d5bed/output/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
-      <root url="jar://$USER_HOME$/.android/build-cache/e3c5c15033819ec99ddfa48af09b18ce0b807cc5/output/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.android/build-cache/e3c5c15033819ec99ddfa48af09b18ce0b807cc5/output/res" />
-      <root url="jar://$USER_HOME$/.android/build-cache/e3c5c15033819ec99ddfa48af09b18ce0b807cc5/output/jars/libs/internal_impl-24.2.1.jar!/" />
+      <root url="jar://$USER_HOME$/.android/build-cache/4dde172ae4441842f0403853ec6e277fb07d5bed/output/jars/libs/internal_impl-24.2.1.jar!/" />
+      <root url="jar://$USER_HOME$/.android/build-cache/4dde172ae4441842f0403853ec6e277fb07d5bed/output/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.android/build-cache/4dde172ae4441842f0403853ec6e277fb07d5bed/output/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

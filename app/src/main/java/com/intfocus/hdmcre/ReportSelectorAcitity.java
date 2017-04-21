@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.URLs;
 
@@ -147,6 +149,8 @@ public class ReportSelectorAcitity extends BaseActivity  {
         TextView mSelector = (TextView) arg1.findViewById(R.id.reportSelectorItem);
         String selectedItemPath = String.format("%s.selected_item", FileUtil.reportJavaScriptDataPath(mAppContext, String.format("%d", groupID), templateID, reportID));
         FileUtil.writeFile(selectedItemPath, mSelector.getText().toString());
+        Log.d("aaaa", selectedItemPath+":"+mSelector.getText().toString());
+
 
         dismissActivity(null);
       } catch (IOException e) {

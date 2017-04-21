@@ -63,6 +63,7 @@ public class DashboardActivity extends BaseActivity {
     private int loadCount = 0;
     boolean waitDouble = true;
     boolean isRefresh = false;
+    int totalNum;
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
@@ -204,7 +205,7 @@ public class DashboardActivity extends BaseActivity {
      */
     private void initDropMenuItem() {
         listItem = new ArrayList<>();
-        int[] imgID = {R.drawable.tab_message, R.drawable.icon_scan, R.drawable.icon_user};
+        int[] imgID = {R.drawable.message, R.drawable.icon_scan, R.drawable.icon_user};
         String[] itemName = {"消息","扫一扫", "个人信息"};
         for (int i = 0; i < itemName.length; i++) {
             HashMap<String, Object> map = new HashMap<>();
@@ -752,6 +753,7 @@ public class DashboardActivity extends BaseActivity {
         @JavascriptInterface
         public void appBadgeNum(final String type, final String num) {
             Log.i("uploadImg",type + num);
+            totalNum = Integer.valueOf(num);
             if (type.equals("total")){
                 runOnUiThread(new Runnable() {
                     @Override
@@ -828,7 +830,7 @@ public class DashboardActivity extends BaseActivity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                String postUrl = "http://cre4.test.hd123.cn:8280/cre-agency-app-server/rest/1/task/query";
+                String postUrl = "http://hdcre.shimaoco.com:8280/cre-agency-app-server/";
                 int count = 0;
                 Map<String, String> siginResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_sign_in"));
                 if (siginResponse.get("code").equals("200")){
@@ -856,16 +858,23 @@ public class DashboardActivity extends BaseActivity {
                     }
                 }
                 Log.d("count111",count+"");
+                final String num = count + "";
                 if (count > 0){
-                    final int num = count;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             bvAnalyse.setBackgroundColor(Color.RED);
-                            bvAnalyse.setText(String.valueOf(num));
+                            bvAnalyse.setText(num);
                             bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
                             bvAnalyse.setBadgeMargin(66,0);
                             bvAnalyse.show();
+                        }
+                    });
+                }else if (totalNum == 0){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            bvAnalyse.setVisibility(View.GONE);
                         }
                     });
                 }
@@ -874,8 +883,9 @@ public class DashboardActivity extends BaseActivity {
     }
 
     public JSONObject getQeuryParams(String taskType){
-        JSONObject params = new JSONObject();
+        JSONObject params = null;
         try {
+            params = new JSONObject();
             params.put("pageSize", 10000000);
             params.put("page", 0);
             JSONObject userJson;

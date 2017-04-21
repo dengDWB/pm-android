@@ -64,6 +64,73 @@ case "$1" in
         check_assets "offline_pages_javascripts"
         check_assets "offline_pages_stylesheets"
     ;;
+    shimao)
+        # 替换 build.gradle 中 applicationId的值
+        build_path="app/build.gradle"
+        sed -i '' "s/applicationId .*/applicationId \'com.hd.shimao\'/" $build_path
+
+        # 替换第三方的key
+        androidmanifest_path="app/src/main/AndroidManifest.xml"
+        payer_findline=`sed -n '/"PGYER_APPID"/=' $androidmanifest_path`
+        let line="payer_findline + 1" 
+        sed -i '' "$line s/^.*$/          android\:value=\"0577088f67fa8e39bda5afe4aaeda053\" \/\>/" $androidmanifest_path
+
+        umeng_key_findline=`sed -n '/"UMENG_APPKEY"/=' $androidmanifest_path`
+        let line="umeng_key_findline + 1" 
+        sed -i '' "$line s/^.*$/          android\:value=\"58f70c7107fe65118a0004f3\" \/\>/" $androidmanifest_path
+
+        umeng_message_findline=`sed -n '/"UMENG_MESSAGE_SECRET"/=' $androidmanifest_path`
+        let line="umeng_message_findline + 1" 
+        sed -i '' "$line s/^.*$/          android\:value=\"a06c12f5b3c1275b7ed4d32e75596f65\" \/\>/" $androidmanifest_path
+
+        # 图片与图标替换
+        icon_config="config/Assets/mipmap-shimao/"
+        icon_app="app/src/main/res"
+        cp -rp $icon_config $icon_app
+
+        # 替换APP名字
+        string_path="app/src/main/res/values/strings.xml"
+        let string_findline=`sed -n '/"app_name"/=' $string_path`
+        sed -i '' "$string_findline s/^.*$/    \<string name=\"app_name\"\>HDMCRE\<\/string\>/" $string_path
+
+        # 替换privateURLs.java中kBaseUrl中的域名
+        private_urls_path=$(find . -name PrivateURLs.java -print)
+        sed -i '' "s/BaseUrl .*/BaseUrl = \"http:\/\/180\.169\.70\.19\";/" $private_urls_path
+    ;;
+    qifu)
+
+        # 替换 build.gradle 中 applicationId的值
+        build_path="app/build.gradle"
+        sed -i '' "s/applicationId .*/applicationId \'com.intfocus.hdmcre\'/" $build_path
+
+        # 替换第三方的key
+        androidmanifest_path="app/src/main/AndroidManifest.xml"
+        payer_findline=`sed -n '/"PGYER_APPID"/=' $androidmanifest_path`
+        let line="payer_findline + 1" 
+        sed -i '' "$line s/^.*$/          android\:value=\"34fc202939786006778b8ddc810486ca\" \/\>/" $androidmanifest_path
+
+        umeng_key_findline=`sed -n '/"UMENG_APPKEY"/=' $androidmanifest_path`
+        let line="umeng_key_findline + 1" 
+        sed -i '' "$line s/^.*$/          android\:value=\"58bcf7e9c62dca1f8f001583\" \/\>/" $androidmanifest_path
+
+        umeng_message_findline=`sed -n '/"UMENG_MESSAGE_SECRET"/=' $androidmanifest_path`
+        let line="umeng_message_findline + 1" 
+        sed -i '' "$line s/^.*$/          android\:value=\"7065ec5133d7d6d7e21ed8c18743ce0b\" \/\>/" $androidmanifest_path
+
+        # 图片与图标替换
+        icon_config="config/Assets/mipmap-qifu/"
+        icon_app="app/src/main/res"
+        cp -rp $icon_config $icon_app
+
+        # 替换APP名字
+        string_path="app/src/main/res/values/strings.xml"
+        let string_findline=`sed -n '/"app_name"/=' $string_path`
+        sed -i '' "$string_findline s/^.*$/    \<string name=\"app_name\"\>HDMCRE\<\/string\>/" $string_path
+
+        # 替换privateURLs.java中kBaseUrl中的域名
+        private_urls_path=$(find . -name PrivateURLs.java -print)
+        sed -i '' 's/BaseUrl .*/BaseUrl = \"http:\/\/123\.56\.91\.131\:8090\";/' $private_urls_path
+    ;;
     *)
         test -z "$1" && echo "current app: $(cat .current-app)" || echo "unknown argument - $1"
     ;;
