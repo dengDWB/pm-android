@@ -31,8 +31,6 @@
             style="@style/BannerRightButton"
             android:layout_alignBottom="@+id/colorViewLayout"
             android:layout_marginTop="0dp"
-            android:onClick="launchDropMenuActivity"
-            android:src="@drawable/banner_setting"
             android:visibility="gone"/>
 
         <ImageView

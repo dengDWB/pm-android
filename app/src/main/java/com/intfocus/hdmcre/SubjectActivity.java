@@ -77,6 +77,8 @@ public class SubjectActivity extends BaseActivity {
 	private Intent mSourceIntent;
 	AlertDialog.Builder builder;
 	String offlineLink = "";
+	private ImageView mBannerSetting;
+	private String[] menu_items = null;
 
 	/* 请求识别码 */
 	private static final int CODE_RESULT_REQUEST = 0xa2;
@@ -234,7 +236,18 @@ public class SubjectActivity extends BaseActivity {
 
 	private void initActiongBar() {
 		bannerView = (RelativeLayout) findViewById(R.id.actionBar);
-		ImageView mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
+		mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
+		mBannerSetting.setVisibility(View.VISIBLE);
+		mBannerSetting.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (menu_items == (null)){
+					refresh();
+				}else {
+					launchDropMenuActivity();
+				}
+			}
+		});
 		mTitle = (TextView) findViewById(R.id.bannerTitle);
 
 		/*
@@ -247,7 +260,6 @@ public class SubjectActivity extends BaseActivity {
 		objectType = intent.getIntExtra(URLs.kObjectType, -1);
 		mTitle.setText(bannerName);
 
-		mBannerSetting.setVisibility(View.VISIBLE);
 		if (link.startsWith("offline:////")){
 			finish();
 		}
@@ -258,12 +270,10 @@ public class SubjectActivity extends BaseActivity {
 		}
 	}
 
-	/*
-	 * 标题栏点击设置按钮显示下拉菜单
-	 */
-	public void launchDropMenuActivity(View v) {
-		initDropMenuItem();
-		ImageView mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
+	public void launchDropMenuActivity() {
+		if (menu_items != null){
+			initDropMenuItem(menu_items);
+		}
 		popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
 
 		/*
@@ -281,32 +291,36 @@ public class SubjectActivity extends BaseActivity {
 	/*
 	 * 初始化标题栏下拉菜单
 	 */
-	private void initDropMenuItem() {
+	private void initDropMenuItem(String[] menu_items) {
 		listItem = new ArrayList<>();
-		String[] itemName = {"刷新"};
 		int[] itemImage = {R.drawable.btn_refresh};
 //					mTts.isSpeaking() ? R.drawable.btn_stop : R.drawable.btn_play};
-		for (int i = 0; i < itemName.length; i++) {
+		for (int i = 0; i < menu_items.length; i++) {
 			HashMap<String, Object> map = new HashMap<>();
-			map.put("ItemImage", itemImage[i]);
-			map.put("ItemText", itemName[i]);
+			map.put("ItemImage", "");
+			map.put("ItemText", menu_items[i]);
 			listItem.add(map);
 		}
 
 		if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
 			HashMap<String, Object> map = new HashMap<>();
-			map.put("ItemImage", R.drawable.banner_search);
+//			map.put("ItemImage", R.drawable.banner_search);
 			map.put("ItemText", "筛选");
 			listItem.add(map);
 		}
+
+		HashMap<String, Object> map = new HashMap<>();
+		map.put("ItemImage", "");
+		map.put("ItemText", "刷新");
+		listItem.add(map);
 
 		SimpleAdapter mSimpleAdapter = new SimpleAdapter(this, listItem, R.layout.menu_list_items, new String[]{"ItemImage", "ItemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
 		initDropMenu(mSimpleAdapter, mDropMenuListener);
 	}
 
 	/*
-	  * 标题栏设置按钮下拉菜单点击响应事件
-	  */
+	 * 标题栏设置按钮下拉菜单点击响应事件
+	 */
 	private final AdapterView.OnItemClickListener mDropMenuListener = new AdapterView.OnItemClickListener() {
 		public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 								long arg3) {
@@ -345,6 +359,14 @@ public class SubjectActivity extends BaseActivity {
 		if (!urlStack.empty() && isInnerLink){
 			refresh();
 		}
+
+		// mBannerSetting 设置那张图片
+		if (menu_items == null){
+			mBannerSetting.setImageResource(R.drawable.btn_refresh);
+		}else {
+			mBannerSetting.setImageResource(R.drawable.banner_setting);
+		}
+
 		super.onResume();
 	}
 
@@ -727,7 +749,6 @@ public class SubjectActivity extends BaseActivity {
 				toast("该功能正在开发中");
 				return;
 			}
-			Log.i("pageUrlString",link + "1");
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
@@ -735,7 +756,6 @@ public class SubjectActivity extends BaseActivity {
 						finish();
 					}else if (link.startsWith("offline://")){
 						String loadUrl = urlTempFile(link);
-						Log.i("pageUrlString",link + "2");
 						if (!loadUrl.equals("")) {
 							mWebView.loadUrl("file://" + loadUrl);
 						}
@@ -872,6 +892,11 @@ public class SubjectActivity extends BaseActivity {
 					bannerView.setVisibility(state.equals("show") ? View.VISIBLE : View.GONE);
 				}
 			});
+		}
+		@JavascriptInterface
+		public void addSubjectMenuItems(String[] items) {
+			menu_items = items;
+
 		}
 
 		@JavascriptInterface
