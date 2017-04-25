@@ -3,15 +3,13 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="distributionType" value="LOCAL" />
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="$PROJECT_DIR$/../gradle-3.3" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/PushSDK" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/libs/android-pdfview" />
             <option value="$PROJECT_DIR$/libs/pull-to-refresh" />
             <option value="$PROJECT_DIR$/libs/umeng-social" />
             <option value="$PROJECT_DIR$/umeng-push" />

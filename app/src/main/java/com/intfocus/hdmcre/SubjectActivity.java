@@ -17,8 +17,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,10 +44,6 @@ import com.intfocus.hdmcre.util.ImageUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
-import com.joanzapata.pdfview.PDFView;
-import com.joanzapata.pdfview.listener.OnErrorOccurredListener;
-import com.joanzapata.pdfview.listener.OnLoadCompleteListener;
-import com.joanzapata.pdfview.listener.OnPageChangeListener;
 import com.umeng.socialize.ShareAction;
 import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -69,10 +63,9 @@ import java.util.Map;
 import static android.webkit.WebView.enableSlowWholeDocumentDraw;
 import static java.lang.String.format;
 
-public class SubjectActivity extends BaseActivity implements OnPageChangeListener, OnLoadCompleteListener, OnErrorOccurredListener {
+public class SubjectActivity extends BaseActivity {
 	private Boolean isInnerLink = false, isSupportSearch;
 	private String templateID, reportID;
-	private PDFView mPDFView;
 	private File pdfFile;
 	private String bannerName, link;
 	private int groupID, objectID, objectType;
@@ -85,6 +78,8 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	private Intent mSourceIntent;
 	AlertDialog.Builder builder;
 	String offlineLink = "";
+	private ImageView mBannerSetting;
+	private String[] menu_items = null;
 
 	/* 请求识别码 */
 	private static final int CODE_RESULT_REQUEST = 0xa2;
@@ -242,7 +237,18 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 
 	private void initActiongBar() {
 		bannerView = (RelativeLayout) findViewById(R.id.actionBar);
-		ImageView mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
+		mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
+		mBannerSetting.setVisibility(View.VISIBLE);
+		mBannerSetting.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (menu_items == (null)){
+					refresh();
+				}else {
+					launchDropMenuActivity();
+				}
+			}
+		});
 		mTitle = (TextView) findViewById(R.id.bannerTitle);
 
 		/*
@@ -255,11 +261,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		objectType = intent.getIntExtra(URLs.kObjectType, -1);
 		mTitle.setText(bannerName);
 
-		if (link.toLowerCase().endsWith(".pdf")) {
-			mPDFView = (PDFView) findViewById(R.id.pdfview);
-			mPDFView.setVisibility(View.INVISIBLE);
-		}
-		mBannerSetting.setVisibility(View.VISIBLE);
 		if (link.startsWith("offline:////")){
 			finish();
 		}
@@ -270,12 +271,10 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 	}
 
-	/*
-	 * 标题栏点击设置按钮显示下拉菜单
-	 */
-	public void launchDropMenuActivity(View v) {
-		initDropMenuItem();
-		ImageView mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
+	public void launchDropMenuActivity() {
+		if (menu_items != null){
+			initDropMenuItem(menu_items);
+		}
 		popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
 
 		/*
@@ -293,34 +292,36 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 	/*
 	 * 初始化标题栏下拉菜单
 	 */
-	private void initDropMenuItem() {
+	private void initDropMenuItem(String[] menu_items) {
 		listItem = new ArrayList<>();
-		String[] itemName = {"分享", "评论", "刷新"};
-		int[] itemImage = {R.drawable.banner_share,
-				R.drawable.banner_comment,
-				R.drawable.btn_refresh};
+		int[] itemImage = {R.drawable.btn_refresh};
 //					mTts.isSpeaking() ? R.drawable.btn_stop : R.drawable.btn_play};
-		for (int i = 0; i < itemName.length; i++) {
+		for (int i = 0; i < menu_items.length; i++) {
 			HashMap<String, Object> map = new HashMap<>();
-			map.put("ItemImage", itemImage[i]);
-			map.put("ItemText", itemName[i]);
+			map.put("ItemImage", "");
+			map.put("ItemText", menu_items[i]);
 			listItem.add(map);
 		}
 
 		if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
 			HashMap<String, Object> map = new HashMap<>();
-			map.put("ItemImage", R.drawable.banner_search);
+//			map.put("ItemImage", R.drawable.banner_search);
 			map.put("ItemText", "筛选");
 			listItem.add(map);
 		}
+
+		HashMap<String, Object> map = new HashMap<>();
+		map.put("ItemImage", "");
+		map.put("ItemText", "刷新");
+		listItem.add(map);
 
 		SimpleAdapter mSimpleAdapter = new SimpleAdapter(this, listItem, R.layout.menu_list_items, new String[]{"ItemImage", "ItemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
 		initDropMenu(mSimpleAdapter, mDropMenuListener);
 	}
 
 	/*
-	  * 标题栏设置按钮下拉菜单点击响应事件
-	  */
+	 * 标题栏设置按钮下拉菜单点击响应事件
+	 */
 	private final AdapterView.OnItemClickListener mDropMenuListener = new AdapterView.OnItemClickListener() {
 		public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 								long arg3) {
@@ -356,6 +357,17 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		 * 判断是否允许浏览器复制
 		 */
 		isAllowBrowerCopy();
+		if (!urlStack.empty() && isInnerLink){
+			refresh();
+		}
+
+		// mBannerSetting 设置那张图片
+		if (menu_items == null){
+			mBannerSetting.setImageResource(R.drawable.btn_refresh);
+		}else {
+			mBannerSetting.setImageResource(R.drawable.banner_setting);
+		}
+
 		super.onResume();
 	}
 
@@ -376,50 +388,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				mTitle.setText(selectedItem);
 			}
 		});
-	}
-
-	/**
-	 * PDFView OnPageChangeListener CallBack
-	 *
-	 * @param page      the new page displayed, starting from 1
-	 * @param pageCount the total page count, starting from 1
-	 */
-	public void onPageChanged(int page, int pageCount) {
-		Log.i("onPageChanged", format("%s %d / %d", bannerName, page, pageCount));
-	}
-
-	public void loadComplete(int nbPages) {
-		Log.d("loadComplete", "load pdf done");
-	}
-
-	public void errorOccured(String errorType, String errorMessage) {
-		String htmlPath = String.format("%s/loading/%s.html", sharedPath, "500"),
-				outputPath = String.format("%s/loading/%s.html", sharedPath, "500.output");
-
-		if (!(new File(htmlPath)).exists()) {
-			toast(String.format("链接打开失败: %s", link));
-			return;
-		}
-
-		mWebView.setVisibility(View.VISIBLE);
-		mPDFView.setVisibility(View.INVISIBLE);
-
-		String htmlContent = FileUtil.readFile(htmlPath);
-		htmlContent = htmlContent.replace("$exception_type$", errorType);
-		htmlContent = htmlContent.replace("$exception_message$", errorMessage);
-		htmlContent = htmlContent.replace("$visit_url$", link);
-
-		try {
-			FileUtil.writeFile(outputPath, htmlContent);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		Message message = mHandlerWithAPI.obtainMessage();
-		message.what = 200;
-		message.obj = outputPath;
-
-		mHandlerWithAPI.sendMessage(message);
 	}
 
 	@Override
@@ -499,28 +467,23 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					if (urlString.toLowerCase().endsWith(".pdf")) {
-						new Thread(mRunnableForPDF).start();
+					String loadUrl = urlTempFile(urlString);
+					if (!loadUrl.equals("")) {
+						mWebView.loadUrl("file:///" + loadUrl);
 					} else {
-						String loadUrl = urlTempFile(urlString);
-						if (!loadUrl.equals("")) {
-//							String htmlPath = FileUtil.sharedPath(mContext) + "/offline_pages/" + "complaints1.html";
-							mWebView.loadUrl("file:///" + loadUrl);
-						} else {
-							/*
-							 * 外部链接传参: user_num, timestamp
-							 */
-							try {
-								if (user.has("csrftoken") && user.has("sessionid")) {
-									synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid=" + user.getString("sessionid"));
-								}
-							} catch (JSONException e) {
-								e.printStackTrace();
+						/*
+						 * 外部链接传参: user_num, timestamp
+						 */
+						try {
+							if (user.has("csrftoken") && user.has("sessionid")) {
+								synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid=" + user.getString("sessionid"));
 							}
-							mWebView.loadUrl(urlString);
+						} catch (JSONException e) {
+							e.printStackTrace();
 						}
-						Log.i("OutLink", urlString);
+						mWebView.loadUrl(urlString);
 					}
+					Log.i("OutLink", urlString);
 				}
 			});
 		}
@@ -567,39 +530,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		String newCookie = cookieManager.getCookie(url);
 		return TextUtils.isEmpty(newCookie) ? false : true;
 	}
-
-	private final Handler mHandlerForPDF = new Handler() {
-		public void handleMessage(Message message) {
-
-			//Log.i("PDF", pdfFile.getAbsolutePath());
-			if (pdfFile.exists()) {
-				mPDFView.fromFile(pdfFile)
-						.defaultPage(1)
-						.showMinimap(true)
-						.enableSwipe(true)
-						.swipeVertical(true)
-						.onLoad(SubjectActivity.this)
-						.onPageChange(SubjectActivity.this)
-						.load();
-				mWebView.setVisibility(View.INVISIBLE);
-				mPDFView.setVisibility(View.VISIBLE);
-			} else {
-				toast("加载PDF失败");
-			}
-		}
-	};
-
-	private final Runnable mRunnableForPDF = new Runnable() {
-		@Override
-		public void run() {
-			String outputPath = String.format("%s/%s/%s.pdf", FileUtil.basePath(mAppContext), K.kCachedDirName, URLs.MD5(urlString));
-			pdfFile = new File(outputPath);
-			ApiHelper.downloadFile(mAppContext, urlString, pdfFile);
-
-			Message message = mHandlerForPDF.obtainMessage();
-			mHandlerForPDF.sendMessage(message);
-		}
-	};
 
 	/*
 	 * 内部报表具有筛选功能时，调用筛选项界面
@@ -754,6 +684,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		new refreshTask().execute();
 	}
 
+	public void refresh() {
+		animLoading.setVisibility(View.VISIBLE);
+		new refreshTask().execute();
+	}
+
 	private class refreshTask extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected Void doInBackground(Void... params) {
@@ -790,18 +725,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}else {
-				urlString = link;
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						if (urlString.toLowerCase().endsWith(".pdf")) {
-							new Thread(mRunnableForPDF).start();
-						}
-					}
-				});
 			}
-
 			return null;
 		}
 
@@ -826,7 +750,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				toast("该功能正在开发中");
 				return;
 			}
-			Log.i("pageUrlString",link + "1");
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
@@ -834,7 +757,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 						finish();
 					}else if (link.startsWith("offline://")){
 						String loadUrl = urlTempFile(link);
-						Log.i("pageUrlString",link + "2");
 						if (!loadUrl.equals("")) {
 							mWebView.loadUrl("file://" + loadUrl);
 						}
@@ -972,6 +894,11 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				}
 			});
 		}
+		@JavascriptInterface
+		public void addSubjectMenuItems(String[] items) {
+			menu_items = items;
+
+		}
 
 		@JavascriptInterface
 		public void jsException(final String ex) {
@@ -1072,7 +999,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
 				newHtmlPath = String.format("%s.tmp.html", htmlPath);
 				try {
-					FileUtil.writeFile(newHtmlPath, newHtmlContent.toString());
+					FileUtil.writeFile1(newHtmlPath, newHtmlContent.toString());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -1080,12 +1007,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		}
 		return newHtmlPath;
 	}
-
-//	public void getCameraCapture() {
-//		Intent intentFromGallery = new Intent(Intent.ACTION_GET_CONTENT);
-//		intentFromGallery.setType("image/*");
-//		startActivityForResult(Intent.createChooser(intentFromGallery, null),CODE_RESULT_REQUEST);
-//	}
 
 	public boolean hasSdcard() {
 		String state = Environment.getExternalStorageState();
@@ -1254,12 +1175,4 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			mUploadMessage1 = null;
 		}
 	}
-
-//	@Override
-//	protected void onDestroy() {
-//		super.onDestroy();
-//		if(builder!=null){
-//			builder.
-//		}
-//	}
 }

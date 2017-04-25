@@ -42,6 +42,7 @@ public class K extends PrivateURLs implements Serializable {
   public final static String kAppMobilePath            = "%s/mobile/%s/role/%s/app";
 //  %s/mobile/%s/role/%s/analyse
   public final static String kAnalyseMobilePath        = "http://123.56.91.131:8091/list/";
+  public final static String kReportMobilePath         = "%s/mobile/%s/group/%s/role/%s/reports";
   public final static String kCommentMobilePath        = "%s/mobile/%s/id/%s/type/%s/comment";
   public final static String kResetPwdMobilePath       = "%s/mobile/%s/update_user_password";
   public final static String kThursdaySayMobilePath    = "%s/mobile/%s/thursday_say";

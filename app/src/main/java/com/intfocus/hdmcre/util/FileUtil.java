@@ -18,14 +18,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -193,15 +197,29 @@ public class FileUtil {
 
         file.createNewFile();
 
-        byte bt[] = new byte[1024];
-        bt = content.getBytes();
-        FileOutputStream in = new FileOutputStream(file);
-        in.write(bt, 0, bt.length);
-        in.close();
-//        FileOutputStream out = new FileOutputStream(file, true);
-//        out.write(content.getBytes("utf-8"));
-//        out.close();
+        FileOutputStream out = new FileOutputStream(file, true);
+        out.write(content.getBytes("utf-8"));
+        out.close();
 
+    }
+
+    public static void writeFile1(String pathName, String content) throws IOException {
+        File file = new File(pathName);
+        if (file.exists()) { file.delete(); }
+
+        file.createNewFile();
+
+        PrintWriter pw = new PrintWriter(new FileWriter(pathName));
+        BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream
+                (content.getBytes(Charset.forName("utf8"))), Charset.forName("utf8")));
+        String s = null;
+        while((s = br.readLine())!=null){//使用readLine方法，一次读一行
+            if (!s.trim().equals("")){
+                pw.println(s);
+            }
+        }
+        br.close();
+        pw.close();
     }
 
     /*
