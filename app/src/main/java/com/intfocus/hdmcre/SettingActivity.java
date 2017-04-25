@@ -366,7 +366,7 @@ public class SettingActivity extends BaseActivity {
                 File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
                     Uri photoURI = FileProvider.getUriForFile(this,
-                            "com.intfocus.hdmcre.fileprovider",
+                            "com.hd.shimao.fileprovider",
                             tempFile);
                     cropPhoto(photoURI);
                 }else {

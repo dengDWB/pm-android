@@ -720,6 +720,7 @@ public class BaseActivity extends Activity {
             @Override
             public void onUpdateAvailable(final String result) {
                 try {
+                    Log.d("aaaaa",result);
                     final AppBean appBean = getAppBeanFromString(result);
 
                     if (result == null || result.isEmpty()) {

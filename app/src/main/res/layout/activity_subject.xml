@@ -31,8 +31,6 @@
             style="@style/BannerRightButton"
             android:layout_alignBottom="@+id/colorViewLayout"
             android:layout_marginTop="0dp"
-            android:onClick="refresh"
-            android:src="@drawable/btn_refresh"
             android:visibility="gone"/>
 
         <ImageView
@@ -80,7 +78,6 @@
             android:visibility="visible"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layerType="software"
             android:layout_below="@id/actionBar" />
 
         <RelativeLayout
@@ -100,12 +97,5 @@
         </RelativeLayout>
 
     </FrameLayout>
-
-    <com.joanzapata.pdfview.PDFView
-        android:id="@+id/pdfview"
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/actionBar" />
 
 </RelativeLayout>

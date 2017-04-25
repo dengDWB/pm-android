@@ -63,6 +63,7 @@ public class DashboardActivity extends BaseActivity {
     private int loadCount = 0;
     boolean waitDouble = true;
     boolean isRefresh = false;
+    int totalNum;
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
@@ -110,6 +111,7 @@ public class DashboardActivity extends BaseActivity {
         mWebView.loadUrl(urlString);
 
         checkUserModifiedInitPassword();
+        getQeuryCount();
     }
 
     protected void onResume() {
@@ -204,8 +206,8 @@ public class DashboardActivity extends BaseActivity {
      */
     private void initDropMenuItem() {
         listItem = new ArrayList<>();
-        int[] imgID = {R.drawable.tab_message,R.drawable.icon_scan, R.drawable.icon_user};
-        String[] itemName = {"消息", "扫一扫", "个人信息"};
+        int[] imgID = {R.drawable.message, R.drawable.icon_scan, R.drawable.icon_user};
+        String[] itemName = {"消息","扫一扫", "个人信息"};
         for (int i = 0; i < itemName.length; i++) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("ItemImage", imgID[i]);
@@ -225,6 +227,10 @@ public class DashboardActivity extends BaseActivity {
                                 long arg3) {
             popupWindow.dismiss();
             switch (listItem.get(arg2).get("ItemText").toString()) {
+                case "消息":
+                    toast("功能待测试");
+                    break;
+
                 case "个人信息":
                     Intent settingIntent = new Intent(mContext, SettingActivity.class);
                     mContext.startActivity(settingIntent);
@@ -306,7 +312,6 @@ public class DashboardActivity extends BaseActivity {
         initSubWebView();
 //        setPullToRefreshWebView(true);
         mWebView.requestFocus();
-        mWebView.getSettings().setDomStorageEnabled(true);
         mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
         animLoading.setVisibility(View.VISIBLE);
 
@@ -451,13 +456,13 @@ public class DashboardActivity extends BaseActivity {
                         break;
                     case R.id.tabAnalyse:
                         objectType = 2;
-                        urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
+                        urlString = urlTempFile(String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html"));
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 1);
                         break;
 
                     case R.id.tabMessage:
                         objectType = 3;
-                        urlString = String.format(K.kMessageMobilePath, K.kBaseUrl, user.getString(URLs.kGroupId), user.getString(
+                        urlString = String.format(K.kReportMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kGroupId), user.getString(
                                 kRoleId));
 
                         bvMessage.setVisibility(View.GONE);
@@ -612,9 +617,9 @@ public class DashboardActivity extends BaseActivity {
             tmpString = String.format(K.kKPIMobilePath, K.kBaseUrl, currentUIVersion, user.getString(
                     kGroupId), user.getString(URLs.kRoleId));
             urlStrings.add(tmpString);
-            tmpString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
+            tmpString = urlTempFile(String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html"));
             urlStrings.add(tmpString);
-            tmpString = String.format(K.kMessageMobilePath, K.kBaseUrl, user.getString(URLs.kGroupId), user.getString(
+            tmpString = String.format(K.kReportMobilePath, K.kBaseUrl, currentUIVersion, user.getString(URLs.kGroupId), user.getString(
                     kRoleId));
             urlStrings.add(tmpString);
         } catch (JSONException e) {
@@ -749,6 +754,7 @@ public class DashboardActivity extends BaseActivity {
         @JavascriptInterface
         public void appBadgeNum(final String type, final String num) {
             Log.i("uploadImg",type + num);
+            totalNum = Integer.valueOf(num);
             if (type.equals("total")){
                 runOnUiThread(new Runnable() {
                     @Override
@@ -759,6 +765,8 @@ public class DashboardActivity extends BaseActivity {
                             bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
                             bvAnalyse.setBadgeMargin(66,0);
                             bvAnalyse.show();
+                        }else {
+                            bvAnalyse.setVisibility(View.GONE);
                         }
                     }
                 });
@@ -823,9 +831,9 @@ public class DashboardActivity extends BaseActivity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                String postUrl = "http://cre4.test.hd123.cn:8280/cre-agency-app-server/rest/1/task/query";
+                String postUrl = "http://hdcre.shimaoco.com:8280/cre-agency-app-server/";
                 int count = 0;
-                Map<String, String> siginResponse = HttpUtil.httpPost1(postUrl, getQeuryParams("to_sign_in"));
+                Map<String, String> siginResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_sign_in"));
                 if (siginResponse.get("code").equals("200")){
                     try {
                         JSONObject js = new JSONObject(siginResponse.get("body"));
@@ -838,7 +846,7 @@ public class DashboardActivity extends BaseActivity {
                     }
                 }
 
-                Map<String, String> executeResponse = HttpUtil.httpPost1(postUrl, getQeuryParams("to_execute"));
+                Map<String, String> executeResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_execute"));
                 if (executeResponse.get("code").equals("200")){
                     try {
                         JSONObject js = new JSONObject(executeResponse.get("body"));
@@ -851,8 +859,8 @@ public class DashboardActivity extends BaseActivity {
                     }
                 }
                 Log.d("count111",count+"");
+                final String num = count + "";
                 if (count > 0){
-                    final int num = count;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -863,21 +871,61 @@ public class DashboardActivity extends BaseActivity {
                             bvAnalyse.show();
                         }
                     });
+                }else if (totalNum == 0){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            bvAnalyse.setVisibility(View.GONE);
+                        }
+                    });
                 }
             }
-        }, 10*1000, 60*1000);
+        }, 5*1000, 30*60*1000);
     }
 
     public JSONObject getQeuryParams(String taskType){
-        JSONObject params = new JSONObject();
+        JSONObject params = null;
         try {
+            params = new JSONObject();
             params.put("pageSize", 10000000);
             params.put("page", 0);
-            params.put("userId", user.getString("user_num"));
+            JSONObject userJson;
+            String userConfigPath = String.format("%s/%s", FileUtil.basePath(DashboardActivity.this), K.kUserConfigFileName);
+            if ((new File(userConfigPath)).exists()) {
+                 userJson = FileUtil.readConfigFile(userConfigPath);
+            }else {
+                userJson = new JSONObject();
+            }
+            if (userJson.has("user_num")){
+                params.put("userId", userJson.getString("user_num"));
+            }else {
+                params.put("userId", "dp");
+            }
             params.put("taskType", taskType);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return params;
+    }
+
+    public String urlTempFile(String url) {
+        String newHtmlPath = "";
+        if (url.contains("list.html")) {
+            String newLink = url.replace("file:///", "");
+            Log.d("newLink1", newLink);
+            String htmlContent = FileUtil.readFile(new File(newLink));
+            if (htmlContent.equals("")){
+                toast("离线文件未存在");
+            }else {
+                String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
+                newHtmlPath = String.format("%s.tmp.html", newLink);
+                try {
+                    FileUtil.writeFile1(newHtmlPath, newHtmlContent.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "file:///" + newHtmlPath;
     }
 }
