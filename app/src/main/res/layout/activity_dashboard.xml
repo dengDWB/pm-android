@@ -14,7 +14,7 @@
 
         <ImageView
             android:id="@+id/bannerLogo"
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:src="@drawable/banner_logo"/>
@@ -91,7 +91,7 @@
         <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabMessage"
             style="@style/ToolBarTab"
-            app:active_src="@drawable/tab_report"
+            app:active_src="@drawable/tab_report_s"
             app:src="@drawable/tab_report"
             app:text="报表"/>
 

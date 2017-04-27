@@ -18,8 +18,8 @@ public class PrivateURLs {
   public final static String kBannerTextColor = "#ffffff";
   public final static String kInitPassword    = "123456";
 
-//  public final static String kBaseUrl      = "https://shengyiplus.com";
-  public final static String kBaseUrl     = "http://123.56.91.131:8090";
+//  public final static String kBaseUrl = "http://123.56.91.131:8090";
+  public final static String kBaseUrl = "http://123.56.91.131:8090";
 
   public final static String kPgyerAppId   = "38e630134f0ca8098aeffe13d52ad5b6";
   public final static String kPgyerUrl     = "https://www.pgyer.com/hdmcre-a";

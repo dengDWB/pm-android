@@ -143,7 +143,7 @@ public class YHApplication extends Application {
 
             @Override
             public void onFailure(String s, String s1) {
-                Toast.makeText(appContext,"无法使用消息推送功能",Toast.LENGTH_SHORT).show();
+                Toast.makeText(appContext,"无法使用消息推送功能", Toast.LENGTH_SHORT).show();
 
             }
         });
