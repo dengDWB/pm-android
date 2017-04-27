@@ -345,6 +345,10 @@ public class SubjectActivity extends BaseActivity {
 					}else if (mItemLink.startsWith("offline:///")){
 						mWebView.loadUrl((String) urlStack.get(0));
 					}
+
+					listItem = null;
+					initActiongBar();
+					mBannerSetting.setImageResource(R.drawable.btn_refresh);
 					break;
 			}
 		}
