@@ -3,7 +3,6 @@ package com.intfocus.hdmcre;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,7 +33,6 @@ import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +47,7 @@ import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.media.UMImage;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,7 +70,8 @@ public class SubjectActivity extends BaseActivity {
 	private int groupID, objectID, objectType;
 	private String userNum;
 	private RelativeLayout bannerView;
-	private ArrayList<HashMap<String, Object>> listItem;
+	private ArrayList<HashMap<String, String>> listItem;
+	private ArrayList<HashMap<String, String>> menuListItem;
 	private Context mContext;
 	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
@@ -79,7 +79,6 @@ public class SubjectActivity extends BaseActivity {
 	AlertDialog.Builder builder;
 	String offlineLink = "";
 	private ImageView mBannerSetting;
-	private String[] menu_items = null;
 
 	/* 请求识别码 */
 	private static final int CODE_RESULT_REQUEST = 0xa2;
@@ -242,7 +241,7 @@ public class SubjectActivity extends BaseActivity {
 		mBannerSetting.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (menu_items == (null)){
+				if (listItem == null){
 					refresh();
 				}else {
 					launchDropMenuActivity();
@@ -272,10 +271,10 @@ public class SubjectActivity extends BaseActivity {
 	}
 
 	public void launchDropMenuActivity() {
-		if (menu_items != null){
-			initDropMenuItem(menu_items);
+		if (listItem != null){
+			initDropMenuItem(listItem);
+			popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
 		}
-		popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
 
 		/*
 		 * 用户行为记录, 单独异常处理，不可影响用户体验
@@ -292,30 +291,28 @@ public class SubjectActivity extends BaseActivity {
 	/*
 	 * 初始化标题栏下拉菜单
 	 */
-	private void initDropMenuItem(String[] menu_items) {
-		listItem = new ArrayList<>();
-		int[] itemImage = {R.drawable.btn_refresh};
-//					mTts.isSpeaking() ? R.drawable.btn_stop : R.drawable.btn_play};
-		for (int i = 0; i < menu_items.length; i++) {
-			HashMap<String, Object> map = new HashMap<>();
-			map.put("ItemImage", "");
-			map.put("ItemText", menu_items[i]);
-			listItem.add(map);
+	private void initDropMenuItem(ArrayList<HashMap<String, String>> listItem) {
+		menuListItem = new ArrayList<>();
+
+		if (listItem != null) {
+			menuListItem.addAll(listItem);
 		}
 
 		if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
-			HashMap<String, Object> map = new HashMap<>();
-//			map.put("ItemImage", R.drawable.banner_search);
+			HashMap<String, String> map = new HashMap<>();
+			map.put("ItemContent", "");
 			map.put("ItemText", "筛选");
-			listItem.add(map);
+			menuListItem.add(map);
 		}
 
-		HashMap<String, Object> map = new HashMap<>();
-		map.put("ItemImage", "");
-		map.put("ItemText", "刷新");
-		listItem.add(map);
+		HashMap<String, String> map = new HashMap<>();
+		map.put("itemContent", "");
+		map.put("itemText", "刷新");
+		menuListItem.add(map);
 
-		SimpleAdapter mSimpleAdapter = new SimpleAdapter(this, listItem, R.layout.menu_list_items, new String[]{"ItemImage", "ItemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
+		Log.i("itemContent", menuListItem.toString());
+
+		MenuAdapter mSimpleAdapter = new MenuAdapter(this, menuListItem, R.layout.menu_list_items, new String[]{"itemContent", "itemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
 		initDropMenu(mSimpleAdapter, mDropMenuListener);
 	}
 
@@ -327,17 +324,9 @@ public class SubjectActivity extends BaseActivity {
 								long arg3) {
 			popupWindow.dismiss();
 
-			switch (listItem.get(arg2).get("ItemText").toString()) {
+			switch (menuListItem.get(arg2).get("itemText").toString()) {
 				case "筛选":
 					actionLaunchReportSelectorActivity(arg1);
-					break;
-
-				case "分享":
-					actionShare2Weixin(arg1);
-					break;
-
-				case "评论":
-					actionLaunchCommentActivity(arg1);
 					break;
 
 				case "刷新":
@@ -345,6 +334,17 @@ public class SubjectActivity extends BaseActivity {
 					break;
 
 				default:
+					String mItemLink = menuListItem.get(arg2).get("itemContent").toString();
+					if (mItemLink.startsWith("offline:////")){
+						finish();
+					}else if (mItemLink.startsWith("offline://")){
+						String loadUrl = urlTempFile(mItemLink);
+						if (!loadUrl.equals("")) {
+							mWebView.loadUrl("file://" + loadUrl);
+						}
+					}else if (mItemLink.startsWith("offline:///")){
+						mWebView.loadUrl((String) urlStack.get(0));
+					}
 					break;
 			}
 		}
@@ -361,8 +361,8 @@ public class SubjectActivity extends BaseActivity {
 			refresh();
 		}
 
-		// mBannerSetting 设置那张图片
-		if (menu_items == null){
+		// mBannerSetting 设置图片
+		if (listItem == null){
 			mBannerSetting.setImageResource(R.drawable.btn_refresh);
 		}else {
 			mBannerSetting.setImageResource(R.drawable.banner_setting);
@@ -894,10 +894,29 @@ public class SubjectActivity extends BaseActivity {
 				}
 			});
 		}
-		@JavascriptInterface
-		public void addSubjectMenuItems(String[] items) {
-			menu_items = items;
 
+		@JavascriptInterface
+		public void addSubjectMenuItems(String menu_items) {
+			try {
+				Log.i("itemContent", menu_items);
+				JSONArray itemArray = new JSONArray(menu_items);
+				listItem = new ArrayList<>();
+				for (int i = 0; i < itemArray.length(); i++) {
+					HashMap<String, String> map = new HashMap<>();
+					map.put("itemContent", itemArray.getJSONObject(i).getString("link"));
+					map.put("itemText", itemArray.getJSONObject(i).getString("title"));
+					listItem.add(map);
+				}
+
+				// mBannerSetting 设置图片
+				if (listItem == null){
+					mBannerSetting.setImageResource(R.drawable.btn_refresh);
+				}else {
+					mBannerSetting.setImageResource(R.drawable.banner_setting);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 
 		@JavascriptInterface

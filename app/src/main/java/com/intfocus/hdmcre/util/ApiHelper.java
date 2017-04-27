@@ -539,10 +539,9 @@ public class ApiHelper {
 
     public static Boolean downloadUserJs(Context context, String sharedPath, JSONObject user) {
         try {
+            final String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, user.getString("user_num"));  // 下载链接
+            final String downloadPath = FileUtil.dirPath(context, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js"); // 临时存储地址
             if (!checkUserPermisson(context, user)) {
-                final String downloadJsUrlString = String.format(K.kUserJsDownload, K.kBaseUrl, user.getString("user_num"));  // 下载链接
-                final String downloadPath = FileUtil.dirPath(context, "Cached/" + String.format("%d", new Date().getTime()), "user_permission.js"); // 临时存储地址
-
                 final Map<String, String> downloadJsResponse = HttpUtil.downloadZip(downloadJsUrlString, downloadPath, new HashMap<String, String>());
                 if (downloadJsResponse.containsKey(URLs.kCode) && downloadJsResponse.get(URLs.kCode).equals("200") && new File(downloadPath).exists()) {
                     /*
@@ -560,6 +559,16 @@ public class ApiHelper {
                     }
                 }
             }
+            else {
+                String userPermissionPath = FileUtil.dirPath(context, "config", "user_permission.js");
+                if (new File(userPermissionPath).exists()) {
+                    String pagePath = sharedPath + "/offline_pages/static/js/user_permission.js";
+                    String adPath = sharedPath + "/advertisement/assets/javascripts/user_permission.js";
+                    FileUtil.copyFile(userPermissionPath, pagePath);
+                    FileUtil.copyFile(userPermissionPath, adPath);
+                }
+            }
+
             return true;
         } catch (FileNotFoundException | JSONException e) {
             e.printStackTrace();

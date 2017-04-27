@@ -3,6 +3,7 @@ package com.intfocus.hdmcre;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -12,6 +13,8 @@ import com.readystatesoftware.viewbadger.BadgeView;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,12 +24,13 @@ import java.util.Map;
 public class MenuAdapter extends SimpleAdapter {
 	private final Context mContext;
 	private final String noticePath;
-
+	private List<? extends Map<String, ?>> listItem;
 
 	public MenuAdapter(Context context, List<? extends Map<String, ?>> data,
 					   int resource, String[] from, int[] to) {
 		super(context, data, resource, from, to);
 		this.mContext = context;
+		this.listItem = data;
 		noticePath = FileUtil.dirPath(mContext, K.kConfigDirName, K.kLocalNotificationConfigFileName);
 	}
 
@@ -34,6 +38,11 @@ public class MenuAdapter extends SimpleAdapter {
 		View v = super.getView(position, convertView, parent);
 
 		TextView itemName = (TextView) v.findViewById(R.id.text_menu_item);
+		ImageView itemImg = (ImageView) v.findViewById(R.id.img_menu_item);
+
+		if (listItem.get(position).get("itemContent") != null) {
+			itemImg.setVisibility(View.GONE);
+		}
 
 		if (itemName.getText().equals("个人信息")) {
 

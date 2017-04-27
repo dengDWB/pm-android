@@ -878,6 +878,7 @@ public class BaseActivity extends Activity {
         checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesJavascripts, false);
         checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesStylesheets, false);
         checkAssetUpdated(shouldReloadUIThread, URLs.kAdvertisement, false);
+        ApiHelper.downloadUserJs(mAppContext, sharedPath, user);
     }
 
     private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
