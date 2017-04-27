@@ -16,8 +16,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -45,10 +43,6 @@ import com.intfocus.hdmcre.util.ImageUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.LogUtil;
 import com.intfocus.hdmcre.util.URLs;
-import com.joanzapata.pdfview.PDFView;
-import com.joanzapata.pdfview.listener.OnErrorOccurredListener;
-import com.joanzapata.pdfview.listener.OnLoadCompleteListener;
-import com.joanzapata.pdfview.listener.OnPageChangeListener;
 import com.umeng.socialize.ShareAction;
 import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -68,10 +62,9 @@ import java.util.Map;
 import static android.webkit.WebView.enableSlowWholeDocumentDraw;
 import static java.lang.String.format;
 
-public class SubjectActivity extends BaseActivity implements OnPageChangeListener, OnLoadCompleteListener, OnErrorOccurredListener {
+public class SubjectActivity extends BaseActivity {
 	private Boolean isInnerLink = false, isSupportSearch;
 	private String templateID, reportID;
-	private PDFView mPDFView;
 	private File pdfFile;
 	private String bannerName, link;
 	private int groupID, objectID, objectType;
@@ -254,10 +247,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		objectType = intent.getIntExtra(URLs.kObjectType, -1);
 		mTitle.setText(bannerName);
 
-		if (link.toLowerCase().endsWith(".pdf")) {
-			mPDFView = (PDFView) findViewById(R.id.pdfview);
-			mPDFView.setVisibility(View.INVISIBLE);
-		}
 		mBannerSetting.setVisibility(View.VISIBLE);
 		if (link.startsWith("offline:////")){
 			finish();
@@ -377,50 +366,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		});
 	}
 
-	/**
-	 * PDFView OnPageChangeListener CallBack
-	 *
-	 * @param page      the new page displayed, starting from 1
-	 * @param pageCount the total page count, starting from 1
-	 */
-	public void onPageChanged(int page, int pageCount) {
-		Log.i("onPageChanged", format("%s %d / %d", bannerName, page, pageCount));
-	}
-
-	public void loadComplete(int nbPages) {
-		Log.d("loadComplete", "load pdf done");
-	}
-
-	public void errorOccured(String errorType, String errorMessage) {
-		String htmlPath = String.format("%s/loading/%s.html", sharedPath, "500"),
-				outputPath = String.format("%s/loading/%s.html", sharedPath, "500.output");
-
-		if (!(new File(htmlPath)).exists()) {
-			toast(String.format("链接打开失败: %s", link));
-			return;
-		}
-
-		mWebView.setVisibility(View.VISIBLE);
-		mPDFView.setVisibility(View.INVISIBLE);
-
-		String htmlContent = FileUtil.readFile(htmlPath);
-		htmlContent = htmlContent.replace("$exception_type$", errorType);
-		htmlContent = htmlContent.replace("$exception_message$", errorMessage);
-		htmlContent = htmlContent.replace("$visit_url$", link);
-
-		try {
-			FileUtil.writeFile(outputPath, htmlContent);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		Message message = mHandlerWithAPI.obtainMessage();
-		message.what = 200;
-		message.obj = outputPath;
-
-		mHandlerWithAPI.sendMessage(message);
-	}
-
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
@@ -498,27 +443,23 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					if (urlString.toLowerCase().endsWith(".pdf")) {
-						new Thread(mRunnableForPDF).start();
+					String loadUrl = urlTempFile(urlString);
+					if (!loadUrl.equals("")) {
+						mWebView.loadUrl("file:///" + loadUrl);
 					} else {
-						String loadUrl = urlTempFile(urlString);
-						if (!loadUrl.equals("")) {
-							mWebView.loadUrl("file:///" + loadUrl);
-						} else {
-							/*
-							 * 外部链接传参: user_num, timestamp
-							 */
-							try {
-								if (user.has("csrftoken") && user.has("sessionid")) {
-									synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid=" + user.getString("sessionid"));
-								}
-							} catch (JSONException e) {
-								e.printStackTrace();
+						/*
+						 * 外部链接传参: user_num, timestamp
+						 */
+						try {
+							if (user.has("csrftoken") && user.has("sessionid")) {
+								synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid=" + user.getString("sessionid"));
 							}
-							mWebView.loadUrl(urlString);
+						} catch (JSONException e) {
+							e.printStackTrace();
 						}
-						Log.i("OutLink", urlString);
+						mWebView.loadUrl(urlString);
 					}
+					Log.i("OutLink", urlString);
 				}
 			});
 		}
@@ -565,39 +506,6 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 		String newCookie = cookieManager.getCookie(url);
 		return TextUtils.isEmpty(newCookie) ? false : true;
 	}
-
-	private final Handler mHandlerForPDF = new Handler() {
-		public void handleMessage(Message message) {
-
-			//Log.i("PDF", pdfFile.getAbsolutePath());
-			if (pdfFile.exists()) {
-				mPDFView.fromFile(pdfFile)
-						.defaultPage(1)
-						.showMinimap(true)
-						.enableSwipe(true)
-						.swipeVertical(true)
-						.onLoad(SubjectActivity.this)
-						.onPageChange(SubjectActivity.this)
-						.load();
-				mWebView.setVisibility(View.INVISIBLE);
-				mPDFView.setVisibility(View.VISIBLE);
-			} else {
-				toast("加载PDF失败");
-			}
-		}
-	};
-
-	private final Runnable mRunnableForPDF = new Runnable() {
-		@Override
-		public void run() {
-			String outputPath = String.format("%s/%s/%s.pdf", FileUtil.basePath(mAppContext), K.kCachedDirName, URLs.MD5(urlString));
-			pdfFile = new File(outputPath);
-			ApiHelper.downloadFile(mAppContext, urlString, pdfFile);
-
-			Message message = mHandlerForPDF.obtainMessage();
-			mHandlerForPDF.sendMessage(message);
-		}
-	};
 
 	/*
 	 * 内部报表具有筛选功能时，调用筛选项界面
@@ -788,18 +696,7 @@ public class SubjectActivity extends BaseActivity implements OnPageChangeListene
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}else {
-				urlString = link;
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						if (urlString.toLowerCase().endsWith(".pdf")) {
-							new Thread(mRunnableForPDF).start();
-						}
-					}
-				});
 			}
-
 			return null;
 		}
 
