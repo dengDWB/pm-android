@@ -21,8 +21,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
@@ -65,7 +63,6 @@ import static java.lang.String.format;
 public class SubjectActivity extends BaseActivity {
 	private Boolean isInnerLink = false, isSupportSearch;
 	private String templateID, reportID;
-	private File pdfFile;
 	private String bannerName, link;
 	private int groupID, objectID, objectType;
 	private String userNum;
@@ -145,7 +142,7 @@ public class SubjectActivity extends BaseActivity {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				super.onPageStarted(view, url, favicon);
-				LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), url));
+				LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), urlString));
 				setUrlStack(url);
 			}
 
@@ -157,7 +154,7 @@ public class SubjectActivity extends BaseActivity {
 			}
 
 			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-				LogUtil.d("onReceivedError",
+				LogUtil.d("onReceivedError111",
 						String.format("errorCode: %d, description: %s, url: %s", errorCode, description,
 								failingUrl));
 			}
@@ -207,31 +204,11 @@ public class SubjectActivity extends BaseActivity {
 					flag = true;
 				}
 			}
-			if (!flag) {
+			if (!flag && !url.contains("400.html")) {
 				urlStack.push(url);
 			}
 		}
 		Log.i("urlStack1", urlStack.toString());
-//		setBannerName((String) urlStack.peek());
-	}
-
-	public void setBannerName(String url) {
-		if (url.contains("offline_pages") && url.contains("file")) {
-			StringBuilder sb = new StringBuilder(url);
-			final String newUrl = url.substring(sb.lastIndexOf("/") + 1, url.length());
-			initStaticUrl();
-			Log.i("newUrl",newUrl);
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					if (staticUrlMap.containsKey(newUrl.replace(".tmp",""))) {
-						mTitle.setText(staticUrlMap.get(newUrl.replace(".tmp","")));
-					} else {
-						mTitle.setText(newUrl);
-					}
-				}
-			});
-		}
 	}
 
 	private void initActiongBar() {
@@ -340,7 +317,7 @@ public class SubjectActivity extends BaseActivity {
 					break;
 
 				case "刷新":
-					refresh(arg1);
+					refresh();
 					break;
 
 				default:
@@ -467,26 +444,22 @@ public class SubjectActivity extends BaseActivity {
 				@Override
 				public void run() {
 					String loadUrl = urlTempFile(urlString);
-					if (!loadUrl.equals("")) {
-						mWebView.loadUrl("file:///" + loadUrl);
-					} else {
-						/*
-						 * 外部链接传参: user_num, timestamp
-						 */
-						try {
-							if (user.has("csrftoken") && user.has("sessionid")) {
-								synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid=" + user.getString("sessionid"));
-							}
-						} catch (JSONException e) {
-							e.printStackTrace();
-						}
-						mWebView.loadUrl(urlString);
-					}
+                    urlString = "file:///" + loadUrl;
+                    isLoadErrorHtml();
 					Log.i("OutLink", urlString);
 				}
 			});
 		}
 	}
+
+	public void isLoadErrorHtml(){
+        if (!isNetworkConnected(mAppContext)){
+            String urlStringForLoading = loadingPath("400");
+            mWebView.loadUrl(urlStringForLoading);
+        }else {
+            mWebView.loadUrl(urlString);
+        }
+    }
 
 	public void initStaticUrl() {
 		staticUrlMap = new HashMap<>();
@@ -518,16 +491,6 @@ public class SubjectActivity extends BaseActivity {
 		staticUrlMap.put("repair.new.html", "设备维修新建");
 		staticUrlMap.put("repair.new.without-back.html", "设备维修新建");
 		staticUrlMap.put("repair.new-from-device.execute.html", "新建设备维修");
-	}
-
-	public boolean synCookie(String url, String cookie) {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-			CookieSyncManager.createInstance(SubjectActivity.this);
-		}
-		CookieManager cookieManager = CookieManager.getInstance();
-		cookieManager.setCookie(url, cookie);
-		String newCookie = cookieManager.getCookie(url);
-		return TextUtils.isEmpty(newCookie) ? false : true;
 	}
 
 	/*
@@ -672,7 +635,8 @@ public class SubjectActivity extends BaseActivity {
 		if (urlStack.size() > 1) {
 			urlStack.pop();
 			mWebView.getSettings().setDomStorageEnabled(true);
-			mWebView.loadUrl((String) urlStack.peek());
+            urlString = (String) urlStack.peek();
+            isLoadErrorHtml();
 		} else {
 			finish();
 		}
@@ -731,10 +695,11 @@ public class SubjectActivity extends BaseActivity {
 		@Override
 		protected void onPostExecute(Void aVoid) {
 			super.onPostExecute(aVoid);
-			String url = (String) urlStack.peek();
+            String url = (String) urlStack.peek();
 			if (url.contains("offline_pages") && url.contains("file")) {
+                urlString = (String) urlStack.peek();
 				mWebView.getSettings().setDomStorageEnabled(true);
-				mWebView.loadUrl(url);
+                isLoadErrorHtml();
 			}
 		}
 	}
@@ -755,12 +720,11 @@ public class SubjectActivity extends BaseActivity {
 					if (link.startsWith("offline:////")){
 						finish();
 					}else if (link.startsWith("offline://")){
-						String loadUrl = urlTempFile(link);
-						if (!loadUrl.equals("")) {
-							mWebView.loadUrl("file://" + loadUrl);
-						}
+						urlString = "file://" + urlTempFile(link);
+                        isLoadErrorHtml();
 					}else if (link.startsWith("offline:///")){
-						mWebView.loadUrl((String) urlStack.get(0));
+                        urlString = (String) urlStack.get(0);
+						isLoadErrorHtml();
 					}
 				}
 			});
@@ -814,13 +778,11 @@ public class SubjectActivity extends BaseActivity {
 										if (redirect_url.startsWith("offline:////")){
 											finish();
 										}else if (redirect_url.startsWith("offline:///")){
-											mWebView.loadUrl((String) urlStack.get(0));
+                                            urlString = (String) urlStack.get(0);
+                                            isLoadErrorHtml();
 										}else if (redirect_url.startsWith("offline://")) {
-											String loadUrl = urlTempFile(link);
-											Log.i("pageUrlString", link + "2");
-											if (!loadUrl.equals("")) {
-												mWebView.loadUrl("file://" + loadUrl);
-											}
+											urlString = "file://" + urlTempFile(link);
+                                            isLoadErrorHtml();
 										}
 									}
 								});
@@ -832,13 +794,11 @@ public class SubjectActivity extends BaseActivity {
 				if (redirect_url.startsWith("offline:////")){
 					finish();
 				}else if (redirect_url.startsWith("offline:///")){
-					mWebView.loadUrl((String) urlStack.get(0));
+                    urlString = (String) urlStack.get(0);
+					isLoadErrorHtml();
 				}else if (redirect_url.startsWith("offline://")) {
-					String loadUrl = urlTempFile(link);
-					Log.i("pageUrlString", link + "2");
-					if (!loadUrl.equals("")) {
-						mWebView.loadUrl("file://" + loadUrl);
-					}
+					urlString = "file://" + urlTempFile(link);
+                    isLoadErrorHtml();
 				}
 			}
 
@@ -979,8 +939,7 @@ public class SubjectActivity extends BaseActivity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					animLoading.setVisibility(View.VISIBLE);
-					loadHtml();
+                    refresh();
 				}
 			});
 		}
@@ -994,6 +953,7 @@ public class SubjectActivity extends BaseActivity {
 			String htmlContent = FileUtil.readFile(new File(htmlPath));
 			if (htmlContent.equals("")){
 				toast("离线文件未存在");
+                finish();
 			}else {
 				String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
 				newHtmlPath = String.format("%s.tmp.html", htmlPath);

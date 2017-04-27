@@ -16,6 +16,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -213,7 +215,7 @@ public class BaseActivity extends Activity {
         }
     }
 
-    protected String loadingPath(String htmlName) {
+    public String loadingPath(String htmlName) {
         return String.format("file:///%s/loading/%s.html", sharedPath, htmlName);
     }
 
@@ -253,6 +255,8 @@ public class BaseActivity extends Activity {
                 LogUtil.d("onReceivedError",
                         String.format("errorCode: %d, description: %s, url: %s", errorCode, description,
                                 failingUrl));
+                String urlStringForLoading = loadingPath("400");
+                view.loadUrl(urlStringForLoading);
             }
         });
 
@@ -328,6 +332,8 @@ public class BaseActivity extends Activity {
                 LogUtil.d("onReceivedError",
                         String.format("errorCode: %d, description: %s, url: %s", errorCode, description,
                                 failingUrl));
+                String urlStringForLoading = loadingPath("400");
+                view.loadUrl(urlStringForLoading);
             }
         });
 
@@ -1096,7 +1102,17 @@ public class BaseActivity extends Activity {
          */
         @JavascriptInterface
         public void refreshBrowser() {
-            mWebView.loadUrl(urlString);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isNetworkConnected(mAppContext) && (mMyApp.getCurrentActivity().equals("SubjectActivity") || urlString.contains("list.html"))){
+                    String urlStringForLoading = loadingPath("400");
+                    mWebView.loadUrl(urlStringForLoading);
+                }else {
+                        mWebView.loadUrl(urlString);
+                    }
+                }
+            });
         }
 
         @JavascriptInterface
@@ -1165,5 +1181,21 @@ public class BaseActivity extends Activity {
         Uri uri = Uri.fromParts("package", getPackageName(), null);
         intent.setData(uri);
         startActivity(intent);
+    }
+
+    /*
+     * 判断有无网络
+     */
+    public boolean isNetworkConnected(Context context) {
+        if (context != null) {
+            // 获取手机所有连接管理对象(包括对wi-fi,net等连接的管理)
+            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            // 获取NetworkInfo对象
+            NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+            //判断NetworkInfo对象是否为空
+            if (networkInfo != null)
+                return networkInfo.isAvailable();
+        }
+        return false;
     }
 }
