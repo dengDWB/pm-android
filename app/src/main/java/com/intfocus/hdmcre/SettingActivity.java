@@ -725,7 +725,6 @@ public class SettingActivity extends BaseActivity {
 //                                    new DownloadGravatar().execute(); //校正头像,必须在主线程运行
 
                                     checkAssetsUpdated(false);
-
                                     if (mProgressDialog != null){
                                         mProgressDialog.dismiss();
                                     }

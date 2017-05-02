@@ -118,6 +118,7 @@ public class DashboardActivity extends BaseActivity {
         mMyApp.setCurrentActivity(this);
 
         dealSendMessage();
+        getQeuryCount();
 
 //        displayAdOrNot(true);
 		/*

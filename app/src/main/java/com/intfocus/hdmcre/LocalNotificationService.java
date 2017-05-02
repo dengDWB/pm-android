@@ -26,6 +26,8 @@ import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.intfocus.hdmcre.util.URLs.kRoleId;
+
 /**
  * Created by lijunjie on 16/8/25.
  */
@@ -71,7 +73,7 @@ public class LocalNotificationService extends Service {
       kpiUrl = String.format(K.kKPIMobilePath, K.kBaseUrl, currentUIVersion, userJSON.getString(URLs.kGroupId), userJSON.getString(URLs.kRoleId));
       analyseUrl = String.format(K.kAnalyseMobilePath, K.kBaseUrl, currentUIVersion, userJSON.getString(URLs.kRoleId));
       appUrl = String.format(K.kAppMobilePath, K.kBaseUrl, currentUIVersion, userJSON.getString(URLs.kRoleId));
-      messageUrl = String.format(K.kMessageMobilePath, K.kBaseUrl, currentUIVersion, userJSON.getString(URLs.kRoleId), userJSON.getString(URLs.kGroupId), userJSON.getString("user_id"));
+      messageUrl = String.format(K.kMessageMobilePath, K.kBaseUrl, userJSON.getString(URLs.kGroupId), userJSON.getString(kRoleId));
       thursdaySayUrl = String.format(K.kThursdaySayMobilePath, K.kBaseUrl, currentUIVersion);
     } catch (JSONException e) {
       e.printStackTrace();
