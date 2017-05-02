@@ -21,8 +21,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
@@ -65,13 +63,12 @@ import static java.lang.String.format;
 public class SubjectActivity extends BaseActivity {
 	private Boolean isInnerLink = false, isSupportSearch;
 	private String templateID, reportID;
-	private File pdfFile;
 	private String bannerName, link;
 	private int groupID, objectID, objectType;
 	private String userNum;
 	private RelativeLayout bannerView;
 	private ArrayList<HashMap<String, String>> listItem;
-	private ArrayList<HashMap<String, String>> menuListItem;
+	private ArrayList<HashMap<String, String>> menuListItem =  new ArrayList<>();
 	private Context mContext;
 	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
@@ -145,7 +142,7 @@ public class SubjectActivity extends BaseActivity {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				super.onPageStarted(view, url, favicon);
-				LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), url));
+				LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), urlString));
 				setUrlStack(url);
 			}
 
@@ -157,7 +154,7 @@ public class SubjectActivity extends BaseActivity {
 			}
 
 			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-				LogUtil.d("onReceivedError",
+				LogUtil.d("onReceivedError111",
 						String.format("errorCode: %d, description: %s, url: %s", errorCode, description,
 								failingUrl));
 			}
@@ -207,31 +204,11 @@ public class SubjectActivity extends BaseActivity {
 					flag = true;
 				}
 			}
-			if (!flag) {
+			if (!flag && !url.contains("400.html")) {
 				urlStack.push(url);
 			}
 		}
 		Log.i("urlStack1", urlStack.toString());
-//		setBannerName((String) urlStack.peek());
-	}
-
-	public void setBannerName(String url) {
-		if (url.contains("offline_pages") && url.contains("file")) {
-			StringBuilder sb = new StringBuilder(url);
-			final String newUrl = url.substring(sb.lastIndexOf("/") + 1, url.length());
-			initStaticUrl();
-			Log.i("newUrl",newUrl);
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					if (staticUrlMap.containsKey(newUrl.replace(".tmp",""))) {
-						mTitle.setText(staticUrlMap.get(newUrl.replace(".tmp","")));
-					} else {
-						mTitle.setText(newUrl);
-					}
-				}
-			});
-		}
 	}
 
 	private void initActiongBar() {
@@ -241,7 +218,7 @@ public class SubjectActivity extends BaseActivity {
 		mBannerSetting.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (listItem == null){
+				if (menuListItem.size() <= 1){
 					refresh();
 				}else {
 					launchDropMenuActivity();
@@ -268,13 +245,34 @@ public class SubjectActivity extends BaseActivity {
 		} else {
 			isInnerLink = !(link.startsWith("http://") || link.startsWith("https://"));
 		}
+		if (isInnerLink) {
+            // format: /mobile/v1/group/:group_id/template/:template_id/report/:report_id
+            // deprecated
+            // format: /mobile/report/:report_id/group/:group_id
+            templateID = TextUtils.split(link, "/")[6];
+            reportID = TextUtils.split(link, "/")[8];
+            String urlPath = format(link.replace("%@", "%d"), groupID);
+            urlString = String.format("%s%s", K.kBaseUrl, urlPath);
+            WebSettings webSettings = mWebView.getSettings();
+            webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+            //  判断是否加入筛选菜单项
+            if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
+                HashMap<String, String> map = new HashMap<>();
+                map.put("itemContent", "");
+                map.put("itemText", "筛选");
+                menuListItem.add(map);
+            }
+        }
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("itemContent", "");
+        map.put("itemText", "刷新");
+        menuListItem.add(map);
 	}
 
 	public void launchDropMenuActivity() {
-		if (listItem != null){
-			initDropMenuItem(listItem);
-			popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
-		}
+        initDropMenuItem();
+        popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
 
 		/*
 		 * 用户行为记录, 单独异常处理，不可影响用户体验
@@ -291,27 +289,7 @@ public class SubjectActivity extends BaseActivity {
 	/*
 	 * 初始化标题栏下拉菜单
 	 */
-	private void initDropMenuItem(ArrayList<HashMap<String, String>> listItem) {
-		menuListItem = new ArrayList<>();
-
-		if (listItem != null) {
-			menuListItem.addAll(listItem);
-		}
-
-		if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
-			HashMap<String, String> map = new HashMap<>();
-			map.put("ItemContent", "");
-			map.put("ItemText", "筛选");
-			menuListItem.add(map);
-		}
-
-		HashMap<String, String> map = new HashMap<>();
-		map.put("itemContent", "");
-		map.put("itemText", "刷新");
-		menuListItem.add(map);
-
-		Log.i("itemContent", menuListItem.toString());
-
+	private void initDropMenuItem() {
 		MenuAdapter mSimpleAdapter = new MenuAdapter(this, menuListItem, R.layout.menu_list_items, new String[]{"itemContent", "itemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
 		initDropMenu(mSimpleAdapter, mDropMenuListener);
 	}
@@ -330,7 +308,7 @@ public class SubjectActivity extends BaseActivity {
 					break;
 
 				case "刷新":
-					refresh(arg1);
+					refresh();
 					break;
 
 				default:
@@ -345,6 +323,10 @@ public class SubjectActivity extends BaseActivity {
 					}else if (mItemLink.startsWith("offline:///")){
 						mWebView.loadUrl((String) urlStack.get(0));
 					}
+
+					listItem = null;
+					initActiongBar();
+					mBannerSetting.setImageResource(R.drawable.btn_refresh);
 					break;
 			}
 		}
@@ -360,9 +342,9 @@ public class SubjectActivity extends BaseActivity {
 		if (!urlStack.empty() && isInnerLink){
 			refresh();
 		}
-
+        Log.i("itemContent", menuListItem.toString());
 		// mBannerSetting 设置图片
-		if (listItem == null){
+		if (menuListItem.size() <= 1){
 			mBannerSetting.setImageResource(R.drawable.btn_refresh);
 		}else {
 			mBannerSetting.setImageResource(R.drawable.banner_setting);
@@ -428,15 +410,6 @@ public class SubjectActivity extends BaseActivity {
 	private void loadHtml() {
 		WebSettings webSettings = mWebView.getSettings();
 		if (isInnerLink) {
-			// format: /mobile/v1/group/:group_id/template/:template_id/report/:report_id
-			// deprecated
-			// format: /mobile/report/:report_id/group/:group_id
-			templateID = TextUtils.split(link, "/")[6];
-			reportID = TextUtils.split(link, "/")[8];
-			String urlPath = format(link.replace("%@", "%d"), groupID);
-			urlString = String.format("%s%s", K.kBaseUrl, urlPath);
-			webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-
 			/**
 			 * 内部报表具有筛选功能时
 			 *   - 如果用户已选择，则 banner 显示该选项名称
@@ -468,26 +441,22 @@ public class SubjectActivity extends BaseActivity {
 				@Override
 				public void run() {
 					String loadUrl = urlTempFile(urlString);
-					if (!loadUrl.equals("")) {
-						mWebView.loadUrl("file:///" + loadUrl);
-					} else {
-						/*
-						 * 外部链接传参: user_num, timestamp
-						 */
-						try {
-							if (user.has("csrftoken") && user.has("sessionid")) {
-								synCookie(urlString, "csrftoken=" + user.getString("csrftoken") + "; sessionid=" + user.getString("sessionid"));
-							}
-						} catch (JSONException e) {
-							e.printStackTrace();
-						}
-						mWebView.loadUrl(urlString);
-					}
+                    urlString = "file:///" + loadUrl;
+                    isLoadErrorHtml();
 					Log.i("OutLink", urlString);
 				}
 			});
 		}
 	}
+
+	public void isLoadErrorHtml(){
+        if (!isNetworkConnected(mAppContext)){
+            String urlStringForLoading = loadingPath("400");
+            mWebView.loadUrl(urlStringForLoading);
+        }else {
+            mWebView.loadUrl(urlString);
+        }
+    }
 
 	public void initStaticUrl() {
 		staticUrlMap = new HashMap<>();
@@ -519,16 +488,6 @@ public class SubjectActivity extends BaseActivity {
 		staticUrlMap.put("repair.new.html", "设备维修新建");
 		staticUrlMap.put("repair.new.without-back.html", "设备维修新建");
 		staticUrlMap.put("repair.new-from-device.execute.html", "新建设备维修");
-	}
-
-	public boolean synCookie(String url, String cookie) {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-			CookieSyncManager.createInstance(SubjectActivity.this);
-		}
-		CookieManager cookieManager = CookieManager.getInstance();
-		cookieManager.setCookie(url, cookie);
-		String newCookie = cookieManager.getCookie(url);
-		return TextUtils.isEmpty(newCookie) ? false : true;
 	}
 
 	/*
@@ -673,7 +632,8 @@ public class SubjectActivity extends BaseActivity {
 		if (urlStack.size() > 1) {
 			urlStack.pop();
 			mWebView.getSettings().setDomStorageEnabled(true);
-			mWebView.loadUrl((String) urlStack.peek());
+            urlString = (String) urlStack.peek();
+            isLoadErrorHtml();
 		} else {
 			finish();
 		}
@@ -732,10 +692,12 @@ public class SubjectActivity extends BaseActivity {
 		@Override
 		protected void onPostExecute(Void aVoid) {
 			super.onPostExecute(aVoid);
-			String url = (String) urlStack.peek();
+            String url = (String) urlStack.peek();
+			Log.i("refreshURL", url);
 			if (url.contains("offline_pages") && url.contains("file")) {
+                urlString = (String) urlStack.peek();
 				mWebView.getSettings().setDomStorageEnabled(true);
-				mWebView.loadUrl(url);
+                isLoadErrorHtml();
 			}
 		}
 	}
@@ -756,12 +718,11 @@ public class SubjectActivity extends BaseActivity {
 					if (link.startsWith("offline:////")){
 						finish();
 					}else if (link.startsWith("offline://")){
-						String loadUrl = urlTempFile(link);
-						if (!loadUrl.equals("")) {
-							mWebView.loadUrl("file://" + loadUrl);
-						}
+						urlString = "file://" + urlTempFile(link);
+                        isLoadErrorHtml();
 					}else if (link.startsWith("offline:///")){
-						mWebView.loadUrl((String) urlStack.get(0));
+                        urlString = (String) urlStack.get(0);
+						isLoadErrorHtml();
 					}
 				}
 			});
@@ -815,13 +776,11 @@ public class SubjectActivity extends BaseActivity {
 										if (redirect_url.startsWith("offline:////")){
 											finish();
 										}else if (redirect_url.startsWith("offline:///")){
-											mWebView.loadUrl((String) urlStack.get(0));
+                                            urlString = (String) urlStack.get(0);
+                                            isLoadErrorHtml();
 										}else if (redirect_url.startsWith("offline://")) {
-											String loadUrl = urlTempFile(link);
-											Log.i("pageUrlString", link + "2");
-											if (!loadUrl.equals("")) {
-												mWebView.loadUrl("file://" + loadUrl);
-											}
+											urlString = "file://" + urlTempFile(link);
+                                            isLoadErrorHtml();
 										}
 									}
 								});
@@ -833,13 +792,11 @@ public class SubjectActivity extends BaseActivity {
 				if (redirect_url.startsWith("offline:////")){
 					finish();
 				}else if (redirect_url.startsWith("offline:///")){
-					mWebView.loadUrl((String) urlStack.get(0));
+                    urlString = (String) urlStack.get(0);
+					isLoadErrorHtml();
 				}else if (redirect_url.startsWith("offline://")) {
-					String loadUrl = urlTempFile(link);
-					Log.i("pageUrlString", link + "2");
-					if (!loadUrl.equals("")) {
-						mWebView.loadUrl("file://" + loadUrl);
-					}
+					urlString = "file://" + urlTempFile(link);
+                    isLoadErrorHtml();
 				}
 			}
 
@@ -896,7 +853,7 @@ public class SubjectActivity extends BaseActivity {
 		}
 
 		@JavascriptInterface
-		public void addSubjectMenuItems(String menu_items) {
+		public void addSubjectMenuItems(final String menu_items) {
 			try {
 				Log.i("itemContent", menu_items);
 				JSONArray itemArray = new JSONArray(menu_items);
@@ -907,13 +864,20 @@ public class SubjectActivity extends BaseActivity {
 					map.put("itemText", itemArray.getJSONObject(i).getString("title"));
 					listItem.add(map);
 				}
-
-				// mBannerSetting 设置图片
-				if (listItem == null){
-					mBannerSetting.setImageResource(R.drawable.btn_refresh);
-				}else {
-					mBannerSetting.setImageResource(R.drawable.banner_setting);
-				}
+                if (listItem != null){
+                    menuListItem.addAll(listItem);
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // mBannerSetting 设置图片
+                        if (menuListItem.size() <= 1){
+                            mBannerSetting.setImageResource(R.drawable.btn_refresh);
+                        }else {
+                            mBannerSetting.setImageResource(R.drawable.banner_setting);
+                        }
+                    }
+                });
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -943,7 +907,8 @@ public class SubjectActivity extends BaseActivity {
 		}
 
 		@JavascriptInterface
-		public void reportSearchItems(final String arrayString) {
+		public void searchItems(final String arrayString) {
+			Log.i("isSearch", "is Search");
 			try {
 				String searchItemsPath = String.format("%s.search_items", FileUtil.reportJavaScriptDataPath(SubjectActivity.this, String.format("%d", groupID), templateID, reportID));
 				FileUtil.writeFile(searchItemsPath, arrayString);
@@ -952,19 +917,27 @@ public class SubjectActivity extends BaseActivity {
 				 *  判断筛选的条件: arrayString 数组不为空
 				 *  报表第一次加载时，此处为判断筛选功能的关键点
 				 */
-				isSupportSearch = FileUtil.reportIsSupportSearch(SubjectActivity.this, String.format("%d", groupID), templateID, reportID);
+					isSupportSearch = FileUtil.reportIsSupportSearch(SubjectActivity.this, String.format("%d", groupID), templateID, reportID);
 				if (isSupportSearch) {
-					displayBannerTitleAndSearchIcon();
+						displayBannerTitleAndSearchIcon();
 				}
+				mBannerSetting.setImageResource(R.drawable.banner_setting);
+
+				mBannerSetting.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						launchDropMenuActivity();
+					}
+				});
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
-		@JavascriptInterface
-		public String reportSelectedItem() {
-			String item = null;
-			String selectedItemPath = String.format("%s.selected_item", FileUtil.reportJavaScriptDataPath(SubjectActivity.this, String.format("%d", groupID), templateID, reportID));
+            @JavascriptInterface
+            public String reportSelectedItem() {
+                String item = null;
+                String selectedItemPath = String.format("%s.selected_item", FileUtil.reportJavaScriptDataPath(SubjectActivity.this, String.format("%d", groupID), templateID, reportID));
 			if (new File(selectedItemPath).exists()) {
 				item = FileUtil.readFile(selectedItemPath);
 			}
@@ -999,8 +972,7 @@ public class SubjectActivity extends BaseActivity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					animLoading.setVisibility(View.VISIBLE);
-					loadHtml();
+                    refresh();
 				}
 			});
 		}
@@ -1014,6 +986,7 @@ public class SubjectActivity extends BaseActivity {
 			String htmlContent = FileUtil.readFile(new File(htmlPath));
 			if (htmlContent.equals("")){
 				toast("离线文件未存在");
+                finish();
 			}else {
 				String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
 				newHtmlPath = String.format("%s.tmp.html", htmlPath);

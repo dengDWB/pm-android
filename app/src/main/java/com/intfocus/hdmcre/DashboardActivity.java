@@ -107,14 +107,14 @@ public class DashboardActivity extends BaseActivity {
         if (urlStrings.get(2).equals(urlString)) {
             setWebViewLongListener(false);
         }
-
-        mWebView.loadUrl(urlString);
+        isLoadErrorHtml();
 
         checkUserModifiedInitPassword();
         getQeuryCount();
     }
 
     protected void onResume() {
+        super.onResume();
         mMyApp.setCurrentActivity(this);
 
         dealSendMessage();
@@ -126,11 +126,14 @@ public class DashboardActivity extends BaseActivity {
 		 */
         isAllowBrowerCopy();
         if (urlString.contains("list.html")){
+            if (!isNetworkConnected(mAppContext)){
+                String urlStringForLoading = loadingPath("400");
+                mWebView.loadUrl(urlStringForLoading);
+                return;
+            }
             mWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
             mWebView.loadUrl(urlString);
         }
-
-        super.onResume();
     }
 
     @Override
@@ -478,8 +481,7 @@ public class DashboardActivity extends BaseActivity {
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 0);
                         break;
                 }
-
-                mWebView.loadUrl(urlString);
+                isLoadErrorHtml();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -497,6 +499,15 @@ public class DashboardActivity extends BaseActivity {
             }
         }
     };
+
+    public void isLoadErrorHtml(){
+        if (!isNetworkConnected(mAppContext) && urlString.contains("list.html")){
+            String urlStringForLoading = loadingPath("400");
+            mWebView.loadUrl(urlStringForLoading);
+        }else {
+            mWebView.loadUrl(urlString);
+        }
+    }
 
     /*
      * 读取用户习惯记录,即用户上次退出时所在 Tab 页面
@@ -836,10 +847,13 @@ public class DashboardActivity extends BaseActivity {
                 Map<String, String> siginResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_sign_in"));
                 if (siginResponse.get("code").equals("200")){
                     try {
-                        JSONObject js = new JSONObject(siginResponse.get("body"));
-                        if (js.has("body") && !js.getString("body").equals(null)){
-                            String[] stringArray = js.getString("body").split("\\,");
-                            count += stringArray.length;
+                        if (siginResponse.containsKey("body")){
+                            String siginResponseBody = siginResponse.get("body");
+                            JSONObject js = new JSONObject(siginResponseBody);
+                            if (js.has("body") && !js.getString("body").equals(null)){
+                                String[] stringArray = js.getString("body").split("\\,");
+                                count += stringArray.length;
+                            }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -849,16 +863,18 @@ public class DashboardActivity extends BaseActivity {
                 Map<String, String> executeResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_execute"));
                 if (executeResponse.get("code").equals("200")){
                     try {
-                        JSONObject js = new JSONObject(executeResponse.get("body"));
-                        if (js.has("body") && !js.getString("body").equals(null)){
-                            String[] stringArray = js.getString("body").split("\\,");
-                            count += stringArray.length;
+                        if (executeResponse.containsKey("body")){
+                            String exexecuteResponseBody = executeResponse.get("body");
+                            JSONObject js = new JSONObject(exexecuteResponseBody);
+                            if (js.has("body") && !js.getString("body").equals(null)){
+                                String[] stringArray = js.getString("body").split("\\,");
+                                count += stringArray.length;
+                            }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
-                Log.d("count111",count+"");
                 final String num = count + "";
                 if (count > 0){
                     runOnUiThread(new Runnable() {
@@ -871,13 +887,15 @@ public class DashboardActivity extends BaseActivity {
                             bvAnalyse.show();
                         }
                     });
-                }else if (totalNum == 0){
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            bvAnalyse.setVisibility(View.GONE);
-                        }
-                    });
+                }else {
+                    if (totalNum == 0){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                bvAnalyse.setVisibility(View.GONE);
+                            }
+                        });
+                    }
                 }
             }
         }, 5*1000, 30*60*1000);

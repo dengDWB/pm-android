@@ -186,7 +186,7 @@ public class YHApplication extends Application {
                         return;
                     }
 
-                    intent = new Intent (appContext,LoginActivity.class);
+                    intent = new Intent (appContext,DashboardActivity.class);
                 }
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
