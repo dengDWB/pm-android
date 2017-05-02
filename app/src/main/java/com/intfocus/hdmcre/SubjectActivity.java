@@ -68,7 +68,7 @@ public class SubjectActivity extends BaseActivity {
 	private String userNum;
 	private RelativeLayout bannerView;
 	private ArrayList<HashMap<String, String>> listItem;
-	private ArrayList<HashMap<String, String>> menuListItem;
+	private ArrayList<HashMap<String, String>> menuListItem =  new ArrayList<>();
 	private Context mContext;
 	private Map<String, String> staticUrlMap;
 	private TextView mTitle;
@@ -218,7 +218,7 @@ public class SubjectActivity extends BaseActivity {
 		mBannerSetting.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (listItem == null){
+				if (menuListItem.size() <= 1){
 					refresh();
 				}else {
 					launchDropMenuActivity();
@@ -245,14 +245,34 @@ public class SubjectActivity extends BaseActivity {
 		} else {
 			isInnerLink = !(link.startsWith("http://") || link.startsWith("https://"));
 		}
+		if (isInnerLink) {
+            // format: /mobile/v1/group/:group_id/template/:template_id/report/:report_id
+            // deprecated
+            // format: /mobile/report/:report_id/group/:group_id
+            templateID = TextUtils.split(link, "/")[6];
+            reportID = TextUtils.split(link, "/")[8];
+            String urlPath = format(link.replace("%@", "%d"), groupID);
+            urlString = String.format("%s%s", K.kBaseUrl, urlPath);
+            WebSettings webSettings = mWebView.getSettings();
+            webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+            //  判断是否加入筛选菜单项
+            if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
+                HashMap<String, String> map = new HashMap<>();
+                map.put("itemContent", "");
+                map.put("itemText", "筛选");
+                menuListItem.add(map);
+            }
+        }
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("itemContent", "");
+        map.put("itemText", "刷新");
+        menuListItem.add(map);
 	}
 
 	public void launchDropMenuActivity() {
-
-//		if (listItem != null){
-			initDropMenuItem(listItem);
-			popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
-//		}
+        initDropMenuItem();
+        popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
 
 		/*
 		 * 用户行为记录, 单独异常处理，不可影响用户体验
@@ -269,28 +289,7 @@ public class SubjectActivity extends BaseActivity {
 	/*
 	 * 初始化标题栏下拉菜单
 	 */
-	private void initDropMenuItem(ArrayList<HashMap<String, String>> listItem) {
-		menuListItem = new ArrayList<>();
-
-//		if (listItem != null) {
-//			menuListItem.addAll(listItem);
-//		}
-
-		if (FileUtil.reportIsSupportSearch(mAppContext, String.format("%d", groupID), templateID, reportID)) {
-            toast("true");
-			HashMap<String, String> map = new HashMap<>();
-            map.put("ItemContent", "");
-            map.put("ItemText", "筛选");
-            menuListItem.add(map);
-		}
-
-		HashMap<String, String> map = new HashMap<>();
-		map.put("itemContent", "");
-		map.put("itemText", "刷新");
-		menuListItem.add(map);
-
-		Log.i("itemContent", menuListItem.toString());
-
+	private void initDropMenuItem() {
 		MenuAdapter mSimpleAdapter = new MenuAdapter(this, menuListItem, R.layout.menu_list_items, new String[]{"itemContent", "itemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
 		initDropMenu(mSimpleAdapter, mDropMenuListener);
 	}
@@ -339,9 +338,9 @@ public class SubjectActivity extends BaseActivity {
 		if (!urlStack.empty() && isInnerLink){
 			refresh();
 		}
-
+        Log.i("itemContent", menuListItem.toString());
 		// mBannerSetting 设置图片
-		if (listItem == null){
+		if (menuListItem.size() <= 1){
 			mBannerSetting.setImageResource(R.drawable.btn_refresh);
 		}else {
 			mBannerSetting.setImageResource(R.drawable.banner_setting);
@@ -407,15 +406,6 @@ public class SubjectActivity extends BaseActivity {
 	private void loadHtml() {
 		WebSettings webSettings = mWebView.getSettings();
 		if (isInnerLink) {
-			// format: /mobile/v1/group/:group_id/template/:template_id/report/:report_id
-			// deprecated
-			// format: /mobile/report/:report_id/group/:group_id
-			templateID = TextUtils.split(link, "/")[6];
-			reportID = TextUtils.split(link, "/")[8];
-			String urlPath = format(link.replace("%@", "%d"), groupID);
-			urlString = String.format("%s%s", K.kBaseUrl, urlPath);
-			webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-
 			/**
 			 * 内部报表具有筛选功能时
 			 *   - 如果用户已选择，则 banner 显示该选项名称
@@ -859,12 +849,6 @@ public class SubjectActivity extends BaseActivity {
 
 		@JavascriptInterface
 		public void addSubjectMenuItems(final String menu_items) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    toast(menu_items);
-                }
-            });
 			try {
 				Log.i("itemContent", menu_items);
 				JSONArray itemArray = new JSONArray(menu_items);
@@ -875,13 +859,20 @@ public class SubjectActivity extends BaseActivity {
 					map.put("itemText", itemArray.getJSONObject(i).getString("title"));
 					listItem.add(map);
 				}
-
-				// mBannerSetting 设置图片
-				if (listItem == null){
-					mBannerSetting.setImageResource(R.drawable.btn_refresh);
-				}else {
-					mBannerSetting.setImageResource(R.drawable.banner_setting);
-				}
+                if (listItem != null){
+                    menuListItem.addAll(listItem);
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // mBannerSetting 设置图片
+                        if (menuListItem.size() <= 1){
+                            mBannerSetting.setImageResource(R.drawable.btn_refresh);
+                        }else {
+                            mBannerSetting.setImageResource(R.drawable.banner_setting);
+                        }
+                    }
+                });
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
