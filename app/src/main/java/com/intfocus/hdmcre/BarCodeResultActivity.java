@@ -106,6 +106,8 @@ public class BarCodeResultActivity extends BaseActivity {
 
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 LogUtil.d("onReceivedError", String.format("errorCode: %d, description: %s, url: %s", errorCode, description, failingUrl));
+                String urlStringForLoading = loadingPath("400");
+                view.loadUrl(urlStringForLoading);
             }
         });
         setWebViewLongListener(true);
