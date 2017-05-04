@@ -15,24 +15,31 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
 import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.K;
 import com.intfocus.hdmcre.util.URLs;
 import com.pgyersdk.update.PgyUpdateManager;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -42,8 +49,10 @@ public class LoginActivity extends BaseActivity {
     private EditText usernameEditText, passwordEditText;
     private String usernameString, passwordString, loginTypeString;
     private Context mContext;
+    private ListView listView;
     private SharedPreferences mSharedPreferences;
     private SharedPreferences.Editor mEditor;
+    private ArrayList<HashMap<String, Object>> menuListItem;
     private final static int CODE_AUTHORITY_REQUEST = 0;
     private static final String[] permissionsArray = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -74,6 +83,7 @@ public class LoginActivity extends BaseActivity {
         usernameEditText = (EditText) findViewById(R.id.etUsername);
         passwordEditText = (EditText) findViewById(R.id.etPassword);
         TextView versionTv = (TextView) findViewById(R.id.versionTv);
+        setEditTextListener();
 
         try {
             if (user.has(URLs.kUserNum)) {
@@ -110,6 +120,47 @@ public class LoginActivity extends BaseActivity {
          */
         checkVersionUpgrade(assetsPath);
         getAuthority();
+    }
+    public void setEditTextListener(){
+        usernameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                menuListItem = new ArrayList<>();
+                try {
+                    JSONArray array = getUserNameList();
+                    for (int i = 0; i < array.length(); i++){
+                        if (array.getString(i).startsWith(usernameEditText.getText().toString()) && !(array.getString(i).equals(usernameEditText.getText().toString()))){
+                            HashMap<String, Object> map = new HashMap<>();
+                            map.put("title", array.getString(i));
+                            menuListItem.add(map);
+                        }
+                    }
+                    listView = (ListView) findViewById(R.id.listView);
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            usernameEditText.setText(menuListItem.get(position).get("title").toString());
+                        }
+                    });
+                    SimpleAdapter adapter = new SimpleAdapter(LoginActivity.this, menuListItem, R.layout.list_prompt,
+                            new String[]{"title"},
+                            new int[]{R.id.titleItem});
+                    listView.setAdapter(adapter);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     protected void onResume() {
@@ -276,6 +327,8 @@ public class LoginActivity extends BaseActivity {
                             mEditor.putBoolean("isLogin", true);
                             mEditor.commit();
 
+                            saveLoginUserName(usernameString);
+
                             // 跳转至主界面
                             Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -305,5 +358,49 @@ public class LoginActivity extends BaseActivity {
             if (mProgressDialog != null) mProgressDialog.dismiss();
             toast(e.getLocalizedMessage());
         }
+    }
+
+    public void saveLoginUserName(String userName){
+        boolean isAdd = true;
+        mSharedPreferences = getSharedPreferences("loginUserNameList", MODE_PRIVATE);
+        String userNameList = mSharedPreferences.getString("userNameList", "");
+        mEditor = mSharedPreferences.edit();
+        try {
+            JSONArray array;
+            if (userNameList.equals("")){
+                array = new JSONArray();
+            }else {
+                array = new JSONArray(userNameList);
+            }
+            for (int i = 0; i < array.length(); i++){
+                if (array.getString(i).equals(userName)){
+                    isAdd = false;
+                }
+            }
+            if (isAdd) {
+                array.put(userName);
+            }
+            mEditor.putString("userNameList", array.toString());
+            mEditor.commit();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public JSONArray getUserNameList(){
+        JSONArray array = null;
+        try {
+            mSharedPreferences = getSharedPreferences("loginUserNameList", MODE_PRIVATE);
+            String userNameList = mSharedPreferences.getString("userNameList", "");
+            if (userNameList.equals("")){
+                array = new JSONArray();
+            }else {
+                array = new JSONArray(userNameList);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            array = new JSONArray();
+        }
+        return array;
     }
 }
