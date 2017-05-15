@@ -6,7 +6,7 @@ android {
     compileSdkVersion 24
     buildToolsVersion '25.0.0'
     defaultConfig {
-        applicationId 'com.intfocus.hdmcre'
+        applicationId 'com.intfocus.shimaotest'
         minSdkVersion 15
         targetSdkVersion 23
     }
