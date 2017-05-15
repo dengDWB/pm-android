@@ -232,6 +232,7 @@ public class DashboardActivity extends BaseActivity {
             popupWindow.dismiss();
             switch (listItem.get(arg2).get("ItemText").toString()) {
                 case "消息":
+                    //跳转到显示消息的界面
                     Intent intent = new Intent(DashboardActivity.this, ShowPushMessageActivity.class);
                     startActivity(intent);
                     break;

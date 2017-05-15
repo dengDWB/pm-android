@@ -1,0 +1,1247 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>设备巡检计划工单</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="telephone=no" name="format-detection" />
+  <meta name="browsermode" content="application">
+  <meta name="renderer" content="webkit">
+
+  <link rel="stylesheet" type="text/css" href="static/css/main.css?TIMESTAMP" />
+  <link rel="stylesheet" type="text/css" href="static/vn/style.css?TIMESTAMP" />
+  <link rel="stylesheet" type="text/css" href="static/css/global.css?TIMESTAMP" />
+  <link rel="stylesheet" type="text/css" href="static/css/base.css?TIMESTAMP" />
+
+  <style type="text/css">
+label#page-title {
+    height: .85rem;
+    background: rgba(0, 147, 245, 0.93);
+    color: #fff;
+    text-align: center;
+    line-height: .85rem;
+    font-size: 0.3rem;
+    z-index: 2;
+}
+</style>
+
+  <style type="text/css">
+    textarea
+    {
+      margin: 10px auto;
+      width: 90%;
+      border: solid 1px #c5c5c5;
+      display: block;
+    }
+    input.has-error
+    {
+      border-bottom: 1px solid #ff2d2d !important;
+    }
+    error-info
+    {
+      color: #ff2d2d !important;
+    }
+    span.error-info
+    {
+      font-size: 0.016rem;
+      display: none;
+    }
+  </style>
+
+</head>
+<body class="">
+
+  <section class="g-head">
+
+    <a class="vn06 " id="back-btn" ></a>
+
+    <label id="page-title">设备巡检计划工单</label>
+
+  </section>
+
+  <section class="g-xjlist paig">
+    <div class="g-xjlist-zt4 fn">
+      <div class="title jm_2">单&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：</div>
+      <div class="text jm_3" id="billNumber"></div>
+    </div>
+    <div class="g-xjlist-zt4 fn">
+      <div class="title jm_2">巡检主题：</div>
+      <div class="text jm_3" id="inspectTopic"></div>
+    </div>
+    <div class="g-xjlist-zt4 fn">
+      <div class="title jm_2">巡检设备：</div>
+      <div class="text jm_3" id="devices"></div>
+    </div>
+    <div class="g-xjlist-zt4 fn">
+      <div class="title jm_2">巡检时间：</div>
+      <div class="text jm_3" id="beginTime"></div>
+    </div>
+    <div class="g-xjlist-zt4 fn">
+      <div class="title jm_2">完成时间：</div>
+      <div class="text jm_3">
+        <input type="datetime-local" value="" id="endTime"/>
+      </div>
+      <span class="vn31 rjt"></span>
+    </div>
+
+    <div class="g-xjlist-zt4 fn">
+      <div class="title jm_2">巡&nbsp;&nbsp;检&nbsp;&nbsp;人：</div>
+      <div class="text jm_3" id="inspector"><span id='_userid_'></span></div>
+    </div>
+  </section>
+
+  <h2 class="g-titleH2">检查项</h2>
+
+  <section class="g-xjlist" id="inspect-items"></section>
+
+  <h2 class="g-titleH2">
+    <div class="km_1">备注信息</div>
+    <div class="km_2">*</div>
+  </h2>
+
+  <section class="g-xjcontent">
+    <textarea id="remark" maxlength="100" rows="9" class="m_text"></textarea>
+  </section>
+  <section class="g-tijiao" id="submit"></section>
+
+  <script type="text/javascript" src="static/js/jquery-3.1.1.min.js?TIMESTAMP" charset="utf-8"></script>
+  <script type="text/javascript" src="static/js/jquery.cookie.js?TIMESTAMP" charset="utf-8"></script>
+  <script type="text/javascript" src="static/js/mobile_bridge.js?TIMESTAMP"></script>
+  <script type="text/javascript" src="static/js/user_permission.js?TIMESTAMP"></script>
+  <script type="text/javascript" src="static/js/crfs.js?TIMESTAMP" charset="utf-8"></script>
+  <script type="text/javascript" src="static/js/global.js?TIMESTAMP" charset="utf-8"></script>
+  <script type="text/javascript" src="static/js/app.js?TIMESTAMP" charset="utf-8"></script>
+  <script type="text/javascript"></script>
+
+  <script type="text/javascript" src="static/js/hdapi.js?TIMESTAMP"></script>
+  <script type="text/javascript" src="static/js/crfs.js?TIMESTAMP"></script>
+  <script type="text/javascript">
+  var resultHandler = undefined;
+  var goBackHandler = undefined;
+  var mymessagesHandler = undefined;
+  var load_more_handler = undefined;
+    var user_process_permissions_handler=undefined;
+(function ($) {
+    $.each(['show', 'hide'], function (i, ev) {
+      var el = $.fn[ev];
+      $.fn[ev] = function () {
+        this.trigger(ev);
+        return el.apply(this, arguments);
+      };
+    });
+  })(jQuery);
+    var dH = 0,wH = 0;
+
+  $('#back-btn').click(function(e){
+    e.preventDefault();
+    goBack()
+  });
+  function goBack()
+  {
+    if(typeof goBackHandler === 'function')
+    {
+      goBackHandler();
+    }
+    else
+      window.history.back();
+  }
+  function scanResult(message)
+  {
+    if(typeof resultHandler === 'function')
+    {
+      resultHandler(message);
+    }
+  }
+  function get_value(val)
+  {
+    if(val)
+      return val.toString();
+    if($.isNumeric(val))
+      return val.toString();
+    return '';
+  }
+  function get_clean_category_name(category) {
+    var names={
+      clean:"清洁",
+      garbageRemoval:"垃圾清理",
+      materialSupplement:"物资补充",
+      other:"其它",
+    }
+    if(category!=undefined)
+    {
+      return names[category.cleanClass]+get_value(category.fineClass);
+    }
+    return "";
+  }
+  function get_source_type_name(code) {
+    var names={
+      tenant:"商户",
+      department:"部门"
+    }
+    return names[code];
+  }
+  function intval(val)
+  {
+    return val - 0;
+  }
+  function get_area_type_name(code) {
+    var names={
+      publicArea:"公区",
+      rentArea:"租区"
+    }
+    return names[code];
+  }
+  function get_task_type_name(code) {
+    var names={
+      wrokRecordCard:"工作记录卡",
+      cleanWorkRecord:"保洁工单"
+    }
+    return names[code];
+  }
+
+  function get_emergency_type_name(code) {
+    var names={
+      dangerous:"危险",
+      urgent:"紧急",
+      general:"一般",
+      reservation:"预约",
+      postComplement:"后补工咭",
+    }
+    return names[code];
+  }
+  function get_bill_type_name(code)
+  {
+    var names={
+      "oper.maintainBill":"维修单",
+      "oper.complaintBill":"投诉单",
+      "property.device.inspect":"设备巡视单",
+      "wrokRecordCard":"工作记录卡",
+      "cleanWorkRecord":"保洁工单",
+      "investment.tenant.contract_newer":"新合同申请",
+      "sales.salesInput":"销售数据录入单",
+    }
+    return names[code];
+  }
+  function get_biz_type_name(code) {
+    var names={
+      ineffect:"未生效",
+      effect:"已生效（待办）",
+      canceled:"已取消",
+      delivered:"已转交",
+      solved:"已解决",
+      finished:"已完成",
+      started:"已发起",
+    }
+    return names[code];
+  }
+  function get_now_full(withoutseconds)
+  {
+    var now = new Date();
+    var month =now.getMonth() -0 +1;
+    var day =now.getDate() -0 ;
+    var hours =now.getHours() -0 ;
+    var minutes =now.getMinutes() -0 ;
+    var seconds =now.getSeconds() -0 ;
+    if(month< 10)
+      month = "0"+month;
+    if(day< 10)
+      day = "0"+day;
+    if(hours< 10)
+      hours = "0"+hours;
+    if(minutes< 10)
+      minutes = "0"+minutes;
+    if(seconds< 10)
+      seconds = "0"+seconds;
+    if(withoutseconds)
+      return now.getFullYear()+"-"+month+"-"+day+' '+hours+":"+minutes;
+    return now.getFullYear()+"-"+month+"-"+day+' '+hours+":"+minutes+":"+seconds;
+  }
+  function format_hd_time(datetime, addsecond) {
+    if(addsecond)
+      return datetime.replace('T',' ').replace(/\-/g,'.')+':00';
+    return datetime.replace('T',' ').replace(/\-/g,'.');
+  }
+  function start_with(str, needle)
+  {
+    if(str.length < needle.length)
+      return false;
+    return str.substr(0, needle.length) == needle;
+  }
+
+    function get_day_format()
+    {
+        var date = new Date();
+        var dayNames=[
+        "星期日",
+        "星期一",
+        "星期二",
+        "星期三",
+        "星期四",
+        "星期五",
+        "星期六",
+        ];
+        var y = date.getFullYear(),
+            m = date.getMonth()+1,
+            d = date.getDate(),
+            w = date.getDay();
+        if(m < 10)
+            m = "0"+m;
+        if(d < 10)
+            d = "0"+d;
+        return {
+            date: y+"-"+m+"-"+d,
+            day:dayNames[w]
+        };
+    }
+    function get_date_format(date)
+    {
+        var mdate = new Date(date);
+
+        var y = mdate.getFullYear(),
+            m = mdate.getMonth()+1,
+            d = mdate.getDate(),
+            w = mdate.getDay();
+        if(m < 10)
+            m = "0"+m;
+        if(d < 10)
+            d = "0"+d;
+        return y+"-"+m+"-"+d;
+    }
+
+    function save_storage(key, value)
+    {
+      window.localStorage[key]=JSON.stringify(value);
+    }
+
+    function get_storage(key)
+    {
+      var value = window.localStorage[key];
+      try
+      {
+        return JSON.parse(value);
+      }
+    catch(err)
+    {
+      value = undefined;
+    }
+    }
+
+    function remove_storage(key)
+    {
+      window.localStorage.removeItem(key);
+    }
+
+  function update_height()
+  {
+    dH = $(document).height();
+  }
+  function convertDataURLToBlob(dataURL)
+  {
+      var arr = dataURL.split(',');
+      var code = window.atob(arr[1]);
+      var aBuffer = new window.ArrayBuffer(code.length);
+      var uBuffer = new window.Uint8Array(aBuffer);
+      for(var i = 0; i < code.length; i++)
+      {
+          uBuffer[i] = code.charCodeAt(i);
+      }
+      var Builder = window.WebKitBlobBuilder || window.MozBlobBuilder;
+      if(Builder)
+      {
+          var builder = new Builder;
+          builder.append(aBuffer);
+          return builder.getBlob(format);
+      }
+      else
+      {
+          // return new window.Blob([ uBuffer ]);
+          return new window.Blob([ aBuffer ], {type: arr[0].match(/:(.*?);/)[1]});
+      }
+  }
+  function changeBlobImageQuality(blob, callback, format, quality)
+  {
+      format = format || 'image/jpeg';
+      quality = quality || 0.6; // 经测试0.9最合适
+      var fr = new FileReader();
+      fr.onload = function(e)
+      {
+          var dataURL = e.target.result;
+          var img = new Image();
+          img.onload = function()
+          {
+              var canvas = document.createElement('canvas');
+              var ctx = canvas.getContext('2d');
+          var oldWidth = img.width;
+          var oldHeight = img.height;
+          var newWidth = img.width;//window.screen.width;
+          var newHeight = Math.floor(oldHeight / oldWidth * newWidth);
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+              // ctx.drawImage(img, 0, 0);
+              var newDataURL = canvas.toDataURL(format, quality);
+              if(callback) callback(convertDataURLToBlob(newDataURL), img);
+              canvas = null;
+          };
+          img.src = dataURL;
+      };
+      fr.readAsDataURL(blob); // blob 转 dataURL
+      function dataURLtoBlob(dataurl)
+      {
+          var arr = dataurl.split(','),
+              mime = arr[0].match(/:(.*?);/)[1],
+              bstr = atob(arr[1]),
+              len = bstr.length,
+              u8arr = new Uint8Array(len);
+          while (len--) u8arr[len] = bstr.charCodeAt(len);
+          return new Blob([u8arr], {type: mime});
+      }
+  }
+  function get_attachment_url(itemid)
+  {
+      return $.HDAPI.server + '/HDMediaService-web/fileget?fileID='+itemid;
+  }
+  function downscaleImage(dataUrl, newWidth, imageType, imageArguments) {
+      "use strict";
+      var image, oldWidth, oldHeight, newHeight, canvas, ctx, newDataUrl;
+
+      // Provide default values
+      imageType = imageType || "image/jpeg";
+      imageArguments = imageArguments || 0.7;
+
+      // Create a temporary image so that we can compute the height of the downscaled image.
+      image = new Image();
+      image.src = dataUrl;
+      oldWidth = image.width;
+      oldHeight = image.height;
+      newHeight = Math.floor(oldHeight / oldWidth * newWidth)
+
+      // Create a temporary canvas to draw the downscaled image on.
+      canvas = document.createElement("canvas");
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      var ctx = canvas.getContext("2d");
+
+      // Draw the downscaled image on the canvas and return the new data URL.
+      ctx.drawImage(image, 0, 0, newWidth, newHeight);
+      newDataUrl = canvas.toDataURL(imageType, imageArguments);
+      return newDataUrl;
+  }
+  function formatDate(date) {
+    var d = new Date(date);
+        var seconds = d.getSeconds();
+        var minutes = d.getMinutes();
+      var day = d.getDate();
+        var month = d.getMonth();
+      var hours = d.getHours();
+      var year = d.getFullYear();
+      if(seconds < 10)
+          seconds = '0'+seconds;
+        if(minutes < 10)
+          minutes = '0'+minutes;
+        if(day < 10)
+          day = '0'+day;
+        if(hours < 10)
+          hours = '0'+hours;
+      month = month - 0 + 1;
+      if(month < 10)
+          month = '0'+ month;
+      return year+'-'+month+'-'+day+' '+hours+':'+minutes+':'+seconds;
+  }
+    function formatNumber(num)
+    {
+      if(num===undefined)
+        return "";
+      if(num==="")
+        return "";
+      if(num==null)
+        return "";
+      return +(Math.round(num + "e+2")  + "e-2");
+    }
+    function checkMobile(sMobile){
+       /**
+        * 手机号码:
+        * 13[0-9], 14[5,7], 15[0, 1, 2, 3, 5, 6, 7, 8, 9], 17[6, 7, 8], 18[0-9], 170[0-9]
+        * 移动号段: 134,135,136,137,138,139,150,151,152,157,158,159,182,183,184,187,188,147,178,1705
+        * 联通号段: 130,131,132,155,156,185,186,145,176,1709
+        * 电信号段: 133,153,180,181,189,177,1700
+        */
+       if((/^1(3[0-9]|4[57]|5[0-35-9]|8[0-9]|70)\d{8}$/.test(sMobile)))
+         return true;
+       /**
+        * 中国移动：China Mobile
+        * 134,135,136,137,138,139,150,151,152,157,158,159,182,183,184,187,188,147,178,1705
+        */
+       if((/(^1(3[4-9]|4[7]|5[0-27-9]|7[8]|8[2-478])\d{8}$)|(^1705\d{7}$)/.test(sMobile)))
+         return true;
+       /**
+        * 中国联通：China Unicom
+        * 130,131,132,155,156,185,186,145,176,1709
+        */
+       if((/(^1(3[0-2]|4[5]|5[56]|7[6]|8[56])\d{8}$)|(^1709\d{7}$)/.test(sMobile)))
+         return true;
+       /**
+        * 中国电信：China Telecom
+        * 133,153,180,181,189,177,1700
+        */
+       if((/(^1(33|53|77|8[019])\d{8}$)|(^1700\d{7}$)/.test(sMobile)))
+         return true;
+       return false;
+     }
+    function compress_upload_image(file, callback)
+    {
+        if (file) {
+            changeBlobImageQuality(file, function(newBlob, image){
+              var data = new FormData();
+              if (newBlob) {
+                var uploadFile = new File( [newBlob], file.name, {type: newBlob.type});
+                  data.append('file', newBlob, file.name);
+                  $.ajax({
+                    url: $.HDAPI.server + '/cre-agency-app-server/rest/1/media/upload/',
+                    data: data,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    dataType: "JSON",
+                    type: 'POST',
+                  }).done(function(result){
+                    if(result.success)
+                    {
+                      var img = {
+                  id: result.body,
+                  name: file.name,
+                  size: file.size,
+                  fileType: file.type,
+                  md5: null
+                };
+                      if( (callback) && (typeof callback === 'function') )
+                        callback(img, image);
+                    }
+                    else
+                    {
+                      if( (callback) && (typeof callback === 'function') )
+                        callback(false, image);
+                    }
+                  });
+              }
+          });
+      }
+  }
+$(function(){
+  $('.timepicker').click(function(e){
+    $(this).find('input[type="date"], input[type="datetime-local"]').focus();
+  });
+    $('.actionbtn').click(function(e){
+        var next = $(this).attr('href');
+        if(next !=undefined && next !='' && next.indexOf('javascript:void(0)') < 0) {
+          goto_url("//");
+          // window.location=next;
+        }
+    });
+
+  $('#leftbutton').click(function(e){
+    e.preventDefault();
+  });
+
+  var _no_more = '<li style="line-height: 4rem; text-align: center; font-size: 1rem; color: #717171;">没有更多啦</li>';
+
+    $(document).ready(function(){
+        dH = $(document).height();
+        wH = $(window).height();
+    });
+    $(window).scroll(function(){
+        var offset_top = $(this).scrollTop();
+        if( dH-offset_top-wH<20){
+      if(typeof load_more_handler === 'function')
+            load_more_handler();
+        }
+    });
+    var process_permissions=[];
+    $.HDAPI.query_user_process_permissions({
+      userId: userinfo.code,
+      prefixs:[
+        // 'investment.tenant.contract_newer',
+        // 'sales.salesinput',
+        // 'oper.maintainBill',
+        // 'oper.complaintBill',
+        // 'property.device.inspect.register',
+        // 'property.device.repair',
+        // 'property.operInspect.inspect',
+        '',
+      ]
+      }, function(result){
+      if(result.success)
+      {
+    if(typeof user_process_permissions_handler === 'function')
+    {
+      process_permissions=result.body;
+      user_process_permissions_handler(result.body);
+    }
+      }
+    });
+
+    $.HDAPI.getUserMessages( userinfo.code, function(result){
+      if(result.success)
+      {
+    if(typeof mymessagesHandler === 'function')
+    {
+      mymessagesHandler(result.body);
+    }
+      }
+      else
+      {
+    if(typeof mymessagesHandler === 'function')
+          showMessage(result.message);
+      }
+    });
+    if($("footer a").length==3) {
+    $("footer a").css("width","33.333%")
+  }else if($("footer a").length==2) {
+    $("footer a").css("width","50%")
+  }
+});
+</script>
+
+  <script type="text/javascript">
+
+$(function(){
+    m_loading.html();//loading 启动
+  resultHandler = function(message){
+  };
+   function validate_field(field, val)
+  {
+    if( (field.nullable==false) && ( (val == '') || (val == null) ||(val == undefined) ))
+    {
+      if(field.fieldType == "integer")
+      {
+        if(/\./.test(val))
+        {
+          return "请输入正确的数据，该数据必须为整数类型。"
+        }
+      }
+      return "请输入正确的数据，该数据项不允许为空。";
+    }
+    else
+    {
+      if(field.fieldType == "number")
+      {
+        if($.isNumeric(val))
+        {
+          if( !( ( $.isNumeric(field.minValue) && (intval(val) >= intval(field.minValue))) && ( $.isNumeric(field.maxValue) && (intval(val) <= intval(field.maxValue))) ) )
+          {
+              return "";
+          }
+        }
+        else
+        {
+          if(val != '')
+          {
+            return "请输入正确的数据，该数据必须为数值类型。";
+          }
+        }
+      }
+      else if(field.fieldType == "integer")
+      {
+          if(/\./.test(val))
+          {
+            return "请输入正确的数据，该数据必须为整数类型。";
+          }
+          if(!$.isNumeric(val))
+            if(val != '')
+              return "请输入正确的数据，该数据必须为整数类型。";
+          if( !( ( $.isNumeric(field.minValue) && (intval(val) >= intval(field.minValue))) && ( $.isNumeric(field.maxValue) && (intval(val) <= intval(field.maxValue))) ) )
+          {
+              return "";
+          }
+      }
+    }
+    return "";
+  }
+  function check_exception()
+  {
+    var exceptions = $('span.on[data-exception="true"]').length;
+    if(exceptions > 0)
+    {
+      $('#submit').html('提交并报修');
+      $('#submit').attr('data-exception', true);
+      return;
+    }
+    var exceptions = $('input[data-exception="true"]').length;
+    if(exceptions > 0)
+    {
+      $('#submit').html('提交并报修');
+      $('#submit').attr('data-exception', true);
+      return;
+    }
+    $('#submit').html('提交');
+    $('#submit').removeAttr('data-exception');
+  }
+  function create_inspect_input_item(field, value)
+  {
+    var item = $('<div class="auto_w fn inspect-item"></div>');
+    $(item).append("<div class='title auto_w1'>"+"<div class='auto_w5'>"+field.name+"</div>"+"<div class='km_2'>"+"*</div>"+"：</div>");
+    var input = $('<input type="text jm_11"   value="'+get_value(value)+'" maxlength="64"/>');
+    $(input).attr('data-null', field.nullable);
+    if(field.nullable==false)
+    {
+      $(input).attr('required', "required");
+    }
+    else
+      $(item).find('.km_2').remove();
+    if(get_value(value)=='')
+      $(input).val(get_value(field.defaultValue));
+    else
+       $(input).val(get_value(value));
+    if(field.fieldType=="string")
+    {
+      $(input).val(get_value(field.defaultValue));
+      $(input).attr('placeholder', field.defaultValue);
+      $(input).attr('title', field.defaultValue);
+      $(input).attr('data-default', field.defaultValue);
+      $(input).attr('data-min', field.minValue);
+      $(input).attr('data-max', field.maxValue);
+    }
+    else if(field.fieldType=="number")
+    {
+      $(input).attr('type', "text");
+      $(input).attr('min', get_value(field.minValue));
+      $(input).attr('max', get_value(field.maxValue));
+      $(input).attr('pattern', "[\-]?[\.0-9]");
+
+      if($.isNumeric(field.minValue) && $.isNumeric(field.maxValue))
+        $(input).attr('placeholder', get_value(field.minValue)+ ' - '+get_value(field.maxValue));
+      else if($.isNumeric(field.minValue) )
+      {
+        $(input).attr('placeholder', '> ' + get_value(field.minValue));
+        $(input).attr('title', '> ' + get_value(field.minValue));
+      }
+      else
+      {
+        $(input).attr('placeholder', '< '+get_value(field.maxValue));
+        $(input).attr('title', '< '+get_value(field.maxValue));
+      }
+    }
+    else if(field.fieldType=="integer")
+    {
+      $(input).attr('type', "text");
+      $(input).attr('pattern', "[\-]?[0-9]");
+      $(input).attr('min', get_value(field.minValue));
+      $(input).attr('max', get_value(field.maxValue));
+      $(input).attr('value', get_value(field.defaultValue));
+      if($.isNumeric(field.minValue) && $.isNumeric(field.maxValue))
+      {
+        $(input).attr('placeholder', get_value(field.minValue)+ ' - '+get_value(field.maxValue));
+        $(input).attr('title', get_value(field.minValue)+ ' - '+get_value(field.maxValue));
+      }
+      else if($.isNumeric(field.minValue) )
+      {
+        $(input).attr('title', '> ' + get_value(field.minValue));
+        $(input).attr('placeholder', '> ' + get_value(field.minValue));
+      }
+      else
+      {
+        $(input).attr('placeholder', '< '+get_value(field.maxValue));
+        $(input).attr('title', '< '+get_value(field.maxValue));
+      }
+    }
+    $(item).append('<div class="text auto_w2"></div>');
+    $(item).children().last().append(input);;
+    $(input).change(function(e){
+      $(input).removeAttr('data-exception');
+      $(input).removeClass('has-error');
+      $(item).removeClass('has-error');
+      $(input).parent().children('span.error-info').remove();
+      var val = $.trim($(this).val());
+      if( (field.nullable==false) && ( (val == '') || (val == null) ||(val == undefined) ))
+      {
+        if(field.fieldType == "integer")
+          if(/\./.test(val))
+          {
+            $(input).parent().append('<span class="error-info">请输入正确的数据，该数据必须为整数类型。</span>')
+            $(item).addClass('has-error');
+            $(input).focus();
+            check_exception();
+            return;
+          }
+        $(input).focus();
+        $(item).addClass('has-error');
+        $(input).parent().append('<span class="error-info">请输入正确的数据，该数据项不允许为空。</span>')
+        check_exception();
+        return;
+      }
+      if(field.fieldType == "number")
+      {
+        if($.isNumeric(val))
+        {
+          if( !( ( $.isNumeric(field.minValue) && (intval(val) >= intval(field.minValue))) && ( $.isNumeric(field.maxValue) && (intval(val) <= intval(field.maxValue))) ) )
+          {
+            var message ='';
+            if($.isNumeric(field.minValue) && $.isNumeric(field.maxValue))
+              message = "请输入正确的数据，该数据允许范围为: "+get_value(field.minValue) + ' - ' + get_value(field.maxValue);
+            else if($.isNumeric(field.minValue) )
+              message = "请输入正确的数据，该数据允许范围为: > "+get_value(field.minValue);
+            else
+              message = "请输入正确的数据，该数据允许范围为: < "+get_value(field.maxValue);
+            $(input).focus();
+            $(item).addClass('has-error');
+            $(input).parent().append('<span class="error-info">'+message+'</span>')
+            $(input).attr('data-exception',true);
+            check_exception();
+            return;
+          }
+        }
+        else
+        {
+          if(val != '')
+          {
+            $(input).parent().append('<span class="error-info">请输入正确的数据，该数据必须为数值类型。</span>')
+            $(item).addClass('has-error');
+            $(input).focus();
+            check_exception();
+            return;
+          }
+        }
+      }
+      else if(field.fieldType == "integer")
+      {
+          if(/\./.test(val))
+          {
+            $(input).parent().append('<span class="error-info">请输入正确的数据，该数据必须为整类型。</span>')
+            $(item).addClass('has-error');
+            $(input).focus();
+            check_exception();
+            return;
+          }
+          if( !( ( $.isNumeric(field.minValue) && (intval(val) >= intval(field.minValue))) && ( $.isNumeric(field.maxValue) && (intval(val) <= intval(field.maxValue))) ) )
+          {
+            var message ='';
+            if($.isNumeric(field.minValue) && $.isNumeric(field.maxValue))
+              message = "请输入正确的数据，该数据允许范围为: "+get_value(field.minValue) + ' - ' + get_value(field.maxValue);
+            else if($.isNumeric(field.minValue) )
+              message = "请输入正确的数据，该数据允许范围为: > "+get_value(field.minValue);
+            else
+              message = "请输入正确的数据，该数据允许范围为: < "+get_value(field.maxValue);
+            $(input).focus();
+            $(item).addClass('has-error');
+            $(input).parent().append('<span class="error-info">'+message+'</span>')
+            $(input).attr('data-exception',true);
+            check_exception();
+            return;
+          }
+      }
+      check_exception();
+    });
+    $(item).data('item',field);
+    return item;
+  }
+  function create_inspect_select_item(field, value)
+  {
+    var item = $('<div class="auto_w fn inspect-item"></div>');
+    $(item).append("<div class='title auto_w1'>"+"<div class='auto_w5'>"+field.name+"</div>"+"<div class='km_2'>"+"*</div>"+"：</div>");
+    var selector = $('<div class="text lm selector auto_w2"></div>');
+    $(selector).attr('data-null', field.nullable);
+    if(field.nullable)
+    {
+      $(item).find('.km_2').remove();
+    }
+    if(get_value(value)=='')
+    {
+      if(get_value(field.defaultValue)=='')
+      {
+        $(selector).html('请选择');
+      }
+      else
+        $(selector).html(get_value(field.defaultValue));
+    }
+    else
+        $(selector).html(get_value(value));
+    $(item).append(selector);
+    $(selector).click(function(e){
+      popipm.html('请选择',field.enumValues, function(popip, e, item){
+        $(selector).data('store',item);
+        $(selector).text(item);
+        $(selector).css("opacity","1");
+      });
+    });
+    $(item).append('<span class="vn05 rjt"></span>');
+    $(item).data('item',field);
+    return item;
+  }
+  function create_inspect_boolean_item(field, value)
+  {
+    var item = $('<div class="auto_w fn inspect-item"></div>');
+    $(item).append("<div class='title auto_w1'>"+"<div class='auto_w5'>"+field.name+"</div>"+"<div class='km_2'>"+"*</div>"+"：</div>");
+    if(field.nullable)
+    {
+      $(item).find('.km_2').remove();
+    }
+    if(get_value(value)=='')
+    {
+      if(field.defaultValue=="true")
+        $(item).append('<div class="text danxuan auto_w2"><label><span class="vn08 on" data-status="true"></span><i>正常</i></label><label><span class="vn08" data-status="false" data-exception="true" data-exception="true"></span><i>异常</i></label></div>');
+      else if(field.defaultValue=="false")
+        $(item).append('<div class="text danxuan auto_w2"><label><span class="vn08" data-status="true"></span><i>正常</i></label><label><span class="vn08 on" data-status="false" data-exception="true"></span><i>异常</i></label></div>');
+      else
+        $(item).append('<div class="text danxuan auto_w2"><label><span class="vn08" data-status="true"></span><i>正常</i></label><label><span class="vn08" data-status="false" data-exception="true"></span><i>异常</i></label></div>');
+    }
+    else
+    {
+      if(value=="true")
+        $(item).append('<div class="text danxuan auto_w2"><label><span class="vn08 on" data-status="true"></span><i>正常</i></label><label><span class="vn08" data-status="false" data-exception="true"></span><i>异常</i></label></div>');
+      else if(value=="false")
+        $(item).append('<div class="text danxuan auto_w2"><label><span class="vn08" data-status="true"></span><i>正常</i></label><label><span class="vn08 on" data-status="false" data-exception="true"></span><i>异常</i></label></div>');
+      else
+        $(item).append('<div class="text danxuan auto_w2"><label><span class="vn08" data-status="true"></span><i>正常</i></label><label><span class="vn08" data-status="false" data-exception="true"></span><i>异常</i></label></div>');
+    }
+    if(field.nullable == false)
+    {
+      if($(item).find('span.vn08.on').length==0)
+        $(item).children('.danxuan').addClass('has-error');
+    }
+    $(item).find('label').click(function(e){
+      $(this).children().addClass("on");
+      $(this).siblings("label").children().removeClass("on");
+      check_exception();
+    });
+    $(item).data('item',field);
+    return item;
+  }
+
+  function create_inspect_date_item(field, value)
+  {
+    var item = $('<div class="auto_w fn inspect-item"></div>');
+    $(item).append("<div class='title auto_w1'>"+"<div class='auto_w5'>"+field.name+"</div>"+"<div class='km_2'>"+"*</div>"+"：</div>");
+    if(field.nullable)
+    {
+      $(item).find('.km_2').remove();
+    }
+    if(get_value(value)=='')
+    {
+      var curval = get_value(field.defaultValue).replace(/\./g,'-').replace(' ','T');
+      //curval = formatDate(Date.parse(curval)).replace(' ','T');
+      $(item).append('<div class="text auto_w2"><input type="date"  value="'+curval+'"/></div>');
+    }
+    else
+       $(item).append('<div class="text auto_w2"><input type="date"  value="'+get_value(value).replace(/\./g,'-').replace(' ','T')+'"/></div>');
+    $(item).attr('data-null', field.nullable);
+    $(item).data('item',field);
+    return item;
+  }
+
+  function get_inspect_item(key)
+  {
+    var ret=undefined;
+    $(inspectitems).each(function(idx, item){
+      if(item.uuid == key && item.enabled)
+      {
+        ret = item;
+        return false;
+      }
+    });
+    return ret;
+  }
+
+function create_inspect_item(item)
+  {
+    // var info = get_inspect_item(item.key);
+    // if(info)
+    {
+      if(item.enabled)
+      {
+        switch(item.fieldType)
+        {
+          case 'string':
+            return create_inspect_input_item(item, item.value);
+            break;
+          case 'date':
+            return create_inspect_date_item(item, item.value);
+            break;
+          case 'number':
+            return create_inspect_input_item(item, item.value);
+            break;
+          case 'integer':
+            return create_inspect_input_item(item, item.value);
+            break;
+          case 'boolean':
+            return create_inspect_boolean_item(item, item.value);
+            break;
+          case 'enum':
+            return create_inspect_select_item(item, item.value);
+            break;
+        }
+      }
+    }
+  }
+
+  function setup_hooks()
+  {
+    $(".danxuan span").click(function(){
+      $(this).addClass("on").siblings("span").removeClass("on");
+    });
+  }
+ function sort_inspect_item(a, b)
+  {
+      if (a.lineNo < b.lineNo)
+          return -1;
+      if (a.lineNo > b.lineNo)
+          return 1;
+      return 0;
+  }
+
+  function fill_device(dev)
+  {
+    $('#billNumber').html(dev.billNumber);
+    // if(dev.inspector)
+      // $('#inspector').html(dev.inspector.name);
+    // else
+      // $('#inspector').html('');
+    if(get_value(dev.endTime)!='')
+      $('#endTime').val(get_value(dev.endTime).replace(' ','T').replace(/\./g,'-'));
+    else
+      $('#endTime').val(get_now_full().replace(' ','T').replace(/\./g,'-'));
+    $('#beginTime').html(dev.beginTime);
+    $('#inspectTopic').html(dev.inspectTopic);
+    $('#remark').val(get_value(dev.remark));
+    var devicestring = [];
+    $(dev.details).each(function(idx, detail){
+      devicestring.push(detail.device.name);
+      var items = [];
+      $(detail.items).each(function(idx, inspectitem){
+          var info = get_inspect_item(inspectitem.key);
+          if(info && info.enabled)
+          {
+            var item = {};
+            $.extend(item, info);
+            $.extend(item, inspectitem);
+            items.push(item);
+          }
+      });
+      items.sort(sort_inspect_item);
+      $(items).each(function(idx, inspectitem){
+        var item = create_inspect_item(inspectitem);
+        if(item)
+          $('#inspect-items').append(item);
+      });
+    });
+    $('#devices').html(devicestring.join(','));
+  }
+
+
+  function get_post_data()
+  {
+    var device = $('#submit').data('device');
+    var endTime = $('#endTime').val();
+    if(endTime == '')
+    {
+      showMessage('请输入完成时间。');
+      return undefined;
+    }
+    device.endTime = endTime.replace('T',' ').replace(/\-/g,'.')+':00';
+    var items = [];
+    var exceptionitems =[];
+    var error = false;
+    $('.inspect-item').each(function(idx, item){
+      var inspect =$(item).data('item');
+      var value = undefined;
+      var hasexception = false;
+     switch(inspect.fieldType)
+      {
+        case 'string':
+          value = $.trim($(item).find('input').val());
+          break;
+        case 'date':
+          if($(item).find('input').val()!='')
+            value = $(item).find('input').val().replace('T',' ').replace(/\-/g,'.')+' 00:00:00';
+          break;
+        case 'number':
+          value = $.trim($(item).find('input').val());
+          hasexception=$(item).find('input').attr('data-exception')=="true";
+          break;
+        case 'integer':
+          value = $.trim($(item).find('input').val());
+          hasexception=$(item).find('input').attr('data-exception')=="true";
+          break;
+        case 'boolean':
+          value = $(item).find('.vn08.on').attr('data-status');
+          hasexception=$(item).find('.vn08.on').attr('data-exception')=="true";
+          break;
+        case 'enum':
+          value = $(item).find('.selector').text();
+          break;
+      }
+      var msg = validate_field(inspect, $.trim(value));
+      if( msg.length > 0)
+      {
+        showMessage(inspect.name + ": "+ msg);
+        $(item).addClass('has-error');
+        if($(item).find('input').length> 0)
+          $(item).find('input').focus();
+        error= true;
+        return false;
+      }
+      if(inspect.nullable==false && get_value(value) == '')
+      {
+        showMessage(inspect.name + " ，该数据项为必须填写，请输入正确的数据。");
+        $(item).addClass('has-error');
+        error= true;
+        return false;
+      }
+      if(hasexception)
+      {
+        exceptionitems.push({
+          key:inspect.uuid,
+          value:value,
+        });
+      }
+      items.push({
+        key:inspect.uuid,
+        value:value,
+      });
+    });
+    if(error)
+      return undefined;
+    device.inspector = userinfo;
+    device.details[0].items = items;
+    device.exceptionitems = exceptionitems;
+    device.remark = $.trim($('#remark').val());
+    if(device.remark == '')
+    {
+      showMessage('请输入备注信息。');
+      return undefined;
+    }
+    return device;
+  }
+
+  $('#submit').click(function(e){
+    var hasexception = $(this).attr('data-exception');
+    var data = 'time='+get_now_full()+'&operator.id='+userinfo.code+'&operator.fullname='+userinfo.name+'&operator.namespace=hd';
+    var args = get_post_data();
+    if( args == undefined)
+    {
+      return;
+    }
+    var exceptionitems = args.exceptionitems;
+    args.exceptionitems = undefined;
+    console.log(args, exceptionitems);
+    m_loading.html();//loading 启动
+    $.HDAPI.save_device(data, args, function(result){
+      if(result.success)
+      {
+        var task = $('#submit').data('task');
+        var taskdata ={
+           "userId": userinfo.code,
+           "taskId":task.uuid,
+           "operate":task.operates[0].name,
+           "message":$.trim($('#remark').val())
+        };
+        $.HDAPI.executeTask(taskdata, function(result){
+          m_loading.remove();
+          if(result.success)
+          {
+              showMessage('数据提交成功');
+              if(hasexception)
+              {
+                var exception={};
+                exception.device = args.details[0].device;
+                exception.store = args.store;
+                exception.remark = args.remark;
+                exception.uuid = args.uuid;
+                exception.billNumber = args.billNumber;
+                exception.category = args.category;
+                exception.inspectitems = inspectitems;
+                exception.items = exceptionitems;
+                save_storage('exception', exception);
+                // goto_url("repair.new.html");
+                goto_url("repair.new.without-back.html");
+              }
+              else
+              {
+                remove_storage("task");
+                goto_url("//"); //goto_url("list.html");
+              }
+          }else
+          {
+            showMessage(result.message);
+          }
+        });
+      }
+      else
+      {
+        m_loading.remove();
+        showMessage(result.message);
+      }
+    });
+  });
+  var inspectitems=[];
+  var task = get_storage('task');
+  remove_storage("exception");
+
+  function load_device(deviceuuid){
+    var data = {
+      userGroups:userGroups,
+      stores: stores_uuids,
+    };
+    $('#inspect-items').children().remove();
+    $.HDAPI.get_device(deviceuuid, data, function(result){
+      m_loading.remove();//loading 移除
+      if(result.success)
+      {
+        var device = result.body;
+        $.HDAPI.get_inspect_items(device.category.uuid, function(result){
+          if(result.success)
+          {
+            inspectitems = result.body;
+            fill_device(device);
+            $('#submit').data('device', device);
+            setup_hooks();
+          }
+          else
+          {
+            showMessage(result.message);
+          }
+        });
+      }
+      else
+      {
+        showMessage(result.message);
+       $('#submit').hide();
+      }
+    });
+  }
+
+  function load_task(task){
+    $('#inspect-items').children().remove();
+    $.HDAPI.getTask(task.uuid, function(result){
+      if(result.success)
+      {
+        if(result.body.length == 0)
+        {
+            return;
+        }
+        var uuid = result.body.billUuid;
+        if( (uuid == undefined) || (uuid == null))
+          uuid = result.body.uuid;
+        load_device(uuid);
+        var titles = [];
+        $(result.body.operates).each(function(idx, operate){
+            titles.push(operate.title);
+        });
+        $('.g-tijiao').html(titles.join(' '));
+        $('#submit').data('task', result.body);
+      }else
+      {
+        showMessage(result.message);
+      }
+    });
+  }
+  if(task)
+  {
+    load_task(task);
+  }
+  $('#endTime').val(get_now_full().replace(' ','T'));
+});
+</script>
+
+</body>
+</html>

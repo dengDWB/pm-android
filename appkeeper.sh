@@ -17,7 +17,7 @@ check_assets() {
 
     local filename="$1.zip"
     local filepath="$shared_path/$filename"
-    local url="http://123.56.91.131:8090/api/v1/download/$1.zip"
+    local url="$url/api/v1/download/$1.zip"
 
     echo -e "\n## $filename\n"
     local status_code=$(curl -s -o /dev/null -I -w "%{http_code}" $url)
@@ -31,6 +31,8 @@ check_assets() {
 
     curl -s -o $filename $url
     echo "- download $([[ $? -eq 0 ]] && echo 'successfully' || echo 'failed')"
+	
+	mv $filename $filepath
 
     local md5_server=$(md5 ./$filename | cut -d ' ' -f 4)
     local md5_local=$(md5 ./$filepath | cut -d ' ' -f 4)
@@ -50,7 +52,23 @@ case "$1" in
         # bundle exec ruby config/app_keeper.rb --plist --assets --constant
         bundle exec ruby config/app_keeper.rb --app="$1" --plist --assets --constant
     ;;
-    assets:check)
+    shimao:assets:check)
+		url="http://180.169.70.19"
+        check_assets "offline_pages"
+        check_assets "BarCodeScan"
+        check_assets "advertisement"
+        check_assets "assets"
+        check_assets "fonts"
+        check_assets "images"
+        check_assets "javascripts"
+        check_assets "stylesheets"
+        check_assets "offline_pages_html"
+        check_assets "offline_pages_images"
+        check_assets "offline_pages_javascripts"
+        check_assets "offline_pages_stylesheets"
+    ;;
+	qifu:assets:check)
+		url="http://123.56.91.131:8090"
         check_assets "offline_pages"
         check_assets "BarCodeScan"
         check_assets "advertisement"

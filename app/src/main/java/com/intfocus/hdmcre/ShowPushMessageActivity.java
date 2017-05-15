@@ -53,6 +53,7 @@ public class ShowPushMessageActivity extends BaseActivity {
 
     }
 
+    //加载网页的处理
     public void isLoadErrorHtml(){
         if (!isNetworkConnected(mAppContext) && urlString.contains("list.html")){
             String urlStringForLoading = loadingPath("400");

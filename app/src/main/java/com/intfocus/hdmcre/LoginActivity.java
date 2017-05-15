@@ -83,7 +83,7 @@ public class LoginActivity extends BaseActivity {
         usernameEditText = (EditText) findViewById(R.id.etUsername);
         passwordEditText = (EditText) findViewById(R.id.etPassword);
         TextView versionTv = (TextView) findViewById(R.id.versionTv);
-        setEditTextListener();
+//        setEditTextListener();
 
         try {
             if (user.has(URLs.kUserNum)) {
