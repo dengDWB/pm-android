@@ -2,6 +2,7 @@ package com.intfocus.hdmcre;
 
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import com.intfocus.hdmcre.util.K;
@@ -36,13 +37,12 @@ public class ShowPushMessageActivity extends BaseActivity {
      * 配置 mWebView
      */
     public void loadWebView() {
-//        pullToRefreshWebView = (PullToRefreshWebView) findViewById(R.id.browser);
-//        initPullWebView();
         mWebView = (WebView) findViewById(R.id.browser);
         initSubWebView();
-//        setPullToRefreshWebView(true);
+        mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.requestFocus();
         mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
+        setWebViewLongListener(false);
         animLoading.setVisibility(View.VISIBLE);
     }
 
@@ -55,6 +55,7 @@ public class ShowPushMessageActivity extends BaseActivity {
 
     //加载网页的处理
     public void isLoadErrorHtml(){
+        animLoading.setVisibility(View.VISIBLE);
         if (!isNetworkConnected(mAppContext) && urlString.contains("list.html")){
             String urlStringForLoading = loadingPath("400");
             mWebView.loadUrl(urlStringForLoading);
@@ -68,5 +69,9 @@ public class ShowPushMessageActivity extends BaseActivity {
 	 */
     public void dismissActivity(View v) {
         ShowPushMessageActivity.this.onBackPressed();
+    }
+
+    public void refresh(View v){
+        isLoadErrorHtml();
     }
 }

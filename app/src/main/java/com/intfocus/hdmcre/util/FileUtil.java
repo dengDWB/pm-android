@@ -655,6 +655,20 @@ public class FileUtil {
         return result.toString();
     }
 
+    public static void deleteFile(File file) {
+        if (file.exists()) {
+            if (file.isFile()) {
+                file.delete();
+            } else if (file.isDirectory()) {
+                File files[] = file.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    deleteFile(files[i]);
+                }
+            }
+            file.delete();
+        }
+    }
+
     //以下代码，原本uri返回的是file:///...，由于android4.4返回的是content:///... 需要转化格式
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static String getBitmapUrlPath(final Context context, final Uri uri) {
