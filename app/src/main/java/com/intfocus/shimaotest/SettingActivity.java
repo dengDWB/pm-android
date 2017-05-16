@@ -844,8 +844,22 @@ public class SettingActivity extends BaseActivity {
     final View.OnClickListener mPgyerLinkListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Intent browserIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(K.kPgyerUrl));
-            startActivity(browserIntent);
+            try {
+                String pgyerVersionPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPgyerVersionConfigFileName);
+                if((new File(pgyerVersionPath)).exists()) {
+                    JSONObject pgyerJSON = FileUtil.readConfigFile(pgyerVersionPath);
+                    JSONObject responseData = null;
+                    responseData = pgyerJSON.getJSONObject(URLs.kData);
+                    String appUrl = responseData.getString("appUrl");
+                    Intent browserIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(appUrl));
+                    startActivity(browserIntent);
+                }else {
+                    toast("链接不存在");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                toast("链接不存在");
+            }
         }
     };
 

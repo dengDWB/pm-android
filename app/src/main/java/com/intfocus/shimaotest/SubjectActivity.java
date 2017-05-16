@@ -440,6 +440,10 @@ public class SubjectActivity extends BaseActivity {
 			}).start();
 		} else {
 			urlString = link;
+            // 删除Local Storage 的缓存
+            if (new File(getFilesDir().getParent()+"/app_webview/Local Storage").exists()){
+                FileUtil.deleteFile(new File(getFilesDir().getParent()+"/app_webview/Local Storage"));
+            }
 			webSettings.setDomStorageEnabled(true);
 			runOnUiThread(new Runnable() {
 				@Override
@@ -630,7 +634,7 @@ public class SubjectActivity extends BaseActivity {
 		SubjectActivity.this.onBackPressed();
 	}
 
-	@Override
+    @Override
 	public void onBackPressed() {
 		Log.i("urlStack", urlStack.toString());
 		if (urlStack.size() > 1) {

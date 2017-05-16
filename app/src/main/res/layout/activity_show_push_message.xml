@@ -24,31 +24,13 @@
             style="@style/BannerTitle"
             android:text="消息"/>
 
-        <RelativeLayout
-            android:id="@+id/colorViewLayout"
-            android:layout_width="35dp"
-            android:layout_height="5dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginBottom="5dp"
-            android:layout_marginRight="6dp">
-
-            <ImageView
-                android:id="@+id/colorView0"
-                style="@style/ColorViewStyle0" />
-            <ImageView
-                android:id="@+id/colorView1"
-                style="@style/ColorViewStyle1" />
-            <ImageView
-                android:id="@+id/colorView2"
-                style="@style/ColorViewStyle2" />
-            <ImageView
-                android:id="@+id/colorView3"
-                style="@style/ColorViewStyle3" />
-            <ImageView
-                android:id="@+id/colorView4"
-                style="@style/ColorViewStyle4" />
-        </RelativeLayout>
+        <ImageView
+            android:id="@+id/bannerSetting"
+            style="@style/BannerRightButton"
+            android:layout_alignBottom="@+id/colorViewLayout"
+            android:layout_marginTop="0dp"
+            android:onClick="refresh"
+            android:src="@drawable/btn_refresh"/>
 
     </RelativeLayout>
 
