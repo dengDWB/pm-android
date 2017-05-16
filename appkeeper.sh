@@ -31,8 +31,8 @@ check_assets() {
 
     curl -s -o $filename $url
     echo "- download $([[ $? -eq 0 ]] && echo 'successfully' || echo 'failed')"
-    
-    mv $filename $filepath
+	
+	mv $filename $filepath
 
     local md5_server=$(md5 ./$filename | cut -d ' ' -f 4)
     local md5_local=$(md5 ./$filepath | cut -d ' ' -f 4)
@@ -53,7 +53,7 @@ case "$1" in
         bundle exec ruby config/app_keeper.rb --app="$1" --plist --assets --constant
     ;;
     shimao:assets:check)
-        url="http://180.169.70.19"
+		url="http://180.169.70.19"
         check_assets "offline_pages"
         check_assets "BarCodeScan"
         check_assets "advertisement"
