@@ -192,6 +192,7 @@ public class DashboardActivity extends BaseActivity {
                 urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
                 pushMessageJSON.put("state", true);
                 FileUtil.writeFile(pushMessagePath, pushMessageJSON.toString());
+                displayAdOrNot(true);
             }
         } catch (JSONException | IOException e) {
             e.printStackTrace();
@@ -231,7 +232,9 @@ public class DashboardActivity extends BaseActivity {
             popupWindow.dismiss();
             switch (listItem.get(arg2).get("ItemText").toString()) {
                 case "消息":
-                    toast("功能待测试");
+                    //跳转到显示消息的界面
+                    Intent intent = new Intent(DashboardActivity.this, ShowPushMessageActivity.class);
+                    startActivity(intent);
                     break;
 
                 case "个人信息":
@@ -316,6 +319,7 @@ public class DashboardActivity extends BaseActivity {
 //        setPullToRefreshWebView(true);
         mWebView.requestFocus();
         mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
+//        mWebView.getSettings().setDomStorageEnabled(false);
         animLoading.setVisibility(View.VISIBLE);
 
         browserAd = (WebView) findViewById(R.id.browserAd);

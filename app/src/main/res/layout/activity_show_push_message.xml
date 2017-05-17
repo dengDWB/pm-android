@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout
+        android:id="@+id/actionBar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/actionBar">
+
+        <ImageView
+            android:id="@+id/bannerBack"
+            style="@style/BannerBackButton"
+            android:onClick="dismissActivity" />
+
+        <TextView
+            style="@style/BannerBackText"
+            android:layout_toRightOf="@id/bannerBack"
+            android:onClick="dismissActivity" />
+
+        <TextView
+            android:id="@+id/bannerTitle"
+            style="@style/BannerTitle"
+            android:text="消息"/>
+
+        <ImageView
+            android:id="@+id/bannerSetting"
+            style="@style/BannerRightButton"
+            android:layout_alignBottom="@+id/colorViewLayout"
+            android:layout_marginTop="0dp"
+            android:onClick="refresh"
+            android:src="@drawable/btn_refresh"/>
+
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/actionBar">
+
+        <WebView
+            android:id="@+id/browser"
+            android:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/actionBar" />
+
+        <RelativeLayout
+            android:id="@+id/anim_loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white">
+
+            <com.wang.avi.AVLoadingIndicatorView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:visibility="visible"
+                app:indicatorColor="@color/loading"
+                app:indicatorName="BallPulseIndicator"
+                />
+        </RelativeLayout>
+
+    </FrameLayout>
+</RelativeLayout>

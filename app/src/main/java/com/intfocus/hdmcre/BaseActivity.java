@@ -1061,12 +1061,9 @@ public class BaseActivity extends Activity {
                             if (assetFilename.contains("offline_pages_")){
                                 JSONObject jsonObject = user.getJSONObject("offline_pages");
                                 offonlineMd5String = jsonObject.getString(keyName);
-                                Log.d("11111","jinru");
                             }else {
                                 offonlineMd5String = user.getString(keyName);
                             }
-                            Log.d("1111", offonlineMd5String+":"+md5String);
-                            Log.d("111", assetFilename+":"+keyName);
                             if (offonlineMd5String.equals(md5String)){
                                 String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
                                 if (new File(downloadPath).exists()) {

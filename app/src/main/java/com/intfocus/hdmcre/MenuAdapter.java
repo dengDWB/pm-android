@@ -13,8 +13,6 @@ import com.readystatesoftware.viewbadger.BadgeView;
 
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +30,11 @@ public class MenuAdapter extends SimpleAdapter {
 		this.mContext = context;
 		this.listItem = data;
 		noticePath = FileUtil.dirPath(mContext, K.kConfigDirName, K.kLocalNotificationConfigFileName);
+	}
+
+	public void setDatas(List<? extends Map<String, ?>> data){
+		this.listItem = data;
+		this.notifyDataSetChanged();
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {

@@ -2,34 +2,34 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.intfocus.hdmcre"
-    android:versionCode="6"
-    android:versionName="0.06">
+    android:versionCode="10"
+    android:versionName="0.1">
     <!-- 扫描条形码或二维码 -->
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
 
     <!-- 6.0 及以上系统需要在代码中动态注册 -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- 必选 -->
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- 网络通信 -->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 获取MAC地址 -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 获取网络状态 -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- 获取设备信息 -->
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" /> <!-- 6.0 及以上系统需要在代码中动态注册 -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 读写sdcard，storage等等 -->
+    <uses-permission android:name="android.permission.INTERNET"/> <!-- 网络通信 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/> <!-- 获取MAC地址 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> <!-- 获取网络状态 -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/> <!-- 获取设备信息 -->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/> <!-- 6.0 及以上系统需要在代码中动态注册 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/> <!-- 读写sdcard，storage等等 -->
     <!-- 6.0 及以上系统需要在代码中动态注册 -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" /> <!-- 允许程序录制音频 -->
-    <uses-permission android:name="android.permission.GET_TASKS" /> <!-- 得到当前运行的activity名字 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/> <!-- 允许程序录制音频 -->
+    <uses-permission android:name="android.permission.GET_TASKS"/> <!-- 得到当前运行的activity名字 -->
     <!-- 5.0 及以上系统不可使用 -->
     <!-- 可选 -->
-    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.READ_LOGS"/>
 
     <!-- 获取logcat日志 -->
     <application
-    android:name="com.intfocus.hdmcre.YHApplication"
+        android:name="com.intfocus.hdmcre.YHApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -38,15 +38,16 @@
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.intfocus.hdmcre.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false">
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/filepaths" />
+                android:resource="@xml/filepaths"/>
         </provider>
+
         <service android:name="org.OpenUDID.OpenUDID_service">
             <intent-filter>
-                <action android:name="org.openudid.GETUDID" />
+                <action android:name="org.openudid.GETUDID"/>
             </intent-filter>
         </service>
         <!--
@@ -65,87 +66,93 @@
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
             android:name="com.intfocus.hdmcre.LoginActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/FullscreenTheme" />
+            android:theme="@style/FullscreenTheme"/>
+        <activity
+            android:name="com.intfocus.hdmcre.ShowPushMessageActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.ForgetPasswordActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
-        <activity android:name="com.intfocus.hdmcre.InputBarCodeActivity"
+            android:theme="@style/AppTheme"/>
+        <activity
+            android:name="com.intfocus.hdmcre.InputBarCodeActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
-        <activity android:name="com.intfocus.hdmcre.BarCodeScannerActivity"
+            android:theme="@style/AppTheme"/>
+        <activity
+            android:name="com.intfocus.hdmcre.BarCodeScannerActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.SettingActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.DashboardActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.SubjectActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="fullSensor"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.ReportSelectorAcitity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.CommentActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.ResetPasswordActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.BarCodeResultActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.StoreSelectorActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.screen_lock.InitPassCodeActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.screen_lock.ConfirmPassCodeActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.umeng.socialize.editorpage.ShareActivity"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.UMDefault" />
+            android:theme="@style/Theme.UMDefault"/>
         <activity
             android:name="com.intfocus.hdmcre.ThursdaySayActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.DeveloperActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.intfocus.hdmcre.wxapi.WXEntryActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
 
         <!-- Services -->
-        <service android:name="com.intfocus.hdmcre.LocalNotificationService" />
+        <service android:name="com.intfocus.hdmcre.LocalNotificationService"/>
 
         <!-- 蒲公英 必选 -->
         <meta-data
@@ -160,8 +167,7 @@
           android:value="7065ec5133d7d6d7e21ed8c18743ce0b" />
         <meta-data
             android:name="UMENG_CHANNEL"
-            android:value="Umeng" />
+            android:value="Umeng"/>
     </application>
-
 
 </manifest>

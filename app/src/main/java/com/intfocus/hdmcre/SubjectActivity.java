@@ -67,7 +67,7 @@ public class SubjectActivity extends BaseActivity {
 	private int groupID, objectID, objectType;
 	private String userNum;
 	private RelativeLayout bannerView;
-	private ArrayList<HashMap<String, String>> listItem;
+	private ArrayList<HashMap<String, String>> listItem = new ArrayList<>();
 	private ArrayList<HashMap<String, String>> menuListItem =  new ArrayList<>();
 	private Context mContext;
 	private Map<String, String> staticUrlMap;
@@ -76,6 +76,7 @@ public class SubjectActivity extends BaseActivity {
 	AlertDialog.Builder builder;
 	String offlineLink = "";
 	private ImageView mBannerSetting;
+	private MenuAdapter mSimpleAdapter;
 
 	/* 请求识别码 */
 	private static final int CODE_RESULT_REQUEST = 0xa2;
@@ -142,15 +143,42 @@ public class SubjectActivity extends BaseActivity {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				super.onPageStarted(view, url, favicon);
-				LogUtil.d("onPageStarted", String.format("%s - %s", URLs.timestamp(), urlString));
+				Log.i("onPageStarted", "0");
+				menuListItem.clear();
+				if (listItem != null) {
+					listItem.clear();
+				}
+				HashMap<String, String> map1 = new HashMap<>();
+				map1.put("itemContent", "");
+				map1.put("itemText", "刷新");
+				menuListItem.add(map1);
+				Log.i("onPageStarted", String.format("%s - %s", URLs.timestamp(), urlString));
 				setUrlStack(url);
 			}
 
 			@Override
 			public void onPageFinished(WebView view, String url) {
 				super.onPageFinished(view, url);
+				// mBannerSetting 设置图片
+				if (menuListItem.size() <= 1){
+					mBannerSetting.setImageResource(R.drawable.btn_refresh);
+				}else {
+					mBannerSetting.setImageResource(R.drawable.banner_setting);
+				}
+				mBannerSetting.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						if (menuListItem.size() <= 1){
+							refresh();
+						}else {
+							launchDropMenuActivity();
+						}
+					}
+				});
+				Log.i("onPageStarted", "2");
 				animLoading.setVisibility(View.GONE);
 				LogUtil.d("onPageFinished", String.format("%s - %s", URLs.timestamp(), url));
+				mWebView.clearCache(true);
 			}
 
 			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
@@ -215,16 +243,6 @@ public class SubjectActivity extends BaseActivity {
 		bannerView = (RelativeLayout) findViewById(R.id.actionBar);
 		mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
 		mBannerSetting.setVisibility(View.VISIBLE);
-		mBannerSetting.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (menuListItem.size() <= 1){
-					refresh();
-				}else {
-					launchDropMenuActivity();
-				}
-			}
-		});
 		mTitle = (TextView) findViewById(R.id.bannerTitle);
 
 		/*
@@ -263,11 +281,6 @@ public class SubjectActivity extends BaseActivity {
                 menuListItem.add(map);
             }
         }
-
-        HashMap<String, String> map = new HashMap<>();
-        map.put("itemContent", "");
-        map.put("itemText", "刷新");
-        menuListItem.add(map);
 	}
 
 	public void launchDropMenuActivity() {
@@ -290,7 +303,12 @@ public class SubjectActivity extends BaseActivity {
 	 * 初始化标题栏下拉菜单
 	 */
 	private void initDropMenuItem() {
-		MenuAdapter mSimpleAdapter = new MenuAdapter(this, menuListItem, R.layout.menu_list_items, new String[]{"itemContent", "itemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
+		if (mSimpleAdapter == null) {
+			mSimpleAdapter = new MenuAdapter(this, menuListItem, R.layout.menu_list_items, new String[]{"itemContent", "itemText"}, new int[]{R.id.img_menu_item, R.id.text_menu_item});
+		}
+		else {
+			mSimpleAdapter.setDatas(menuListItem);
+		}
 		initDropMenu(mSimpleAdapter, mDropMenuListener);
 	}
 
@@ -343,13 +361,6 @@ public class SubjectActivity extends BaseActivity {
 			refresh();
 		}
         Log.i("itemContent", menuListItem.toString());
-		// mBannerSetting 设置图片
-		if (menuListItem.size() <= 1){
-			mBannerSetting.setImageResource(R.drawable.btn_refresh);
-		}else {
-			mBannerSetting.setImageResource(R.drawable.banner_setting);
-		}
-
 		super.onResume();
 	}
 
@@ -436,6 +447,10 @@ public class SubjectActivity extends BaseActivity {
 			}).start();
 		} else {
 			urlString = link;
+            // 删除Local Storage 的缓存
+            if (new File(getFilesDir().getParent()+"/app_webview/Local Storage").exists()){
+                FileUtil.deleteFile(new File(getFilesDir().getParent()+"/app_webview/Local Storage"));
+            }
 			webSettings.setDomStorageEnabled(true);
 			runOnUiThread(new Runnable() {
 				@Override
@@ -447,6 +462,8 @@ public class SubjectActivity extends BaseActivity {
 				}
 			});
 		}
+
+
 	}
 
 	public void isLoadErrorHtml(){
@@ -626,7 +643,7 @@ public class SubjectActivity extends BaseActivity {
 		SubjectActivity.this.onBackPressed();
 	}
 
-	@Override
+    @Override
 	public void onBackPressed() {
 		Log.i("urlStack", urlStack.toString());
 		if (urlStack.size() > 1) {
@@ -759,7 +776,7 @@ public class SubjectActivity extends BaseActivity {
 		@JavascriptInterface
 		public void showAlertAndRedirect(final String title, final String content, final String redirect_url, String cleanStack){
 			Log.d("pages1", title+":"+content+":"+redirect_url);
-			if (cleanStack == "yes"){
+			if (cleanStack.equals("yes")){
 				urlStack.clear();
 			}
 			if (!(title.equals("")) && !(content.equals(""))){
@@ -855,9 +872,8 @@ public class SubjectActivity extends BaseActivity {
 		@JavascriptInterface
 		public void addSubjectMenuItems(final String menu_items) {
 			try {
-				Log.i("itemContent", menu_items);
-				JSONArray itemArray = new JSONArray(menu_items);
 				listItem = new ArrayList<>();
+				JSONArray itemArray = new JSONArray(menu_items);
 				for (int i = 0; i < itemArray.length(); i++) {
 					HashMap<String, String> map = new HashMap<>();
 					map.put("itemContent", itemArray.getJSONObject(i).getString("link"));
@@ -867,17 +883,7 @@ public class SubjectActivity extends BaseActivity {
                 if (listItem != null){
                     menuListItem.addAll(listItem);
                 }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // mBannerSetting 设置图片
-                        if (menuListItem.size() <= 1){
-                            mBannerSetting.setImageResource(R.drawable.btn_refresh);
-                        }else {
-                            mBannerSetting.setImageResource(R.drawable.banner_setting);
-                        }
-                    }
-                });
+				Log.i("onPageStarted", "MENUList size is   " + menuListItem.size());
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -908,7 +914,6 @@ public class SubjectActivity extends BaseActivity {
 
 		@JavascriptInterface
 		public void searchItems(final String arrayString) {
-			Log.i("isSearch", "is Search");
 			try {
 				String searchItemsPath = String.format("%s.search_items", FileUtil.reportJavaScriptDataPath(SubjectActivity.this, String.format("%d", groupID), templateID, reportID));
 				FileUtil.writeFile(searchItemsPath, arrayString);
@@ -944,6 +949,15 @@ public class SubjectActivity extends BaseActivity {
 			return item;
 		}
 
+		@JavascriptInterface
+		public void checkVersion(String info) {
+			toast("该中间件版本过低" + info);
+		}
+
+		@JavascriptInterface
+		public void goBack(String info) {
+			mWebView.goBack();
+		}
 
 		@JavascriptInterface
 		public void showAlert(final String title, final String content) {

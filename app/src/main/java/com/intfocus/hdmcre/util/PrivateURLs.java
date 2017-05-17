@@ -22,7 +22,7 @@ public class PrivateURLs {
   public final static String kBaseUrl = "http://123.56.91.131:8090";
 
   public final static String kPgyerAppId   = "38e630134f0ca8098aeffe13d52ad5b6";
-  public final static String kPgyerUrl     = "https://www.pgyer.com/hdmcre-a";
+  public final static String kPgyerUrl = "http://www.pgyer.com/hdmcre-a";
 
   public final static String kUMAppId      = "5705c952e0f55a391a0011cc";
   public final static String kWXAppId      = "wx0ad40e5c84419ce2";
@@ -35,11 +35,11 @@ public class PrivateURLs {
   public final static boolean kDropMenuUserInfo = true;
 
   public final static boolean kTabBar        = true;
-  public final static boolean kTabBarKPI     = true;
   public final static boolean kTabBarAnalyse = true;
   public final static boolean kTabBarApp     = true;
   public final static boolean kTabBarMessage = true;
 
   public final static boolean kSubjectComment = true;
+  public final static boolean kTabBarKPI     = true;
   public final static boolean kSubjectShare   = true;
 }
