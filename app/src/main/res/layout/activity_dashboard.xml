@@ -67,14 +67,14 @@
         android:background="@color/white"
         android:orientation="horizontal">
 
-        <com.intfocus.shimaotest.view.TabView
+        <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabKPI"
             style="@style/ToolBarTab"
             app:active_src="@drawable/tab_kpi_s"
             app:src="@drawable/tab_kpi"
             app:text="首页"/>
 
-        <com.intfocus.shimaotest.view.TabView
+        <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabAnalyse"
             style="@style/ToolBarTab"
             app:active_src="@drawable/tab_analysis_s"
@@ -88,7 +88,7 @@
         <!--app:src="@drawable/tab_app"-->
         <!--app:text="应用"/>-->
 
-        <com.intfocus.shimaotest.view.TabView
+        <com.intfocus.hdmcre.view.TabView
             android:id="@+id/tabMessage"
             style="@style/ToolBarTab"
             app:active_src="@drawable/tab_report_s"

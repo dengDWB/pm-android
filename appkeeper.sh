@@ -147,6 +147,10 @@ case "$1" in
         # 替换privateURLs.java中kBaseUrl中的域名
         private_urls_path=$(find . -name PrivateURLs.java -print)
         sed -i '' "s/BaseUrl .*/BaseUrl = \"http:\/\/180\.169\.70\.19\";/" $private_urls_path
+
+        # 替换privateURLs.java中pgy链接
+        private_urls_path=$(find . -name PrivateURLs.java -print)
+        sed -i '' "s/PgyerUrl .*/PgyerUrl = \"http:\/\/www\.pgyer\.com\/shimao-test-a\";/" $private_urls_path
     ;;
     qifu)
 
@@ -181,6 +185,10 @@ case "$1" in
         # 替换privateURLs.java中kBaseUrl中的域名
         private_urls_path=$(find . -name PrivateURLs.java -print)
         sed -i '' 's/BaseUrl .*/BaseUrl = \"http:\/\/123\.56\.91\.131\:8090\";/' $private_urls_path
+
+        # 替换privateURLs.java中pgy链接
+        private_urls_path=$(find . -name PrivateURLs.java -print)
+        sed -i '' "s/PgyerUrl .*/PgyerUrl = \"http:\/\/www\.pgyer\.com\/hdmcre-a\";/" $private_urls_path
     ;;
     *)
         test -z "$1" && echo "current app: $(cat .current-app)" || echo "unknown argument - $1"
