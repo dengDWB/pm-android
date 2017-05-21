@@ -5,18 +5,24 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 
+import com.intfocus.hdmcre.util.ApiHelper;
 import com.intfocus.hdmcre.util.FileUtil;
 import com.intfocus.hdmcre.util.HttpUtil;
 import com.intfocus.hdmcre.util.K;
@@ -38,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import anetwork.channel.cache.CacheManager;
 
 import static com.intfocus.hdmcre.util.URLs.kGroupId;
 import static com.intfocus.hdmcre.util.URLs.kRoleId;
@@ -94,16 +102,6 @@ public class DashboardActivity extends BaseActivity {
      	 */
         checkAssetsUpdated(false);
 
-
-		/*
-		 * 语音播报初始化
-		 */
-//		SpeechUtility.createUtility(mAppContext, "appid=581aa9e1");
-
-		/*
-         * 动态注册广播用于接收通知
-		 */
-
         if (urlStrings.get(2).equals(urlString)) {
             setWebViewLongListener(false);
         }
@@ -120,13 +118,12 @@ public class DashboardActivity extends BaseActivity {
         dealSendMessage();
         getQeuryCount();
 
-//        displayAdOrNot(true);
-		/*
+        /*
 		 * 判断是否允许浏览器复制
 		 */
         isAllowBrowerCopy();
-        if (urlString.contains("list.html")){
-            if (!isNetworkConnected(mAppContext)){
+        if (urlString.contains("list.html")) {
+            if (!isNetworkConnected(mAppContext)) {
                 String urlStringForLoading = loadingPath("400");
                 mWebView.loadUrl(urlStringForLoading);
                 return;
@@ -187,7 +184,7 @@ public class DashboardActivity extends BaseActivity {
         String pushMessagePath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPushMessageFileName);
         JSONObject pushMessageJSON = FileUtil.readConfigFile(pushMessagePath);
         try {
-            if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state") == false){
+            if (pushMessageJSON.has("state") && pushMessageJSON.getBoolean("state") == false) {
                 jumpTab(mTabAnalyse);
                 urlString = String.format(K.kStaticHtml, FileUtil.sharedPath(mContext), "list.html");
                 pushMessageJSON.put("state", true);
@@ -211,7 +208,7 @@ public class DashboardActivity extends BaseActivity {
     private void initDropMenuItem() {
         listItem = new ArrayList<>();
         int[] imgID = {R.drawable.message, R.drawable.icon_scan, R.drawable.icon_user};
-        String[] itemName = {"消息","扫一扫", "个人信息"};
+        String[] itemName = {"消息", "扫一扫", "个人信息"};
         for (int i = 0; i < itemName.length; i++) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("ItemImage", imgID[i]);
@@ -245,14 +242,6 @@ public class DashboardActivity extends BaseActivity {
                 case "扫一扫":
                     toast("功能待测试");
                     break;
-//                    if (ContextCompat.checkSelfPermission(DashboardActivity.this, Manifest.permission.CAMERA)
-//                            != PackageManager.PERMISSION_GRANTED) {
-//                        setAlertDialog(DashboardActivity.this, "相机权限获取失败，是否到本应用的设置界面设置权限");
-//                    } else {
-//                        Intent barCodeScannerIntent = new Intent(mContext, BarCodeScannerActivity.class);
-//                        mContext.startActivity(barCodeScannerIntent);
-//                    }
-//                    break;
 
                 case "语音播报":
                     toast("功能开发中，敬请期待");
@@ -281,9 +270,17 @@ public class DashboardActivity extends BaseActivity {
         String adIndexBasePath = FileUtil.sharedPath(this) + "/advertisement/index";
         String adIndexPath = adIndexBasePath + ".html";
         String adIndexWithTimestampPath = adIndexBasePath + ".timestamp.html";
+        String adPath = sharedPath + "/advertisement/assets/javascripts/user_permission.js";
+        String userPermissionPath = FileUtil.dirPath(mContext, "config", "user_permission.js");
+
+        if (!new File(adPath).exists() && new File(userPermissionPath).exists()) {
+            FileUtil.copyFile(userPermissionPath, adPath);
+        } else {
+            ApiHelper.downloadUserJs(mContext, sharedPath, user);
+        }
 
         boolean isShouldDisplayAd = mCurrentTab == mTabKPI && new File(adIndexPath).exists();
-        if (isShouldDisplayAd) {
+        if (isShouldDisplayAd && new File(adPath).exists()) {
             browserAd.setVisibility(View.VISIBLE);
         } else {
             browserAd.setVisibility(View.GONE);
@@ -304,6 +301,8 @@ public class DashboardActivity extends BaseActivity {
 
         if (isShouldLoadHtml) {
             browserAd.loadUrl(String.format("file:///%s", adIndexWithTimestampPath));
+        } else {
+            toast("用户权限文件已更新, 请至个人信息页校正");
         }
 
     }
@@ -331,7 +330,37 @@ public class DashboardActivity extends BaseActivity {
         browserAd.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         browserAd.requestFocus();
         browserAd.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
-        browserAd.setWebViewClient(new WebViewClient());
+        browserAd.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                Log.i("uploadImg", error.toString());
+                handler.proceed();
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
+                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
+                view.loadUrl(url);
+                return true;
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+//                if (!ApiHelper.checkAdUserPermission(mContext, sharedPath, user)) {
+//                    toast("用户权限文件已更新, 请至个人信息页校正");
+//                }
+                super.onPageStarted(view, url, favicon);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                animLoading.setVisibility(View.GONE);
+            }
+
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            }
+        });
     }
 
     /*
@@ -419,7 +448,7 @@ public class DashboardActivity extends BaseActivity {
         @Override
         public void onClick(View v) {
             if (v == mCurrentTab) {
-                if (waitDouble){
+                if (waitDouble) {
                     waitDouble = false;
                     new Thread(new Runnable() {
                         @Override
@@ -433,7 +462,7 @@ public class DashboardActivity extends BaseActivity {
                         }
                     }).start();
                     return;
-                }else {
+                } else {
                     waitDouble = true;
                 }
             }
@@ -457,7 +486,6 @@ public class DashboardActivity extends BaseActivity {
                         objectType = 1;
                         urlString = String.format(K.kKPIMobilePath, K.kBaseUrl, currentUIVersion, user.getString(
                                 kGroupId), user.getString(URLs.kRoleId));
-
                         bvKpi.setVisibility(View.GONE);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 0);
                         break;
@@ -504,11 +532,11 @@ public class DashboardActivity extends BaseActivity {
         }
     };
 
-    public void isLoadErrorHtml(){
-        if (!isNetworkConnected(mAppContext) && urlString.contains("list.html")){
+    public void isLoadErrorHtml() {
+        if (!isNetworkConnected(mAppContext) && urlString.contains("list.html")) {
             String urlStringForLoading = loadingPath("400");
             mWebView.loadUrl(urlStringForLoading);
-        }else {
+        } else {
             mWebView.loadUrl(urlString);
         }
     }
@@ -580,48 +608,6 @@ public class DashboardActivity extends BaseActivity {
             e.printStackTrace();
         }
     }
-
-	/*
-     * view 缩放动画
-     */
-//	public void viewAnimation(final View view, final Boolean isShow, final int startHeight, final int endHeight) {
-//		runOnUiThread(new Runnable() {
-//			@Override
-//			public void run() {
-//				mAnimationTime = getResources().getInteger(android.R.integer.config_mediumAnimTime);//动画效果时间
-//				final ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-//				ValueAnimator valueAnimator = ValueAnimator.ofInt(startHeight, endHeight);
-//				valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//					@Override
-//					public void onAnimationUpdate(ValueAnimator animation) {
-//						layoutParams.height = (int) animation.getAnimatedValue();
-//						view.setLayoutParams(layoutParams);
-//						view.requestLayout();
-//					}
-//				});
-//
-//				valueAnimator.addListener(new AnimatorListenerAdapter() {
-//					@Override
-//					public void onAnimationStart(Animator animation) {
-//						super.onAnimationStart(animation);
-//						if (isShow) {
-//							view.setVisibility(View.VISIBLE);
-//						}
-//					}
-//
-//					@Override
-//					public void onAnimationEnd(Animator animation) {
-//						super.onAnimationEnd(animation);
-//						if (!isShow) {
-//							view.setVisibility(View.GONE);
-//						}
-//					}
-//				});
-//				valueAnimator.setDuration(mAnimationTime);
-//				valueAnimator.start();
-//			}
-//		});
-//	}
 
     private void initUrlStrings() {
         urlStrings = new ArrayList<>();
@@ -709,9 +695,6 @@ public class DashboardActivity extends BaseActivity {
                         case URLs.kTabAnalyse:
                             mTabAnalyse.performClick();
                             break;
-//						case URLs.kTabApp:
-//							mTabAPP.performClick();
-//							break;
                         case URLs.kTabMessage:
                             if (openLink.equals("0") || openLink.equals("1") || openLink.equals("2")) {
 
@@ -742,11 +725,6 @@ public class DashboardActivity extends BaseActivity {
             });
         }
 
-//		@JavascriptInterface
-//		public void hideAd() {
-//			viewAnimation(browserAd, false, dip2px(DashboardActivity.this, 140), 0);
-//		}
-
         @JavascriptInterface
         public void storeTabIndex(final String pageName, final int tabIndex) {
             try {
@@ -768,19 +746,19 @@ public class DashboardActivity extends BaseActivity {
 
         @JavascriptInterface
         public void appBadgeNum(final String type, final String num) {
-            Log.i("uploadImg",type + num);
+            Log.i("uploadImg", type + num);
             totalNum = Integer.valueOf(num);
-            if (type.equals("total")){
+            if (type.equals("total")) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (Integer.valueOf(num) > 0){
+                        if (Integer.valueOf(num) > 0) {
                             bvAnalyse.setBackgroundColor(Color.RED);
                             bvAnalyse.setText(num);
                             bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
-                            bvAnalyse.setBadgeMargin(66,0);
+                            bvAnalyse.setBadgeMargin(66, 0);
                             bvAnalyse.show();
-                        }else {
+                        } else {
                             bvAnalyse.setVisibility(View.GONE);
                         }
                     }
@@ -830,18 +808,13 @@ public class DashboardActivity extends BaseActivity {
                 logParams.put(URLs.kObjTitle, String.format("主页面/%s", ex));
                 new Thread(mRunnableForLogger).start();
 
-//				//点击两次还是有异常 异常报出
-//				if (loadCount < 2) {
-//					showWebViewExceptionForWithoutNetwork();
-//					loadCount++;
-//				}
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void getQeuryCount(){
+    public void getQeuryCount() {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -849,12 +822,12 @@ public class DashboardActivity extends BaseActivity {
                 String postUrl = "http://hdcre.shimaoco.com:8280/cre-agency-app-server/";
                 int count = 0;
                 Map<String, String> siginResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_sign_in"));
-                if (siginResponse.get("code").equals("200")){
+                if (siginResponse.get("code").equals("200")) {
                     try {
-                        if (siginResponse.containsKey("body")){
+                        if (siginResponse.containsKey("body")) {
                             String siginResponseBody = siginResponse.get("body");
                             JSONObject js = new JSONObject(siginResponseBody);
-                            if (js.has("body") && !js.getString("body").equals(null)){
+                            if (js.has("body") && !js.getString("body").equals(null)) {
                                 String[] stringArray = js.getString("body").split("\\,");
                                 count += stringArray.length;
                             }
@@ -865,12 +838,12 @@ public class DashboardActivity extends BaseActivity {
                 }
 
                 Map<String, String> executeResponse = HttpUtil.httpQeuryPost(postUrl, getQeuryParams("to_execute"));
-                if (executeResponse.get("code").equals("200")){
+                if (executeResponse.get("code").equals("200")) {
                     try {
-                        if (executeResponse.containsKey("body")){
+                        if (executeResponse.containsKey("body")) {
                             String exexecuteResponseBody = executeResponse.get("body");
                             JSONObject js = new JSONObject(exexecuteResponseBody);
-                            if (js.has("body") && !js.getString("body").equals(null)){
+                            if (js.has("body") && !js.getString("body").equals(null)) {
                                 String[] stringArray = js.getString("body").split("\\,");
                                 count += stringArray.length;
                             }
@@ -880,19 +853,19 @@ public class DashboardActivity extends BaseActivity {
                     }
                 }
                 final String num = count + "";
-                if (count > 0){
+                if (count > 0) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             bvAnalyse.setBackgroundColor(Color.RED);
                             bvAnalyse.setText(num);
                             bvAnalyse.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
-                            bvAnalyse.setBadgeMargin(66,0);
+                            bvAnalyse.setBadgeMargin(66, 0);
                             bvAnalyse.show();
                         }
                     });
-                }else {
-                    if (totalNum == 0){
+                } else {
+                    if (totalNum == 0) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -902,10 +875,10 @@ public class DashboardActivity extends BaseActivity {
                     }
                 }
             }
-        }, 5*1000, 30*60*1000);
+        }, 5 * 1000, 30 * 60 * 1000);
     }
 
-    public JSONObject getQeuryParams(String taskType){
+    public JSONObject getQeuryParams(String taskType) {
         JSONObject params = null;
         try {
             params = new JSONObject();
@@ -914,13 +887,13 @@ public class DashboardActivity extends BaseActivity {
             JSONObject userJson;
             String userConfigPath = String.format("%s/%s", FileUtil.basePath(DashboardActivity.this), K.kUserConfigFileName);
             if ((new File(userConfigPath)).exists()) {
-                 userJson = FileUtil.readConfigFile(userConfigPath);
-            }else {
+                userJson = FileUtil.readConfigFile(userConfigPath);
+            } else {
                 userJson = new JSONObject();
             }
-            if (userJson.has("user_num")){
+            if (userJson.has("user_num")) {
                 params.put("userId", userJson.getString("user_num"));
-            }else {
+            } else {
                 params.put("userId", "dp");
             }
             params.put("taskType", taskType);
@@ -936,9 +909,9 @@ public class DashboardActivity extends BaseActivity {
             String newLink = url.replace("file:///", "");
             Log.d("newLink1", newLink);
             String htmlContent = FileUtil.readFile(new File(newLink));
-            if (htmlContent.equals("")){
+            if (htmlContent.equals("")) {
                 toast("离线文件未存在");
-            }else {
+            } else {
                 String newHtmlContent = htmlContent.replaceAll("TIMESTAMP", String.format("%d", new Date().getTime()));
                 newHtmlPath = String.format("%s.tmp.html", newLink);
                 try {

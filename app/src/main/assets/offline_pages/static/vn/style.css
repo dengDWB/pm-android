@@ -1,0 +1,138 @@
+@font-face {
+  font-family: 'vn';
+  src:  url('fonts/vn.eot?8s1lh5');
+  src:  url('fonts/vn.eot?8s1lh5#iefix') format('embedded-opentype'),
+    url('fonts/vn.ttf?8s1lh5') format('truetype'),
+    url('fonts/vn.woff?8s1lh5') format('woff'),
+    url('fonts/vn.svg?8s1lh5#vn') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="vn"], [class*=" vn"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'vn' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.vn01:before {
+  content: "\e900";
+}
+.vn02:before {
+  content: "\e901";
+}
+.vn03:before {
+  content: "\e902";
+}
+.vn04:before {
+  content: "\e903";
+}
+.vn05:before {
+  content: "\e904";
+}
+.vn06:before {
+  content: "\e905";
+}
+.vn07:before {
+  content: "\e906";
+}
+.vn08:before {
+  content: "\e907";
+}
+.vn09:before {
+  content: "\e908";
+}
+.vn10:before {
+  content: "\e909";
+}
+.vn11:before {
+  content: "\e90a";
+}
+.vn12:before {
+  content: "\e90b";
+}
+.vn13:before {
+  content: "\e90c";
+}
+.vn14:before {
+  content: "\e90d";
+}
+.vn15:before {
+  content: "\e90e";
+}
+.vn16:before {
+  content: "\e90f";
+}
+.vn17:before {
+  content: "\e910";
+}
+.vn18:before {
+  content: "\e911";
+}
+.vn19:before {
+  content: "\e912";
+}
+.vn20:before {
+  content: "\e913";
+}
+.vn21:before {
+  content: "\e914";
+}
+.vn22:before {
+  content: "\e915";
+}
+.vn23:before {
+  content: "\e916";
+}
+.vn24:before {
+  content: "\e917";
+}
+.vn25:before {
+  content: "\e918";
+}
+.vn26:before {
+  content: "\e919";
+}
+.vn27:before {
+  content: "\e91a";
+}
+.vn28:before {
+  content: "\e91b";
+}
+.vn29:before {
+  content: "\e91c";
+}
+.vn30:before {
+  content: "\e91d";
+}
+.vn31:before {
+  content: "\e91e";
+}
+.vn32:before {
+  content: "\e91f";
+}
+.vn33:before {
+  content: "\e920";
+}
+.vn34:before {
+  content: "\e921";
+}
+.vn35:before {
+  content: "\e922";
+}
+.vn36:before {
+  content: "\e923";
+}
+.vn37:before {
+  content: "\e924";
+}
+

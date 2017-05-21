@@ -318,6 +318,7 @@ public class BaseActivity extends Activity {
                 super.onPageFinished(view, url);
                 animLoading.setVisibility(View.GONE);
                 isWeiXinShared = true;
+
                 LogUtil.d("onPageFinished", String.format("%s - %s", URLs.timestamp(), url));
                 Log.d("loadState", "加载网页结束");
             }

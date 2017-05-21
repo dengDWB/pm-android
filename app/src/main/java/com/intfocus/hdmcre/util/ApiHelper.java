@@ -31,18 +31,20 @@ import static com.intfocus.hdmcre.util.K.kImagesMd5;
 import static com.intfocus.hdmcre.util.K.kInfo;
 import static com.intfocus.hdmcre.util.K.kUserName;
 
+// FIXME generate failure  field _$Notice82
+// FIXME generate failure  field _$Notice291
 public class ApiHelper {
     /*
-     * 用户登录验证
-     * params: {device: {name, platform, os, os_version, uuid}}
-     */
+         * 用户登录验证
+         * params: {device: {name, platform, os, os_version, uuid}}
+         */
     public static String authentication(Context context, String username, String password, String type) {
         String responseState = "success", urlString = String.format(K.kUserAuthenticateAPIPath, K.kBaseUrl, "android", username, password);
         try {
             JSONObject device = new JSONObject();
-            device.put("name", android.os.Build.MODEL);
+            device.put("name", Build.MODEL);
             device.put("platform", "android");
-            device.put("os", android.os.Build.MODEL);
+            device.put("os", Build.MODEL);
             device.put("os_version", Build.VERSION.RELEASE);
             device.put("uuid", OpenUDID_manager.getOpenUDID());
 

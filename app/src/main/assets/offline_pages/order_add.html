@@ -1,0 +1,1169 @@
+<html><head>
+		<title>订单详情</title>
+		<meta name="keywords" content="">
+		<meta name="description" content="">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		
+		<link rel="stylesheet" type="text/css" href="static/css/main.css">
+		<link rel="stylesheet" type="text/css" href="static/hai/style.css">
+		
+		
+		  <style type="text/css">
+.datebox{float:left;display:block;width:7.9em; background:#fff;}
+.xmost10 em .datebox input{font-size:0.9em;}
+.datebox input{float:left;background:#fff;}
+#btncalc{float:right;border:1px solid #ddd;background:none;padding:0.4em;border-radius:5px !important;margin-top:-4px;font-size:1em;line-height:1em;}
+		  </style>
+		
+		  <style type="text/css">
+		    .descnumber:focus,
+		    .incnumber:focus
+		    {
+		      outline: none;
+		  }
+		  </style>
+	</head>
+	<body>
+		
+	
+
+
+	
+<div class="disc0 paig">
+	<div class="disc1 paig">
+		<span id="back"><i class="hai31 disc5"></i></span>
+		<h2 class="disc3">订单详情</h2>
+	</div>
+	<div class="disc16 paig" style="background:#fff;padding-top: .85em;">
+		<div class="disc6 paig" style="">
+			<p class="dis8">
+				<i class="disc9 fleft hai29"></i>
+				<em class="disc10 fleft"><input type="text" value="" placeholder="客户" id="customer-name" maxlength="64"></em>
+			</p>
+			<p class="dis8">
+				<i class="disc9 fleft hai21"></i>
+				<em class="disc10 fleft"><input type="tel" value="" placeholder="联系电话" maxlength="32" id="customer-telephone"></em>
+			</p>
+			<p class="dis8">
+				<i class="disc9 fleft hai27"></i>
+				<em class="disc10 fleft"><input type="tel" value="" placeholder="营业员联系方式" maxlength="32" id="boothTelephone"></em>
+			</p>
+			<p class="dis8">
+				<i class="hai19 fleft disc9"></i>
+				<em class="disc10 fleft">
+					<input type="text" value="" placeholder="收货地址" id="customer-address" maxlength="128">
+				</em>
+			</p>
+		</div>
+	</div>
+	<div class="disc6"></div>
+	<div class="xmost paig" id="products"></div>
+	<div class="xmost paig">
+		<h4 class="fujian_1">添加附件</h4>
+		<input type="file" accept="image/*" style="display: none;" capture="camera" id="picture-picker">
+		<div class="fujian_5 sclear paig" id="images">
+		    <div class="fujian_2 fleft paig" id="upload-picture">
+			  <div class="fujian_3 rel">
+			  	<img class="fujian_10" src="static/images/xxx0.png">
+			  	<div class="fujian_6 abs">
+			  		<em class="fujian_9 fujian_p hai51 display"></em>
+			  		<h5 class="fujian_7 fujian_p display">附件上传</h5>
+			  	</div>
+			  </div>
+		    </div>
+		</div>		
+	</div>
+	<div class="xmost paig " id="paytype">
+		<div class="chose20">
+			<h2 class="chose37 fleft">付款类别</h2>
+		</div>
+		<div class="xmost1">
+			<dd class="paig eanr paytype" data-value="deposit" id="paytype-deposit">
+				<div class="xmost3 fleft"> <span class="eanr_title">定金：</span><span class="eanr_con"></span> </div>
+				<i class="hai47 xmost5">&nbsp;</i>
+			</dd>
+			<!-- <dd class="paig xmost2" data-value="cash">
+				<em class="xmost3 fleft">余款</em>
+				<i class="hai47 xmost5 cxo2">&nbsp;</i>
+			</dd> -->
+			<dd class="paig xmost2 paytype" data-value="full" id="paytype-full">
+				<em class="xmost3 fleft">全款</em>
+				<i class="hai47 xmost5 cxo2">&nbsp;</i>
+			</dd>
+		</div>
+	</div>
+
+	<div class="xmost paig ">
+		<div class="chose20">
+			<h2 class="chose37 fleft">活动</h2>
+		</div>
+		<div class="xmost1">
+			<div class="xmost102 fleft">
+				<!--<dd class="paig xmosp2" id="prom">
+					<em class="xmost3 fleft">双12疯狂刮满额送</em>
+					<i class="hai47 xmost5 cxo2">&nbsp;</i>
+				</dd>-->
+				<dd class="lm_gcw yx_stores">请选择</dd>
+				<div class="join_arr">
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- <div class="xmost paig " id="paymethod">
+		<div class="chose20">
+			<h2 class="chose37 fleft">付款方式</h2>
+		</div>
+		<div class="xmost1">
+			<dd class="paig xmost2" data-value="cash">
+				<em class="xmost3 fleft">现金</em>
+				<i class="hai47 xmost5 cxo1">&nbsp;</i>
+			</dd>
+			<dd class="paig xmost2" data-value="card">
+				<em class="xmost3 fleft">刷卡</em>
+				<i class="hai47 xmost5 cxo2">&nbsp;</i>
+			</dd>
+			<dd class="paig xmost2" data-value="check">
+				<em class="xmost3 fleft">支票</em>
+				<i class="hai47 xmost5 cxo2">&nbsp;</i>
+			</dd>
+			<dd class="paig xmost2" data-value="other">
+				<em class="xmost3 fleft">其他</em>
+				<i class="hai47 xmost5 cxo2">&nbsp;</i>
+			</dd>
+		</div>
+	</div> 
+	<div class="xmost paig " id="setup">
+		<div class="chose20">
+			<h2 class="chose37 fleft">安装</h2>
+		</div>
+		<div class="xmost1">
+			<dd class="paig xmost2" data-value="self">
+				<em class="xmost3 fleft">购货方自行安装</em>
+				<i class="hai47 xmost5 cxo1">&nbsp;</i>
+			</dd>
+			<dd class="paig xmost2" data-value="dealer">
+				<em class="xmost3 fleft">供货方负责安装</em>
+				<i class="hai47 xmost5 cxo2">&nbsp;</i>
+			</dd>
+			
+		</div>
+	</div>-->
+	<div class="xmost paig " id="delivery">
+		<div class="chose20">
+			<h2 class="chose37 fleft">交货方式</h2>
+		</div>
+		<div class="xmost1">
+			<div class="xmost101 fleft">
+				<dd class="paig xmost2" data-value="delivery">
+					<em class="xmost3 fleft">送货</em>
+					<i class="hai47 xmost5 cxo1">&nbsp;</i>
+				</dd>
+				<dd class="paig xmost2" data-value="selfExtract">
+					<em class="xmost3 fleft">自提</em>
+					<i class="hai47 xmost5 cxo2">&nbsp;</i>
+				</dd>
+			</div>
+			<div class="xmost102 fleft">
+				<dd class="paig xmosp2" id="install">
+					<em class="xmost3 fleft">安装</em>
+					<i class="hai47 xmost5 cxo2">&nbsp;</i>
+				</dd>
+			</div>
+		</div>
+	</div>
+	<div class="xmost paig">
+		<div class="chose20">
+			<h2 class="chose37 fleft">货品日期</h2>
+		</div>
+		<div class="xmost1">
+		<!--update 0407 start style="width:40%" style="width:60%"  
+    <span class="datebox"><input type="date" class="fright" value="" id="delivery-date" ></span>
+    <button class="" id="btncalc" ><i class="hai30"></i>修改</button>
+    -->
+      <dl class="xmmok">
+        <dd class="paig xmost10" style="width:40%"> <i class="xmost12 hai30 fleft"></i> <em class="xmost11 display fleft">订货日期</em> </dd>
+        <dd class="paig xmost10" style="width:60%"> <em class="xmost11 display fleft">
+          <input type="" class="fright" value="" id="order-date">
+          </em> </dd>
+      </dl>
+      <dl class="xmmok">
+        <dd class="paig xmost10" style="width:40%"> <i class="xmost12 hai30 fleft"></i> <em class="xmost11 display fleft">预约送货日期</em> </dd>
+        <dd class="paig xmost10" style="width:60%"> <em class="xmost11 display fleft">
+          <span class="datebox"><input type="date" class="fright" value="" id="delivery-date"></span><button class="" id="btncalc"><i class="hai30"></i>修改</button>
+          </em> </dd>
+      </dl><!--update 0407 end -->
+
+			<!-- <dl class="xmmok">
+				<dd class="paig xmost10">
+					<i class="xmost12 hai30 fleft"></i>
+					<em class="xmost11 display fleft">订货日期</em>
+				</dd>
+				<dd class="paig xmost10">
+					<em class="xmost11 display fleft"><input type="text" class="fright" value="" id="order-date" /></em>
+				</dd>
+			</dl>
+			<dl class="xmmok">
+				<dd class="paig xmost10">
+					<i class="xmost12 hai30 fleft"></i>
+					<em class="xmost11 display fleft">预约送货日期</em>
+				</dd>
+				<dd class="paig xmost10">
+					<em class="xmost11 display fleft"><input type="date" class="fright" value="" id="delivery-date" /></em>
+				</dd>
+			</dl> -->
+		</div>
+	</div>
+
+	<div class="xmost paig">
+		<div class="chose20">
+			<h2 class="chose37 fleft">活动专区</h2>
+		</div>
+		<div class="xmost1">
+			<input type="text" placeholder="赠品" class="paig xmost13" id="gift" maxlength="128">
+			<input type="text" placeholder="礼券" class="paig xmost13" id="voucher" maxlength="128">
+		</div>
+	</div>
+
+	<div class="xmost paig">
+		<div class="chose20">
+			<h2 class="chose37 fleft">备注</h2>
+		</div>
+		<div class="xmost1">
+			<textarea class="xmost15" id="remark" maxlength="128"></textarea>
+		</div>
+	</div>
+</div>
+<div class="xmost16"></div>
+<div class="fop1 fix">
+	<div class="fop10">
+		<div class="fop3 fleft">
+			<dl class="gongji fop20" id="totals">共0件商品</dl>
+			<span class="op5 display " id="fees-1">合计：￥0.00元</span>
+			<span class="op6 display " id="fees-2">￥0.00元</span>
+		</div>
+		<div class="xmost17 fleft">
+			<input type="button" value="添加" class="xmost18 fleft" id="add-products">
+			<input type="button" value="提交" class="xmost19 fright" id="submit-order">
+		</div>
+	</div>
+	<!-- <div class="fop10 fix">
+		<em class="fop2 display fleft" id="totals"> </em>
+		<div class="xmost17">
+			<input type="button" value="添加商品" class="xmost18 fleft" id="add-products"/>
+			<input type="button" value="提交" class="xmost19 fright"  id="submit-order"/>
+		</div>
+		<div class="fop3 fright">
+			<span class="op5 display " id="fees-1"></span>
+			<span class="op6 display " id="fees-2"></span>
+		</div>
+	</div> -->
+</div>
+
+
+		
+  
+			<script type="text/javascript" src="static/js/jquery-2.1.4.min.js"></script>
+			<script type="text/javascript" src="static/js/jquery.cookie.js"></script>
+			<script type="text/javascript" src="static/js/crfs.js"></script>
+			<script type="text/javascript">
+function connectToSwiftWebViewBridge(callback) {
+		            if (window.SwiftWebViewBridge) {
+		                callback(SwiftWebViewBridge)
+		            } else {
+		                document.addEventListener('SwiftWebViewBridgeReady', function() {
+		                    callback(SwiftWebViewBridge)
+		                }, false)
+		            }
+		        }
+		        connectToSwiftWebViewBridge(function(bridge) {
+		            bridge.init(function(message, responseCallback) {
+		                responseCallback("loaded");
+		            });
+		            bridge.registerHandlerForSwift('scanResult', function(data, responseCallback) {
+		            	if(scanResult)
+		                	scanResult(data.barcode);
+		            });
+		            bridge.registerHandlerForSwift('setChannelID', function(data, responseCallback) {
+		            	if(setChannelID)
+		                	setChannelID(data.channel);
+		            });
+
+		            window.scanCode = function() {
+                		bridge.callSwiftHandler("scanBarCode", null, null);
+		            }
+		            window.alert = function(message) {
+                		bridge.callSwiftHandler("showMessage", message, null);
+		            }
+		        });
+		        var channelID=undefined;
+				function setChannelID(channel)
+				{
+					channelID=channel;
+				}
+
+				function showMessage(message)
+				{
+					try
+					{
+						if(webContainer)
+						  {
+						    webContainer.showMessage(message);
+						  }
+						  else
+						    alert(message);
+					}
+					catch(err)
+					{
+					    alert(message);
+					}
+				}
+			</script>
+		
+<script type="text/javascript" src="static/js/hdapi.js"></script>
+<script type="text/javascript">
+	var resultHandler = undefined;
+	function scanResult(message)
+	{
+		if(typeof resultHandler === 'function')
+		{
+			resultHandler(message);
+		}
+	}
+				function scanBarCode()
+				{
+
+					try
+					{
+						if(webContainer)
+					  	{
+					    	webContainer.scanBarCode();
+						}
+					}
+					catch(err)
+					{
+						try
+						{
+							if(scanCode!=undefined)
+							{
+								scanCode();
+							}
+							else
+						    	alert('不支持该功能，请安装适合的App。');
+						}
+						catch(err1)
+						{
+						    alert('不支持该功能，请安装适合的App。');
+						}
+					}
+				}
+
+	function scanBarCode1()
+	{
+
+		try
+		{
+			if(webContainer)
+			  {
+		    		webContainer.scanBarCode();
+			  }
+			  else
+			    alert(message);
+		}
+		catch(err)
+		{
+		    alert('不支持该功能，请安装适合的App。');
+		}
+
+	}
+$(function(){
+    $.HDAPI.server='http://test195.yuexing.com.cn:8295/';
+	$('#leftbutton').click(function(e){
+		e.preventDefault();
+		var url = $(this).find('.chose6').attr('href');
+		window.location.href=url;
+	});
+	$('#scan').click(function(e) {
+		e.preventDefault();
+		scanBarCode();
+	});
+});
+</script>
+
+
+		
+<script type="text/javascript">
+$(function(){
+Date.prototype.Format = function (fmt) { //author: meizz 
+    var o = {
+        "M+": this.getMonth() + 1, //月份 
+        "d+": this.getDate(), //日 
+        "h+": this.getHours(), //小时 
+        "m+": this.getMinutes(), //分 
+        "s+": this.getSeconds(), //秒 
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+        "S": this.getMilliseconds() //毫秒 
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+    if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+}
+var time1 = new Date().Format("yyyy-MM-dd");
+$("#btncalc").bind("click",function(){
+	if($("#delivery-date").val()=="")
+	{$("#delivery-date").val(time1);}
+	$("#delivery-date").trigger("focus");
+	$("#delivery-date").trigger("click");
+});
+
+	$('.xmost2').click(function(){
+		$(this).addClass('cxo1').siblings().removeClass('cxo1');
+	});
+	$(".xmosp2").click(function(){
+		$(this).toggleClass('cxo1');
+	});
+	$('#paytype-full').click(function(e){
+		if($(this).hasClass('cxo1'))
+			$('#paytype-deposit').find('.eanr_con').html('');
+	});
+	$('#delivery-date').val('');
+	//$('#order-date').val(get_now().replace(/\./g,'-') );
+	/*var local=new Date(+new Date()+8*3600*1000).toISOString().replace(/\.[\d]{3}Z/,'');
+   $("#order-date").val(local);*/
+	function setup_image_hooks()
+	{
+		$(".large").off();
+		$(".large").click(function(e){
+		  $(this).closest('.image-item').find(".fj_large").show();
+		  e.stopPropagation();
+		});
+
+		$(".lgclose").off();
+		$(".lgclose").click(function(e){
+		  $(this).closest('.image-item').find(".fj_large").hide();
+		  e.stopPropagation();
+		});
+		$(".fujian_4").off();
+		$(".fujian_4").click(function(e){
+		  $(this).parent().parent().remove();
+		  if($('#images').children('.image-item').length < 3)
+		  {
+				$("#upload-picture").show();
+		  }
+		  e.stopPropagation();
+		});
+	}
+	setup_image_hooks();
+	function create_image_item(itemid)
+	{
+		var media_server = 'http://test195.yuexing.com.cn:8295/HDMediaService-Web/';
+		var fileaddr = media_server + '/fileget?fileID='+itemid;
+		var div = $('<div></div>');
+		$(div).addClass('fujian_2 fleft paig image-item');
+		var view = $('<div></div>');
+		var preview = $('<div></div>');
+		$(view).addClass('fujian_3 rel');
+		$(view).append('<span class="fujian_4 hai50 abs"></span>');
+		$(view).append('<img class="large" src="'+fileaddr+'">');
+		$(preview).addClass('fj_large fix imgw');
+		// $(preview).css('display','none');
+		var previewlarge = $('<div class="fj_large2"></div>');
+		// $(previewlarge).append('<span class="lgclose hai50 abs"></span>');
+		$(previewlarge).append('<span class="lgclose hai50 abs"></span>');
+		$(previewlarge).append('<img src="'+fileaddr+'">');
+		$(preview).append(previewlarge);
+		$(div).append(view);
+		$(div).append(preview);
+		$(div).data('image',itemid);
+		$("#upload-picture").before(div);
+		if($('#images').children('.image-item').length == 3)
+		{
+			$("#upload-picture").hide();
+		}
+	}
+	$('#picture-picker').change(function(e) {
+        var file = this.files[0];
+		var data = new FormData();
+        if (file) {
+	    	data.append('file', file);
+            $.ajax({
+			    url: 'http://test195.yuexing.com.cn:8295/cre-server/rest/commons/media/upload/',
+			    data: data,
+			    cache: false,
+			    contentType: false,
+			    processData: false,
+                dataType: "HTML",
+			    type: 'POST',			    
+			}).done(function(ret){
+		        create_image_item(ret);
+				setup_image_hooks();
+		    });
+        }
+    });
+    $('#upload-picture').click(function(e){
+    	e.preventDefault();
+    	$('#picture-picker').val('');
+    	$('#picture-picker').click();
+    });
+	function get_value(val)
+	{
+		if(val)
+			return val.toString();
+		return '';
+	}
+	function create_product_item(product, selected)
+	{
+		var item= $('<dl class="paig chose19 cleark product-item"></div>');
+		var title = $('<div class="chose20"><div class="chose58 fright"><input type="number" value="'+get_value(product.price)+'" class="fright price"/><em class="fright">￥</em></div><div class="chose59 fleft product-check"><i class="chose36 fleft hai49"></i><input type="hidden" class="chose36 fleft" /><h2 class="chose37 fleft"> '+get_value(product.code) + ' ' + get_value(product.name)+'</h2></div></div>');
+		if(selected)
+			$(title).find('i.chose36').addClass('hai49');
+		// var title = $('<div class="chose20"><em class="chose58 fright">￥'+get_value(product.price)+'</em><i class="chose36 fleft hai49"></i><input type="hidden" class="chose36 fleft" /><h2 class="chose37 fleft"> '+get_value(product.code) + ' ' + get_value(product.name)+'</h2></div>');
+		// var title = $('<div class="chose20"><label><input type="checkbox" class="chose36 fleft product-chooser" checked/><h2 class="chose37 fleft"> '+get_value(product.code) + ' ' + get_value(product.name)+'</h2></label></div>');
+
+		var body = $('<div class="chose25"><div class="chose27 fleft"><div class="chose30"><p>'+get_value(product.name)+'</p><p>规格：'+get_value(product.specification)+'</p><p>型号：'+get_value(product.model)+'</p></div><div class="chose31 paig"><div class="chose32 fleft" id="originalPrice">￥ '+get_value(product.price)+'元</div><div class="chose33 fright"><em class="chose39 fleft descnumber">-</em><input type="text" readonly class="chose35 fleft qty" value="'+get_value(product.qty)+'" /><em class="chose39 fleft incnumber">+</em></div></div></div></div>'+
+			'<div class="rebate"><span class="rebate1">折扣率：</span><input type="number" class="rebate2 discount-rate" value="100" max="100" min="0" maxlength="5" pattern="[0-9]{3}[\.?][0-9]{2}"/><span class="rebate5">%</span></div>');
+		if(product.originalPrice)
+			$(body).find('#originalPrice').html('￥ '+get_value(product.originalPrice)+'元');
+		$(body).find('input.discount-rate').val(product.discount);
+		$(body).find('input.discount-rate').change(function(e){
+			var rate = $(this).val();
+			if($.isNumeric(rate) == false)
+			{
+				showMessage('请输入正确的折扣率。');
+				$(this).val('100');
+				$(title).find('input.price').val(product.originalPrice);
+			}
+			else if( (rate-0) <=0)
+			{
+				showMessage('请输入正确的折扣率。');
+				$(this).val('100');
+				$(title).find('input.price').val(product.originalPrice);
+			}
+			else if( (rate-0) >100)
+			{
+				showMessage('请输入正确的折扣率。');
+				$(this).val('100');
+				$(title).find('input.price').val(product.originalPrice);
+			}
+			else
+			{
+				rate = rate -0;
+				rate = rate.toFixed();
+				$(this).val(rate);
+				var price =  rate * product.originalPrice / 100;
+				$(title).find('input.price').val(price.toFixed(2));
+				update_order_info();
+			}
+		});
+		$(title).find('input.price').change(function(e){
+			var price = $(this).val();
+			if($.isNumeric(price) == false)
+			{
+				showMessage('请输入正确的价格。');
+				$(this).val(get_value(product.originalPrice));
+				$(body).find('input.discount-rate').val('100');
+			}
+			else if( (price-0) <0)
+			{
+				showMessage('请输入正确的价格。');
+				$(this).val(get_value(product.originalPrice));
+				$(body).find('input.discount-rate').val('100');
+			}
+			else if( (price-0) >product.originalPrice)
+			{
+				showMessage('请输入正确的价格。');
+				$(this).val(get_value(product.originalPrice));
+				$(body).find('input.discount-rate').val('100');
+			}
+			else
+			{
+				price = price -0;
+				price = price.toFixed(2);
+				$(this).val(price);
+				var rate = 100 * price/product.originalPrice;
+				$(body).find('input.discount-rate').val(rate.toFixed());
+				update_order_info();
+			}
+		});
+		
+		$(item).append(title);
+		$(item).append(body);
+		$(item).data('product',product);
+		return item;
+	}
+	function update_order_info()
+	{
+		var totals = 0;
+		var fees = 0;
+		var originalfees = 0;
+		$('#products').children('.product-item').each(function(idx, product){
+			if($(product).find('i.chose36').hasClass('hai49'))
+			{
+				var prod = $(product).data('product');
+				var qty = $(product).find('input.qty').val();
+				var price = $(product).find('input.price').val();
+				if($.isNumeric(qty) == false)
+				{
+					qty = 1;
+					$(product).find('input.qty').val(qty);
+				}
+				else if( (qty-0) <=0)
+				{
+					qty = 1;
+					$(product).find('input.qty').val(qty);
+				}
+				if(prod)
+				{
+					if($.isNumeric(prod.price))
+					{
+						originalfees = originalfees + prod.originalPrice * qty;
+					}
+					if($.isNumeric(price))
+					{
+						fees = fees + price * qty;
+					}
+					totals = totals - 0 + (qty -0);
+				}
+			}
+		});
+		$('#fees-1').html('合计：￥'+fees.toFixed(2)+'元');
+		$('#fees-1').data('fees', fees.toFixed(2));
+		$('#fees-2').html('￥'+originalfees.toFixed(2)+'元');
+		$('#totals').html('共'+totals+'件商品');
+	}
+	function setup_hooks()
+	{
+		$('.descnumber').click(function(e){
+			var qty = $(this).siblings('input').val();
+			var qty=Math.max(0, qty - 1);
+			if(qty ==0)
+				$(this).closest('.product-item').find('i.chose36').removeClass('hai49');
+			$(this).siblings('input').val(qty);
+			update_order_info();
+		});
+		$('.incnumber').click(function(e){
+			var qty = $(this).siblings('input').val();
+			var qty=Math.min(1000000, qty - 0 + 1);
+			if(qty >0)
+				$(this).closest('.product-item').find('i.chose36').addClass('hai49');
+			$(this).siblings('input').val(qty);
+			update_order_info();
+		});
+
+		// $('.descnumber').click(function(e){
+		// 	var qty = $(this).siblings('input').val();
+		// 	var qty=Math.max(0, qty - 1);
+		// 	$(this).siblings('input').val(qty);
+		// 	update_order_info();
+		// });
+		// $('.incnumber').click(function(e){
+		// 	var qty = $(this).siblings('input').val();
+		// 	var qty=Math.min(1000000, qty - 0 + 1);
+		// 	$(this).siblings('input').val(qty);
+		// 	update_order_info();
+		// });
+		$('input.product-chooser[type="checkbox"]').click(function(e){
+			update_order_info();
+		});
+		$('.product-item').find(".product-check").click(function(){
+           $(this).find('i.chose36').toggleClass('hai49');
+			update_order_info();
+	   	});
+   		$('input.price').click(function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+	   	});
+	   	$('input.price').change(function (e) {
+          update_order_info();
+	   	});
+	}
+	function load_order_info(order)
+	{
+		if(order)
+		{
+			$('#customer-name').val(get_value(order.customname));
+			$('#customer-address').val(get_value(order.customaddr));
+			$('#customer-telephone').val(get_value(order.customertelephone));
+			$('#paytype').find('.paytype[data-value="'+get_value(order.paytype)+'"]').addClass('cxo1').siblings().removeClass('cxo1');
+			$('#paymethod').find('.xmost2[data-value="'+get_value(order.paymethod)+'"]').addClass('cxo1').siblings().removeClass('cxo1');
+			if(order.install)
+				$('#install').addClass('cxo1');
+			if(order.prom)
+				$('#prom').addClass('cxo1');
+			$('#delivery').find('.xmost2[data-value="'+get_value(order.delivery)+'"]').addClass('cxo1').siblings().removeClass('cxo1');
+			$('#delivery-date').val(get_value(order.deliverydate));
+			$('#self-date').val(get_value(order.selfdate));
+			$('#gift').val(get_value(order.gift));
+			$('#voucher').val(get_value(order.voucher));
+			$('#remark').val(get_value(order.remark));
+			$(order.fileIds).each(function(idx, id){
+		        create_image_item(id);
+			});
+			setup_image_hooks();
+		}
+	}
+	function get_image_items()
+	{
+		var ids = [];
+		$('.image-item').each(function(idx, image){
+			var fileid = $(image).data('image');
+			ids.push(fileid);
+		});
+		return ids;
+	}
+	function get_order_info()
+	{
+		var order = {};
+		order.customname = $.trim($('#customer-name').val());
+		order.customaddr = $.trim($('#customer-address').val());
+		order.customertelephone = $.trim($('#customer-telephone').val());
+		order.paytype = $.trim($('#paytype').find('.paytype.cxo1').attr('data-value'));
+		if(order.paytype=='deposit')
+			order.preDeposit=$('#paytype-deposit').find('.eanr_con').html();
+		else
+			order.preDeposit=undefined;
+		order.paymethod = $.trim($('#paymethod').find('.xmost2.cxo1').attr('data-value'));
+		order.install = $('#install').hasClass('cxo1');
+		order.prom = $('#prom').hasClass('cxo1');
+		order.delivery = $.trim($('#delivery').find('.xmost2.cxo1').attr('data-value'));
+		order.deliverydate = $.trim($('#delivery-date').val());
+		order.orderdate = $.trim($('#order-date').val());
+		order.remark = $.trim($('#remark').val());
+		order.gift = $.trim($('#gift').val());
+		order.voucher = $.trim($('#voucher').val());
+		order.boothTelephone = $.trim($('#boothTelephone').val());
+		order.fileIds = get_image_items();
+		var activities = [];
+		$('.join_arr').children().each(function(idx, act){
+			var prom = {};
+			var activity = $(act).data('prom');
+			prom.activityId = activity.activityId;//活动标识
+			prom.name = activity.activityName;
+			prom.promotionUuid = activity.promotionUuid;
+
+	
+		
+			prom.contract= {
+		        uuid: "8ae5940e557addbc0155e2156e840784",
+		        code: "900101160713000006",
+		        name: "科勒"
+		    };
+		
+	
+
+			prom.serialNumber = 0;//act.promotionUuid;//促销单标识
+			prom.discountAmount =0;// act.discountAmount;
+			activities.push(prom);
+		});
+		order.preActivities = activities;
+		return order;
+	}
+	function save_products(products)
+	{
+		window.localStorage["order_products"]=JSON.stringify(products);
+	}
+	function get_products () {
+		var products = [];
+		$('#products').children('.product-item').each(function(idx, product){
+			if($(product).find('i.chose36').hasClass('hai49'))
+			{
+				var prod = $(product).data('product');
+				var qty = $(product).find('input.qty').val();
+				var price = $(product).find('input.price').val();
+				var discount = $(product).find('input.discount-rate').val();
+				var price = $(product).find('input.price').val();
+				if(prod)
+				{
+					prod.qty = qty;
+					prod.price = price;
+					prod.stdTotal = qty * prod.price;
+					prod.orders= undefined;
+					prod.category= undefined;
+					prod.discount= discount;
+					// prod.uuid= undefined;
+					products.push(prod);
+				}
+			}
+		});
+		return products;
+	}
+	$('#add-products').click(function(e){
+		save_products(get_products());
+		window.localStorage["order"]=JSON.stringify(get_order_info());
+		window.location.href="/select";
+	});
+	var order = window.localStorage["order"];
+	if ( (order != undefined) || (order == '') )
+	{
+		try
+		{
+			order = JSON.parse(order);
+		}
+		catch(err)
+		{
+			order =undefined;
+		}
+	}
+	else
+		order = undefined;
+	load_order_info(order);
+	var products = window.localStorage["order_products"];
+	if ( (products != undefined) || (products == '') )
+	{
+		try
+		{
+			products = JSON.parse(products);
+		}
+		catch(err)
+		{
+			products =[];
+		}
+	}
+	else
+		products = [];
+	$('#products').empty();
+	$(products).each(function(idx, item){
+		$('#products').append(create_product_item(item,true));
+	});
+	setup_hooks();
+	update_order_info();
+	function get_now()
+	{
+		var now = new Date();
+		var month =now.getMonth() -0 +1;
+		var day =now.getDate() -0 ;
+		if(month< 10)
+			month = "0"+month;
+		if(day< 10)
+			day = "0"+day;
+		return now.getFullYear()+"."+month+"."+day;
+	}
+	function get_now_full()
+	{
+		var now = new Date();
+		var month =now.getMonth() -0 +1;
+		var day =now.getDate() -0 ;
+		var hours =now.getHours() -0 ;
+		var minutes =now.getMinutes() -0 ;
+		var seconds =now.getSeconds() -0 ;
+		if(month< 10)
+			month = "0"+month;
+		if(day< 10)
+			day = "0"+day;
+		if(hours< 10)
+			hours = "0"+hours;
+		if(minutes< 10)
+			minutes = "0"+minutes;
+		if(seconds< 10)
+			seconds = "0"+seconds;
+		return now.getFullYear()+"-"+month+"-"+day+' '+hours+":"+minutes+":"+seconds;
+	}
+	$('#back').click(function(e){
+		window.localStorage.removeItem("order_products");
+		window.localStorage.removeItem("order");
+		window.location.href="/"
+	});
+	
+		
+	$('#submit-order').click(function(e){
+		var local=new Date(+new Date()+8*3600*1000).toISOString().replace(/\.[\d]{3}Z/,'');
+		re=new RegExp("T");
+		var newstart=local.replace(re," ");
+        $("#order-date").val(newstart);
+		//console.log(order.orderdate);
+		var order = get_order_info();
+		var now = get_now();
+		var products = get_products();
+		var activities = [];
+		$('.join_arr').children().each(function(idx, act){
+			var prom = {};
+			var activity = $(act).data('prom');
+			prom.uuid = activity.activityId;//活动标识
+			prom.name = activity.activityName;
+			prom.serialNumber = 0;//act.promotionUuid;//促销单标识
+			prom.discountAmount = 0;//act.discountAmount;
+			activities.push(prom);
+		});
+		if(order.customname == undefined  || order.customname == '')
+		{
+			showMessage('请填写顾客姓名');
+			return ;
+		}
+		if(order.customertelephone == undefined  || order.customertelephone == '')
+		{
+			showMessage('请填写顾客电话');
+			return ;
+		}
+		if(order.boothTelephone == undefined  || order.boothTelephone == '')
+		{
+			showMessage('请填写营业员联系方式');
+			return ;
+		}
+		if(order.customaddr == undefined  || order.customaddr == '')
+		{
+			showMessage('请填写顾客地址');
+			return ;
+		}
+		if(order.paytype == undefined  || order.paytype == '')
+		{
+			showMessage('请填写付款类别');
+			return ;
+		}
+		if(order.delivery == undefined  || order.delivery == '')
+		{
+			showMessage('请填写交货方式');
+			return ;
+		}
+		if(order.deliverydate == undefined  || order.deliverydate == '')
+		{
+			showMessage('请填写预约交货日期');
+			return ;
+		}
+		function get_date_format(date)
+	    {
+	        var mdate = new Date(date);
+	        
+	        var y = mdate.getFullYear(),
+	            m = mdate.getMonth()+1,
+	            d = mdate.getDate(),
+	            w = mdate.getDay();
+	        if(m < 10)
+	            m = "0"+m;
+	        if(d < 10)
+	            d = "0"+d;
+	        return y+"-"+m+"-"+d;
+	    }
+
+		 if(order.deliverydate < get_date_format(new Date()))
+	    {
+	      showMessage('预约交货日期必须大于当前时间。');
+	      return ;
+	    }   
+		if(products == undefined  || products.length == 0)
+		{
+			showMessage('请至少选择一个商品');
+			return ;
+		}
+		$(products).each(function(idx, product){
+			product.discount=undefined;
+			// product.pdtUuid=undefined;
+			// product.payedTotal=undefined;
+		});
+		// var now = get_now();
+		
+		// time,operator.id,operator.fullname,operator.namespace
+
+		var orderdata={
+			bizState: "ineffect",
+		    store: {
+		        uuid: "8ae5940e541915240154195db68401a5",
+		        code: "900101",
+		        name: "月星家居常州店"
+		    },
+		    contract: {
+		        uuid: "8ae5940e557addbc0155e2156e840784",
+		        code: "900101160713000006",
+		        name: "科勒"
+		    },
+		    tenant: {
+		        uuid: "8ae5940e552b6069015562281db50174",
+		        code: "100295",
+		        name: "郑文鹏"
+		    },
+		    appointmentDeliveryDate: order.deliverydate.replace(/\-/g,'.') + " 00:00:00",
+		    deliveryMode: order.delivery,
+		    frozenState: "unfrozen",
+		    install:order.install,
+		    customerName: order.customname,
+		    boothTelephone: order.boothTelephone,
+			preDeposit: order.preDeposit,
+			discountRate: order.discountRate,
+		    gift: order.gift,
+		    prom: order.prom,
+		    voucher: order.voucher,
+		    remark: order.remark,
+		    customerTelephone: order.customertelephone,
+		    orderDate: order.orderdate.replace(/\-/g,'.'),//.replace(/\-/g,'.') + " 00:00:00"
+		    receiptAddress: order.customaddr,
+		    paymentCategory: order.paytype,
+		    fileIds: order.fileIds,
+		    preActivities: order.preActivities,
+		    lines: products
+		};
+		$.HDAPI.create_order(orderdata,'time='+get_now_full()+'&operator.id=100295001&operator.fullname=月星家居常州店&operator.namespace=yx', function(result){
+			if(result.success)
+			{
+				window.localStorage.removeItem("order");
+				window.localStorage.removeItem("order_products");
+				window.location.href="/";
+			}else
+			{
+				showMessage(result.message);
+			}
+		});
+
+	});
+		
+	
+	var proms = [];
+	var contracts = [
+	
+		
+			"8ae5940e557addbc0155e2156e840784",
+	
+		];
+
+	$.HDAPI.query_prom({contracts:contracts}, function(result){
+		proms = result.body.records;
+	});
+	/*
+	 <dd class="paig xmosp2">
+					<em class="xmost3 fleft">双12疯狂刮满额送</em>
+					<i class="hai47 xmost5 cxo2">&nbsp;</i>
+	 </dd>
+	 * */
+//活动多选
+var gcw = {
+	html:function(selected, callback){
+		var html = [];
+		html=$("<div class='gcw_20'></div>");
+		var list = $("<ul class='gcw_21'></ul>");
+		$("<div class='gcw_25'><div class='gcw_23'>请选择</div></div>").append(list).append("<div class='gcw_hide'>选好了</div>").appendTo(html);
+		$(proms).each(function(idx, activity){
+			var prom = $('<li class="paig xmosp2"><i class="hai47 xmost5 cxo2">&nbsp;</i></li>')
+			$(prom).prepend("<div class='xmost3 fleft'>"+activity.activityName+"</div>");
+			$(prom).data('prom',activity);
+			$(list).append(prom);
+			if(selected.indexOf(activity.activityId)!=-1 )
+			{
+				$(prom).toggleClass('cxo1');
+			}
+		});
+		$("body").append(html);
+		//动态添加或移除已选中数据到$(".join_arr")中
+	   	$(list).children(".xmosp2").click(function(){
+		   $(this).toggleClass('cxo1');
+		   return;
+		});
+		$(html).find(".gcw_hide").click(function(){
+			if(typeof callback == "function")
+			{
+				var items = [];
+				$(list).children(".xmosp2.cxo1").each(function(index, el) {
+					var text = $(el).html();
+					var activity= $(el).data('prom');
+					var item=$("<dd class='yx_stores2 cxo1 paig'>"+text+"</dd>");
+					$(item).data('prom',activity);
+					items.push({item:item,data:activity});
+				});
+				callback(items);
+			}
+			gcw.remove();
+		});
+	},
+	remove:function(){
+		$(".gcw_20").remove();
+		$(".lm_gcw2").show();
+	}
+}
+//活动多选 end
+
+//定金弹出框
+var earn = {
+	html:function(value, max, callback){
+		var html =$("<div class='gcw_20' id='preDepositDialog'></div>");
+		var eanr_box = $("<div class='eanr_box'><div class='gcw_23'>请输入定金金额</div></div>");
+		var eanr_box2 = $("<div class='eanr_box2'></div>");
+		eanr_box2.append("<div class='eanr1'>请输入定金：</div>");
+		if(value!=undefined)
+			eanr_box2.append("<input type='number' class='eanr3' value = '"+value+"' autofocus maxlength='12'/>");
+		else
+			eanr_box2.append("<input type='number' class='eanr3' autofocus maxlength='12'/>");
+		eanr_box.append(eanr_box2);
+		html.append(eanr_box);
+		eanr_box.append("<div class='gcw_hide'><span class='eanr_hide1' id='cancel-dialog'>取消</span><span class='eanr_ok' id='confirm-preDeposit'>确定</span></div>");
+		$("body").append(html);
+		
+		//取消按钮
+		$(html).find("#cancel-dialog").click(function(e){
+			e.preventDefault();
+			setTimeout(function(e){earn.remove();}, 200);
+		});
+		
+		//保存按钮
+		$(html).find("#confirm-preDeposit").off();
+		$(html).find("#confirm-preDeposit").click(function(e){
+			e.preventDefault();
+			var eanr_text=$("input.eanr3").val();
+			if($.isNumeric(eanr_text)==false)
+			{
+				showMessage("请输入正确的定金金额。");
+				$("input.eanr3").focus();
+				return;
+			}
+			if( (eanr_text-0 < 0) || (eanr_text-0 > max))
+			{
+				showMessage("请输入正确的定金金额。");
+				$("input.eanr3").focus();
+				return;
+			}
+			if(eanr_text.toString().split('.').length > 1)
+			{
+				if(eanr_text.toString().split('.')[1].length > 3)
+				{
+					showMessage("请输入正确的定金金额。");
+					$("input.eanr3").focus();
+					return;
+				}
+			}
+			if(typeof callback == "function")
+			{
+				callback(eanr_text);
+			}
+			setTimeout(function(e){earn.remove();}, 200);
+		});
+//		setTimeout(function(e){$("input.eanr3").focus();}, 200);
+		
+	},
+	remove:function(){
+		$("#preDepositDialog").remove();
+		$(".gcw_20").remove();
+		$(".lm_gcw2").show();
+	}
+}
+//定金弹出框 end
+
+    //活动多选创建html
+	$(".lm_gcw").click(function(){
+		var promlist = [];
+		$('.join_arr').children().each(function(index, el) {
+			var activity= $(el).data('prom');
+			promlist.push(activity.activityId);
+		});
+		gcw.html(promlist, function(items){
+			$('.join_arr').children().remove();
+			$(items).each(function(index, item) {
+				$('.join_arr').append(item.item);
+			});
+		});
+	});
+	
+	//创建定金输入框
+	$(".eanr").click(function(){
+		earn.html($(".eanr_con").html(), $('#fees-1').data('fees'), function(newvalue){
+			$(".eanr_con").html(newvalue);
+			$('#paytype-full').removeClass('cxo1');
+			$('#paytype-deposit').addClass('cxo1');
+		});
+	});
+	
+})
+</script>
+
+	
+
+</body></html>

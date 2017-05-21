@@ -13,13 +13,14 @@
         android:background="@color/actionBar">
 
         <ImageView
-            android:id="@+id/bannerBack"
+            android:id="@+id/ivbannerBack"
             style="@style/BannerBackButton"
             android:onClick="dismissActivity" />
 
         <TextView
+            android:id="@+id/tvBannerBack"
             style="@style/BannerBackText"
-            android:layout_toRightOf="@id/bannerBack"
+            android:layout_toRightOf="@id/ivbannerBack"
             android:onClick="dismissActivity" />
 
         <TextView

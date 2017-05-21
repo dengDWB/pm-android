@@ -71,11 +71,11 @@ public class SubjectActivity extends BaseActivity {
 	private ArrayList<HashMap<String, String>> menuListItem =  new ArrayList<>();
 	private Context mContext;
 	private Map<String, String> staticUrlMap;
-	private TextView mTitle;
+	private TextView mTitle, mTvBannerBack;
 	private Intent mSourceIntent;
 	AlertDialog.Builder builder;
 	String offlineLink = "";
-	private ImageView mBannerSetting;
+	private ImageView mBannerSetting, mIvBannerBack;
 	private MenuAdapter mSimpleAdapter;
 
 	/* 请求识别码 */
@@ -119,6 +119,12 @@ public class SubjectActivity extends BaseActivity {
 		colorViews.add((ImageView) findViewById(R.id.colorView3));
 		colorViews.add((ImageView) findViewById(R.id.colorView4));
 		initColorView(colorViews);
+	}
+
+	@Override
+	protected void onDestroy() {
+		mWebView.loadUrl("javascript:localStorage.clear()");
+		super.onDestroy();
 	}
 
 	public void initWebView() {
@@ -240,6 +246,8 @@ public class SubjectActivity extends BaseActivity {
 	}
 
 	private void initActiongBar() {
+		mTvBannerBack = (TextView) findViewById(R.id.tvBannerBack);
+		mIvBannerBack = (ImageView) findViewById(R.id.ivbannerBack);
 		bannerView = (RelativeLayout) findViewById(R.id.actionBar);
 		mBannerSetting = (ImageView) findViewById(R.id.bannerSetting);
 		mBannerSetting.setVisibility(View.VISIBLE);
@@ -448,9 +456,9 @@ public class SubjectActivity extends BaseActivity {
 		} else {
 			urlString = link;
             // 删除Local Storage 的缓存
-            if (new File(getFilesDir().getParent()+"/app_webview/Local Storage").exists()){
-                FileUtil.deleteFile(new File(getFilesDir().getParent()+"/app_webview/Local Storage"));
-            }
+//            if (new File(getFilesDir().getParent()+"/app_webview/Local Storage").exists()){
+//                FileUtil.deleteFile(new File(getFilesDir().getParent()+"/app_webview/Local Storage"));
+//            }
 			webSettings.setDomStorageEnabled(true);
 			runOnUiThread(new Runnable() {
 				@Override
@@ -462,8 +470,10 @@ public class SubjectActivity extends BaseActivity {
 				}
 			});
 		}
+	}
 
-
+	void clearLocalStorage() {
+		mWebView.loadUrl("javascript:localStorage.clear()");
 	}
 
 	public void isLoadErrorHtml(){
@@ -864,7 +874,10 @@ public class SubjectActivity extends BaseActivity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					bannerView.setVisibility(state.equals("show") ? View.VISIBLE : View.GONE);
+					bannerView.setVisibility(state.equals("show") ? View.VISIBLE : View.VISIBLE);
+					mBannerSetting.setVisibility(state.equals("show") ? View.VISIBLE : View.GONE);
+					mIvBannerBack.setVisibility(state.equals("show") ? View.VISIBLE : View.GONE);
+					mTvBannerBack.setVisibility(state.equals("show") ? View.VISIBLE : View.GONE);
 				}
 			});
 		}
@@ -901,12 +914,6 @@ public class SubjectActivity extends BaseActivity {
 				logParams.put(URLs.kObjType, objectType);
 				logParams.put(URLs.kObjTitle, String.format("主题页面/%s/%s", bannerName, ex));
 				new Thread(mRunnableForLogger).start();
-
-				//点击两次还是有异常 异常报出
-//				if (loadCount < 2) {
-//					showWebViewExceptionForWithoutNetwork();
-//					loadCount++;
-//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
