@@ -667,6 +667,10 @@ $(function(){
           record.beginSettle = beginSettle;
           record.endSettle = endSettle;
           save_storage('settle',record);
+          //updatecynthia start
+          save_storage('beginSettle',beginSettle);
+          save_storage('endSettle',endSettle);
+          //updatecynthia end
           goto_url('contract.settle.info.html');
         });
         return item;
@@ -689,14 +693,35 @@ $(function(){
       $('#search').click(function(e){
           var text = $('input#keyword').val();
           keyword = text;
-          load_settles(0);
+          if(selected_store)
+          {load_settles(0);}
+      	  else
+      	  {
+      	  	showMessage("未选择项目，请返回主页重新进入");
+      	  }	
       });
-
-    $('#settle-begin,#settle-end').val(now.date.substr(0,7));
+    /*===开始日期结束日期存储 updatecynthia0522 start===*/
+    var beginSettle=get_storage('beginSettle');
+    var endSettle=get_storage('endSettle');
+    if(beginSettle)
+    {$('#settle-begin').val(beginSettle);}
+	else
+	{$('#settle-begin').val(now.date.substr(0,7));}
+   if(endSettle)
+    {$('#settle-end').val(endSettle);}
+	else
+	{$('#settle-end').val(now.date.substr(0,7));}
+   /*===开始日期结束日期存储 updatecynthia end===*/
+   $('#settle-begin,#settle-end').click(function(e){
+   		 if(!selected_store)
+   		 {
+      	  	showMessage("未选择项目，请返回主页重新进入");
+      	  }
+   })
     $('#settle-begin,#settle-end').change(function(e){
         var text = $('input#keyword').val();
           keyword = text;
-        load_settles(0);
+          load_settles(0);
     });
     var curpage = undefined;
     var can_loading = true;
@@ -713,7 +738,7 @@ $(function(){
     };
    //updatecynthia 
    //remove_storage('selected_store');
-    //var selected_store = undefined;
+    //var selected_store = undefined;    
     var selected_store = get_storage('selected_store');
     function load_settles(page)
     {

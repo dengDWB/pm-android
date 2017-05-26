@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <title>订单列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta content="email=no" name="format-detection" />
+    <!-- Set render engine for 360 browser -->
+    <meta name="renderer" content="webkit" />
+    <!-- No Baidu Siteapp-->
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <!--<link rel="icon" type="image/png" href="assets/i/favicon.png" />-->
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!--<link rel="icon" sizes="192x192" href="assets/i/app-icon72x72@2x.png" />-->
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="月星促销" />
+    <!--<link rel="apple-touch-icon-precomposed" href="assets/i/app-icon72x72@2x.png" />-->
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <!--<meta name="msapplication-TileImage" content="assets/i/app-icon72x72@2x.png" />-->
+    <meta name="msapplication-TileColor" content="#0e90d2" />
+    <link href="static/css/default.css" rel="stylesheet" />
+
+</head>
+
+<body>
+    <div class="content frame">
+        <div class="main">
+            <!--内容区域-->
+            <div class="detail">
+                <div class="board bg">
+                    <div class="board_t search_t">
+                        <span class="searchboard over">
+                            <span class="searchipt cols-11"><input type="text" class="searchtxt ico searchico" placeholder="请输入顾客的姓名及电话" id="txtSearch" /></span>
+                        <span class="searchhandler cols-1 margin_r"><button class="ico searchico" onclick="ordersearch()"></button></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="board">
+                    <div class="board_c">
+                        <ul id="orderlist">
+                            <li class="boarditem" id="goods{{billNumber}}">
+                                <div class="boarditem_t rows-3 over">
+                                    <div class="boarditem_t_l cols-7">订单编号：<span data-cell="{{billNumber}}"></span></div>
+                                    <div class="boarditem_t_c cols-3" data-format="delHandler,{{billNumber}},{{version}},false" data-cell="{{bizState}}"></div>
+                                    <div class="boarditem_t_r cols-2"><a href="javascript:;" onclick="goDetail({{billNumber}})">详情</a></div>
+                                </div>
+                                <a href="javascript:;" onclick="goDetail({{billNumber}})">
+                                    <div class="over boarditem_context">
+                                        <div class="boarditem_c rows-3 over border_b">
+                                            <div class="boarditem_c_l cols-4">顾客姓名</div>
+                                            <div class="boarditem_c_c cols-4" data-cell="{{customerName}}">
+
+                                            </div>
+                                            <div class="boarditem_c_r cols-4" data-format="statusName" data-cell="{{bizState}}">
+
+                                            </div>
+                                        </div>
+                                        <div class="boarditem_c rows-2 over border_b">
+                                            <div class="boarditem_c_l cols-4">电话</div>
+                                            <div class="boarditem_c_r cols-8" data-cell="{{customerTelephone}}">
+
+                                            </div>
+                                        </div>
+                                        <div class="boarditem_c rows-2 over border_b">
+                                            <div class="boarditem_c_l cols-4">下单时间</div>
+                                            <div class="boarditem_c_r cols-8" data-format="datetime,yyyy-MM-dd" data-cell="{{orderDate}}">
+
+                                            </div>
+                                        </div>
+                                        <div class="boarditem_c rows-2 over">
+                                            <div class="boarditem_c_l cols-4">预计到货时间</div>
+                                            <div class="boarditem_c_r cols-8" data-format="datetime,yyyy-MM-dd" data-cell="{{appointmentDeliveryDate}}">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!--内容区域完-->
+        </div>
+        <div class="footer ">
+            <div class="board">
+                <div class="board_c navlist">
+                    <ul class="navrows over">
+                        <li class="boarditem">
+                            <a href="javascript:;" class="navitem" onclick="createOrder()">
+                                <ul class="padding_v">
+                                    <li class="navtitle textoverflow">
+                                        <span class="ico newico">新增订单</span>
+                                    </li>
+                                </ul>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="static/js/jquery-1.10.2.min.js"></script>
+    <script src="static/js/jquery.tcscdui.js"></script>
+    <script src="static/js/site.base.js"></script>
+    <script src="static/js/loaddata.js"></script>
+    <script src="static/js/user_permission.js"></script>
+    <script src="static/js/syp_v1.js"></script>
+    <script type="text/javascript">
+        var orderlist;
+        var goodsData;
+        var activityData;
+        $(function () {
+            ordersearch();
+        })
+        function goDetail(id) {
+            window.SYP.pageLink("商品列表", "order.view.html?id="+id, -1);
+            //window.location.href = "order.view.html";
+        }
+        function createOrder() {
+            window.SYP.pageLink("商品列表", "goods.html", -1);
+            //window.location.href = "goods.html";
+        }
+    </script>
+</body>
+
+</html>

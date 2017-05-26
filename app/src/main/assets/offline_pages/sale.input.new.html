@@ -853,7 +853,7 @@
 					get_payments();
 					$('#saleCount').blur(function(){
 						var saleCount = $.trim($('#saleCount').val());
-						var intr = /^[0-9]*[1-9][0-9]*$/;
+						var intr = /^[0-9]*[0-9][0-9]*$/;
 						if(!(intr.test(saleCount))) {
 							showMessage("请输入正确的笔数");
 						}	
@@ -876,7 +876,7 @@
 							return;
 						}
 						var saleCount = $.trim($('#saleCount').val());
-						var intr = /^[0-9]*[1-9][0-9]*$/;
+						var intr = /^[0-9]*[0-9][0-9]*$/;
 						if(!(intr.test(saleCount))) {
 							showMessage("请输入正确的笔数");
 							return;

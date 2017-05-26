@@ -67,6 +67,7 @@ label#page-title {
 		  }
 		  .shlogo1{display:none;}
 		  .shlogo2{width:90%;}
+		  .
 		  </style>
 
 	</head>
@@ -75,8 +76,8 @@ label#page-title {
 	<section class="g-seek">
 		<div class="content">
 			<input type="text"  placeholder="请输入关键字" oninput="seek(this)" id="tebabtsSeek"/>
-			<i class="vn02 searchCancel" id="searchCancel"></i>
-			<span class="l_om vn27"></span>
+			<i class="vn02 searchCancel" id="searchCancel" style="display:none"></i>
+			<span class="l_om vn27"  style="display:none"></span>
 		</div>
 	</section>
 	<script>
@@ -90,6 +91,7 @@ label#page-title {
 					$('#tenants').append(lists[i][0]);
 				}
 			}
+			setup_hooks();
 		}
 	</script>
 	
@@ -624,7 +626,14 @@ $(function(){
 <script type="text/javascript" src="static/js/echarts.min.js?TIMESTAMP"></script>
 <script type="text/javascript" src="static/js/jquery.glide.min.js?TIMESTAMP"></script>
 <script type="text/javascript">
-
+ function setup_hooks()
+  {
+    $(".tenant-item").on("click",function(e){
+      var contract = $(this).data('tenant');
+      save_storage('tenant', contract);
+      goto_url("tenant.view.html");
+    });
+  }
 $(function(){
 	resultHandler = function(message){
 	};
@@ -675,15 +684,7 @@ $(function(){
         $(tenants).append(create_tenant_item(tenant));
       }
 
-  function setup_hooks()
-  {
-    $(".tenant-item").click(function(e){
-      var contract = $(this).data('tenant');
-      save_storage('tenant', contract);
-      // window.location.href="tenant.view.html";
-      goto_url("tenant.view.html");
-    });
-  }
+ 
 
     var curpage = undefined;
     var can_loading = true;

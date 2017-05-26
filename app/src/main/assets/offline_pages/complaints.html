@@ -60,7 +60,7 @@ label#page-title {
 
 </ul>
 
-<div class="g-add vn32 actionbtn hidden" id="new-complaint" onclick="MobileBridge.pageLink('$title$', 'offline://complaint.new.html', 0);"  href="javascript:void(0);"></div>
+<div class="g-add vn32 actionbtn hidden" style="display:none" id="new-complaint" onclick="MobileBridge.pageLink('$title$', 'offline://complaint.new.html', 0);"  href="javascript:void(0);"></div>
 
 
 
@@ -579,9 +579,9 @@ $(function(){
 <script type="text/javascript">
 
 $(function(){
-	//m_loading.html();//loading 启动
-	resultHandler = function(message){
-	};
+	m_loading.html();//loading 启动
+	 resultHandler = function(message){
+	 };
   goBackHandler = function () {
     goto_url("/");
   }
@@ -660,14 +660,16 @@ if(userinfo.permissions.indexOf("/cre-app/complainAdvice/create") >= 0) {
       query_complaint(page);
     }
   };
+  
   var selected_store = get_storage('selected_store');
-  function query_complaint(page){
-  	if(!selected_store)
+if(!selected_store)
   	{
   		$("#new-complaint").hide();
   	}
   	else
   	{$("#new-complaint").show();}
+  function query_complaint(page){
+  	$(".g-add").show();
     var data = {
       pageSize: 10,
       page: page,
@@ -713,6 +715,7 @@ if(userinfo.permissions.indexOf("/cre-app/complainAdvice/create") >= 0) {
   {//updatecynthia start 判断是否已选择selected_store
   	if(selected_store==undefined || selected_store=="")
     {
+    	m_loading.remove();
     popipm.html('请选择项目',stores, function(popip, e, item){
       selected_store = item.uuid;
       save_storage('selected_store', selected_store);

@@ -102,7 +102,7 @@ label#page-title {
     <textarea class="m_text" disabled="disabled" id="complaintContents"></textarea>
   </section>
   <h2 class="g-titleH2 hidden dealing">处理记录</h2>
-  <section class="g-xjlist hidden dealing">
+  <section class="g-xjlist hidden dealing" >
     <div class="g-xjlist-zt5 fn">
       <div class="title jm_2">处理时间：</div>
       <div class="text jm_3">
@@ -127,6 +127,7 @@ label#page-title {
       <input class="jm_input" type="text"  id="processInfo" placeholder="请输入" maxlength="128" />
     </div>
   </div>
+  <div style="padding-bottom:50px"></div>
 </section>
 </div>
 <section class="g-tijiao  hidden"  id="buttons">
@@ -639,7 +640,7 @@ $(function(){
 
 <script type="text/javascript">
 $(function(){
-  buttonFixed();
+  
   resultHandler = function(message){
   };
   m_loading.html();
@@ -763,8 +764,9 @@ $(function(){
           showMessage(result.message);
         }
     });
+    buttonFixed();
   }
-
+buttonFixed();
   if(taskinfo)
   {
     var data = {

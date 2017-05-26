@@ -691,10 +691,18 @@ $(function(){
         $(sale.mediaFiles).each(function(idx, media){  
             var html = create_image_item(media);
             $('#mediaFiles').append(html);
+                 
         });
-        setup_image_hooks($('#mediaFiles'));
+        //setup_image_hooks($('#mediaFiles'));
         /*===updatecynthia0520 end==*/
 	    load_today_sales_total(sale.contract , sale.saleDate);
+	    
+	     $(".imgShow").click(function() {
+        
+				var imgSrc = $(this).find("img")[0].currentSrc;
+				imgShow.html(imgSrc);
+			});  
+	   
   	}
   /*===updatecynthia0520 照片显示start===*/	
   function create_image_item(image)
@@ -702,7 +710,11 @@ $(function(){
     var div = $('<div></div>');
     $(div).addClass('left image-item');
     var view = $('<div class="img imgShow"></div>');
-    var img = $('<img class="large">');
+    if(image.size >= 2000000 && isIOS){
+		var img = $('<img class="large" style="transform:rotateY(180deg)">');
+	}else{
+		var img = $('<img class="large">');
+	}
     $(view).append(img);
     $(div).append(view);
     $.HDAPI.get_attachment(image, function(result){

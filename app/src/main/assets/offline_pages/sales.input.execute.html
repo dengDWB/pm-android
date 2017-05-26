@@ -68,9 +68,9 @@ label#page-title {
 		  .enter2{background:#f8f2fe;}
 		  .enter3> dt, dd,.enter9, .enter15{color:#000;}
 		  .btn_button2{color:#000;}
-		  .submitbtn{border-radius:10px; position: fixed; z-index: 2; left: 0; bottom:0.5px; width:90%;left:50%;margin-left:-45%; height: 0.8rem; line-height: 0.8rem; text-align: center;background: #8C0122; color: #fff; font-size: 0.29rem;letter-spacing:4px;}
-		  .btn_button1{ border-radius:10px; position: fixed; z-index: 2; left: 0; bottom:0.5px; width: 45%; height: 0.8rem; line-height: 0.8rem; text-align: center;background: #8C0122; color: #fff; font-size: 0.29rem;margin-left:3%;}
-.btn_button2{ border-radius:10px; position: fixed; z-index: 2; right: 0; bottom:0.5px;left:auto; width: 45%; height: 0.8rem; line-height: 0.8rem; text-align: center;background: #fff;border:1px solid #000; color: #000; font-size: 0.29rem;margin-right:3%;}
+		  .submitbtn{border-radius:5px; position: fixed; z-index: 2; left: 0; bottom:0.5px; width:90%;left:50%;margin-left:-45%; height: 0.8rem; line-height: 0.8rem; text-align: center;background: #8C0122; color: #fff; font-size: 0.29rem;letter-spacing:4px;}
+		  .btn_button1{ border-radius:5px; position: fixed; z-index: 2; left: 0; bottom:0.5px; width: 45%; height: 0.8rem; line-height: 0.8rem; text-align: center;background: #8C0122; color: #fff; font-size: 0.29rem;margin-left:3%;}
+.btn_button2{ border-radius:5px; position: fixed; z-index: 2; right: 0; bottom:0.5px;left:auto; width: 45%; height: 0.8rem; line-height: 0.8rem; text-align: center;background: #fff;border:1px solid #000; color: #000; font-size: 0.29rem;margin-right:3%;}
 .kuan50{overflow:visible;}
 .wrap{padding-bottom:0.8rem;}
 		  </style>
@@ -666,7 +666,13 @@ $(function(){
 	buttonFixed();
 	resultHandler = function(message){
 	};
-
+    function get_attachments() {
+						var attachments = [];
+						$('.image-item').each(function(idx, item) {
+							attachments.push($(item).data('image'));
+						});
+						return attachments;
+	}
 	function create_payment(payment)
 	{
 		var html = $('<dl class="info_list payment-item"></dl>');
@@ -816,6 +822,8 @@ $(function(){
       return;
     }
     saleinfo.payments = payments;
+    saleinfo.mediaFiles = get_attachments();
+    //console.log(saleinfo.mediaFiles);
     var extra = 'time='+get_now_full()+'&operator.id='+userinfo.code+'&operator.fullname='+userinfo.name+'&operator.namespace=hd';
     $.HDAPI.save_salesInput(extra, saleinfo, function(result){
       if(result.success)
@@ -881,7 +889,8 @@ $(function(){
 						$(view).append('<p class="hide vn02 imgHide"></p>');
 						$(div).append(view);
 
-						$(div).data('image', img);
+						$(div).data('image', img.id);
+						//console.log($(div).data('image'));
 						return div;
 	}
 	/*===updatecynthia0521 照片上传start===*/
@@ -915,14 +924,30 @@ $(function(){
         /*===添加支付方式 updatecynthia start===*/
         get_payments();
         /*===添加支付方式 updatecynthia end===*/
-        if(sale.mediaFiles.length >0)
-          {
-          $('#mediaFiles').show();
-          $('#uploaddiv').hide();
-          } 
+       //console.log(sale);
+        //if(sale.mediaFiles.length > 2)
+       //   {
+//        $('#mediaFiles').show();
+//        $('#uploaddiv').hide();
+
+			
+       //   } 
         $(sale.mediaFiles).each(function(idx, media){  
             var html = create_image_item(media);
-            $('#mediaFiles').append(html);
+            //$('#mediaFiles').append(html);
+            $('#uploaddiv').prepend(html);
+            $(".imgShow").click(function() {
+				var imgSrc = $(this).find("img")[0].currentSrc;
+				imgShow.html(imgSrc);
+			});
+			$(".imgHide").click(function() {
+				$(this).closest('.image-item').remove();
+				if($("#uploaddiv").find('.image-item').length < 2) $("#uploaddiv").find('.upload-picture').show();
+
+			});
+			if($("#uploaddiv").find('.image-item').length > 1) {
+				$("#uploaddiv").find('.upload-picture').hide();
+			}
         });
         setup_image_hooks($('#mediaFiles'));
         $('#total').html(total.toFixed(2));
@@ -937,7 +962,7 @@ $(function(){
     var img = $('<img class="large">');
     $(view).append(img);
     $(div).append(view);
-    $(view).append('<span class="lgclose wu01 abs"></span>');
+    $(view).append('<p class="hide vn02 imgHide"></p>');
     $.HDAPI.get_attachment(image, function(result){
       if(result.success)
       {
@@ -945,6 +970,7 @@ $(function(){
       }
     });
     $(div).data('image',image);
+    //console.log($(div).data('image'));
     return div;
   }
 

@@ -60,6 +60,7 @@ case "$1" in
         check_assets "assets"
         check_assets "fonts"
         check_assets "images"
+        check_assets "icons"
         check_assets "javascripts"
         check_assets "stylesheets"
         check_assets "offline_pages_html"
@@ -67,14 +68,15 @@ case "$1" in
         check_assets "offline_pages_javascripts"
         check_assets "offline_pages_stylesheets"
     ;;
-    qifu:assets:check)
-        url="http://123.56.91.131:8090"
+    yuexing:assets:check)
+        url="http://123.56.91.131:8092"
         check_assets "offline_pages"
         check_assets "BarCodeScan"
         check_assets "advertisement"
         check_assets "assets"
         check_assets "fonts"
         check_assets "images"
+        check_assets "icons"
         check_assets "javascripts"
         check_assets "stylesheets"
         check_assets "offline_pages_html"
@@ -152,25 +154,25 @@ case "$1" in
         private_urls_path=$(find . -name PrivateURLs.java -print)
         sed -i '' "s/PgyerUrl .*/PgyerUrl = \"http:\/\/www\.pgyer\.com\/shimao-test-a\";/" $private_urls_path
     ;;
-    qifu)
+    yuexing)
 
         # 替换 build.gradle 中 applicationId的值
         build_path="app/build.gradle"
-        sed -i '' "s/applicationId .*/applicationId \'com.intfocus.hdmcre\'/" $build_path
+        sed -i '' "s/applicationId .*/applicationId \'com.intfocus.yxtest\'/" $build_path
 
         # 替换第三方的key
         androidmanifest_path="app/src/main/AndroidManifest.xml"
         payer_findline=`sed -n '/"PGYER_APPID"/=' $androidmanifest_path`
         let line="payer_findline + 1" 
-        sed -i '' "$line s/^.*$/          android\:value=\"34fc202939786006778b8ddc810486ca\" \/\>/" $androidmanifest_path
+        sed -i '' "$line s/^.*$/          android\:value=\"9fd1fe37d108e436ab47cb1eb83549ef\" \/\>/" $androidmanifest_path
 
         umeng_key_findline=`sed -n '/"UMENG_APPKEY"/=' $androidmanifest_path`
         let line="umeng_key_findline + 1" 
-        sed -i '' "$line s/^.*$/          android\:value=\"58bcf7e9c62dca1f8f001583\" \/\>/" $androidmanifest_path
+        sed -i '' "$line s/^.*$/          android\:value=\"59239426b27b0a1b0b001941\" \/\>/" $androidmanifest_path
 
         umeng_message_findline=`sed -n '/"UMENG_MESSAGE_SECRET"/=' $androidmanifest_path`
         let line="umeng_message_findline + 1" 
-        sed -i '' "$line s/^.*$/          android\:value=\"7065ec5133d7d6d7e21ed8c18743ce0b\" \/\>/" $androidmanifest_path
+        sed -i '' "$line s/^.*$/          android\:value=\"ba52ebb0b0ccc711d86b2e5f9c187eb6\" \/\>/" $androidmanifest_path
 
         # 图片与图标替换
         icon_config="config/Assets/mipmap-qifu/"
@@ -184,11 +186,11 @@ case "$1" in
 
         # 替换privateURLs.java中kBaseUrl中的域名
         private_urls_path=$(find . -name PrivateURLs.java -print)
-        sed -i '' 's/BaseUrl .*/BaseUrl = \"http:\/\/123\.56\.91\.131\:8090\";/' $private_urls_path
+        sed -i '' 's/BaseUrl .*/BaseUrl = \"http:\/\/123\.56\.91\.131\:8092\";/' $private_urls_path
 
         # 替换privateURLs.java中pgy链接
         private_urls_path=$(find . -name PrivateURLs.java -print)
-        sed -i '' "s/PgyerUrl .*/PgyerUrl = \"http:\/\/www\.pgyer\.com\/hdmcre-a\";/" $private_urls_path
+        sed -i '' "s/PgyerUrl .*/PgyerUrl = \"http:\/\/www\.pgyer\.com\/yx-test-a\";/" $private_urls_path
     ;;
     *)
         test -z "$1" && echo "current app: $(cat .current-app)" || echo "unknown argument - $1"

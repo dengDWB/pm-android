@@ -102,7 +102,7 @@ label#page-title {
   </div>
   <div class="enter_num kuan50">
     <p class="money1">本单笔数</p>
-    <input type="text" name="" class="money3" id="saleCount" value="20" placeholder="请输入笔数" readonly="readonly" />
+    <input type="text" name="" class="money3" id="saleCount" value="20" placeholder="请输入笔数" readonly />
   </div>
 </div>
 
@@ -712,7 +712,11 @@ $(function(){
     var div = $('<div></div>');
     $(div).addClass('left image-item');
     var view = $('<div class="img imgShow"></div>');
-    var img = $('<img class="large">');
+     if(image.size >= 2000000 && isIOS){
+		var img = $('<img class="large" style="transform:rotateY(180deg)">');
+	}else{
+		var img = $('<img class="large">');
+	}
     $(view).append(img);
     $(div).append(view);
     $.HDAPI.get_attachment(image, function(result){

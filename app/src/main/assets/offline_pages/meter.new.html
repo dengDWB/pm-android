@@ -691,7 +691,7 @@ $(function(){
           var currentValue = $.trim($('#currentValue').val());
           if($.isNumeric(currentValue) == false )
     {
-      showMessage("请输入正确的本次读数");
+      showMessage("请输入数字");
     }
 
         }
@@ -745,7 +745,7 @@ $(function(){
 
   $('#submit').click(function(e){
   	buttonFixed();
-    var data = 'time='+get_now_full()+'&operator.id='+userinfo.code+'&operator.fullname='+userinfo.name+'&operator.namespace=hd';
+    var data = 'time='+get_now_full()+'&operator.id='+userinfo.code+'&operator.fullname='+encodeURIComponent(userinfo.name)+'&operator.namespace=hd';    
     var args = get_post_data();
     if( args == undefined)
     {

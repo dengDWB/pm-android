@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <title>订单详情</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta content="email=no" name="format-detection" />
+    <!-- Set render engine for 360 browser -->
+    <meta name="renderer" content="webkit" />
+    <!-- No Baidu Siteapp-->
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <!--<link rel="icon" type="image/png" href="assets/i/favicon.png" />-->
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!--<link rel="icon" sizes="192x192" href="assets/i/app-icon72x72@2x.png" />-->
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="月星促销" />
+    <!--<link rel="apple-touch-icon-precomposed" href="assets/i/app-icon72x72@2x.png" />-->
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <!--<meta name="msapplication-TileImage" content="assets/i/app-icon72x72@2x.png" />-->
+    <meta name="msapplication-TileColor" content="#0e90d2" />
+    <link href="static/css/default.css" rel="stylesheet" />
+    
+</head>
+<body>
+    <div class="content frame">
+        <div class="main">
+            <!--内容区域-->
+            <div class="detail" id="detail">
+                <div>
+                    <div class="board form">
+                        <div class="board_t form_t"><span class="board_t_l cols-6">订单详情</span><span class="board_t_r cols-6" data-format="delHandler,{{billNumber}},{{version}},true" data-cell="{{bizState}}"></span></div>
+                        <div class="board_c form_c">
+                            <ul>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4">订单编号</div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{billNumber}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4">订单状态</div>
+                                        <div class="boarditem_c_r cols-margin-8" data-format="statusName" data-cell="{{bizState}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4">内容说明</div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{confirmContent}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4">满意度</div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{estimation}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over">
+                                        <div class="boarditem_c_l cols-margin-4">确认时间</div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{confirmTime}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="board form">
+                        <div class="board_t form_t">基本信息</div>
+                        <div class="board_c form_c">
+                            <ul>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4"><span class="ico userico"></span></div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{customerName}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4"><span class="ico phoneico"></span></div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{customerTelephone}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4"><span class="ico sellerico"></span></div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{boothTelephone}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over border_b">
+                                        <div class="boarditem_c_l cols-margin-4"><span class="ico localico"></span></div>
+                                        <div class="boarditem_c_r cols-margin-8" data-cell="{{receiptAddress}}">
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="board form">
+                        <div class="board_t form_t">商品信息</div>
+                        <div class="board_c form_c goods_list_c">
+                            <div id="goodslist">
+                                <ul>
+                                    <li class="boarditem goods_list_t">
+                                        <div class="boarditem_t rows-3 over border_b">
+                                            <div class="boarditem_t_l cols-9" data-cell="{{code}} {{name}}"></div>
+                                            <div class="boarditem_t_r cols-3 alignright" data-cell="{{price}}"></div>
+                                        </div>
+                                    </li>
+                                    <li class="boarditem">
+                                        <div class="boarditem_c rows-2 over border_b">
+                                            <div class="boarditem_c_l cols-4">规格</div>
+                                            <div class="boarditem_c_r cols-8" data-cell="{{specification}}">
+
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="boarditem">
+                                        <div class="boarditem_c rows-2 over border_b">
+                                            <div class="boarditem_c_l cols-4">型号</div>
+                                            <div class="boarditem_c_r cols-8" data-cell="{{model}}">
+
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="boarditem">
+                                        <div class="boarditem_c rows-2 over border_b">
+                                            <div class="boarditem_c_l cols-4">数量</div>
+                                            <div class="boarditem_c_r cols-8" data-cell="{{qty}}">
+
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="boarditem">
+                                        <div class="boarditem_c rows-2 over">
+                                            <div class="boarditem_c_l cols-4">实价</div>
+                                            <div class="boarditem_c_r cols-8" data-cell="{{stdTotal1}}">
+
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="board_f"></div>
+                    </div>
+                    <div class="board form">
+                        <div class="board_t form_t">附件信息</div>
+                        <div class="board_c form_c">
+                            <ul>
+                                <li class="boarditem">
+                                    <div class="boarditem_c rows-fix-3 over piclist">
+                                        <div class="boarditem_c_i cols-margin-4"><img src="static/images/1.jpg" onclick="showLarge()" /></div>
+                                        <div class="boarditem_c_i cols-margin-4"><img src="static/images/1.jpg" onclick="showLarge()" /></div>
+                                        <div class="boarditem_c_i cols-margin-4"><img src="static/images/1.jpg" onclick="showLarge()" /></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="board form">
+                        <div class="board_t form_t">付款方式</div>
+                        <div class="board_c form_c">
+                            <ul>
+                                <li class="boarditem ">
+                                    <div class="boarditem_t">
+                                        <span class="ico radioico checkedico" data-format="payWay,{{preDeposit}}" data-cell="{{paymentCategory}}"></span>
+                                    </div>
+</li>
+                                <li class="boarditem active">
+                                    <div class="boarditem_t">优惠活动</div>
+                                    <div class="boarditem_c over active" id="activityboard">
+                                        <ul id="activitylist">
+                                            <li class="boarditem_c_l ico checkboxico checkedico" data-cell="{{name}}"></li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="board form">
+                        <div class="board_t form_t">货品信息</div>
+                        <div class="board_c form_c">
+                            <ul>
+                                <li class="boarditem">
+                                    <div class="boarditem_t"><span class="ico radioico checkedico margin_r" data-format="sendWay" data-cell="{{deliveryMode}}"></span><span data-format="installWay" data-cell="{{install}}"><span class="ico radioico checkedico"></span></div>
+                                    <div class="boarditem_c over">
+                                        <div class="boarditem_c_l cols-margin-4">订货日期</div>
+                                        <div class="boarditem_c_r cols-margin-8" data-format="datetime,yyyy-MM-dd" data-cell="{{orderDate}}"></div>
+                                    </div>
+                                    <div class="boarditem_c over">
+                                        <div class="boarditem_c_l cols-margin-4">预约送货日期</div>
+                                        <div class="boarditem_c_r cols-margin-8" data-format="datetime,yyyy-MM-dd" data-cell="{{appointmentDeliveryDate}}"></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="board form">
+                        <div class="board_t form_t">其他信息</div>
+                        <div class="board_c form_c">
+                            <ul>
+                                <li class="boarditem">
+                                    <div class="boarditem_c over">
+                                        <div class="boarditem_c_l cols-margin-4">赠品信息</div>
+                                        <div class="boarditem_c_r cols-margin-8 breakall" data-cell="{{gift}}"></div>
+                                    </div>
+                                    <div class="boarditem_c over">
+                                        <div class="boarditem_c_l cols-margin-4">礼券信息</div>
+                                        <div class="boarditem_c_r cols-margin-8 breakall" data-cell="{{voucher}}"></div>
+                                    </div>
+                                    <div class="boarditem_c over">
+                                        <div class="boarditem_c_l cols-margin-4">备注信息</div>
+                                        <div class="boarditem_c_r cols-margin-8 breakall" data-cell="{{remark}}"></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--内容区域完-->
+            <div class="dialog picdialog" id="picDialog">
+                <div class="main padding">
+                    <img src="#" id="largePic" />
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="board">
+                <div class="board_c navlist">
+                    <ul class="navrows over">
+                        <li class="boarditem border_r">
+                            <ul class="padding_v">
+                                <li class="navtitle textoverflow">
+                                    共计<i class="countnum" id="countnum">0</i>件商品<em class="money" id="countmoney">0</em>元
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="static/js/jquery-1.10.2.min.js"></script>
+    <script src="static/js/jquery.tcscdui.js"></script>
+    <script src="static/js/site.base.js"></script>
+    <script src="static/js/loaddata.js"></script>
+    <script src="static/js/user_permission.js"></script>
+    <script src="static/js/syp_v1.js"></script>
+    <script type="text/javascript">
+        var goodsData;
+        var activityData;
+        var picDialog;
+        $(function () {
+            bindOrderDetail();
+            picDialog = $("#picDialog").dialog()
+        })
+        function showLarge() {
+            $("#largePic").attr("src", event.target.getAttribute("src"));
+            picDialog.show();
+        }
+    </script>
+</body>
+</html>

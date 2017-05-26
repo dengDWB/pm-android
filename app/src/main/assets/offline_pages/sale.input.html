@@ -87,7 +87,7 @@ label#page-title {
   </ul>
 </div>
 
-<div id="sale-input" class="g-add vn32"  onclick="MobileBridge.pageLink('$title$', 'offline://sale.input.new.html', 0);" href="javascript:void(0);"></div>
+<div id="sale-input" class="g-add vn32" style="display:none" onclick="MobileBridge.pageLink('$title$', 'offline://sale.input.new.html', 0);" href="javascript:void(0);"></div> 
 			<script type="text/javascript" src="static/js/jquery-3.1.1.min.js?TIMESTAMP" charset="utf-8"></script>
 			<script type="text/javascript" src="static/js/jquery.cookie.js?TIMESTAMP" charset="utf-8"></script>
 <script type="text/javascript" src="static/js/mobile_bridge.js?TIMESTAMP"></script>
@@ -599,6 +599,7 @@ $(function(){
 <script type="text/javascript">
 
 $(function(){
+	
 	resultHandler = function(message){
 	};
   if(userinfo.permissions.indexOf("/cre-app/saleInput/read") >= 0) {
@@ -662,17 +663,15 @@ $(function(){
     }
   };
  // updatecynthia 读取selected_store
- //window.localStorage.clear();
- // var selected_store = undefined;
  var selected_store = get_storage('selected_store');
- //console.log(selected_store);
-  function query_salesInput(page){
-  	if(!selected_store)
+ if(!selected_store)
   	{
   		$("#sale-input").hide();
   	}
   	else
   	{$("#sale-input").show();}
+  function query_salesInput(page){
+  	$(".g-add").show();
     var data = {
       pageSize: 10,
       page: page,
@@ -706,6 +705,7 @@ $(function(){
       }
       update_height();
     });
+
   }
 
   if(stores_uuids.length == 1)

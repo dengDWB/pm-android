@@ -463,8 +463,8 @@ var popipm = {
 		//05-20
 		var section =$("<section class='g-seek'></section>");
 		var searchText = $("<input type='text' placeholder='请输入关键字' oninput='popipm.screen(this)'>");
-		var searchCancel = $("<i class='vn02 searchCancel' id='searchCancel'></i>");
-		var searchButton = $("<span class='l_om vn27' id='search'></span>");
+		var searchCancel = $("<i class='vn02 searchCancel' id='searchCancel' style='display:none'></i>");
+		var searchButton = $("<span class='l_om vn27' id='search'  style='display:none'></span>");
 		var searchArea = $("<div class='content'></div>");
 		searchArea.append(searchText);
 		searchArea.append(searchCancel);
@@ -1126,7 +1126,13 @@ function buttonFixed()
                     $(".submitbtn").show();
                 }
 
-            });  
+            }); 
+            if(isAndroid)
+            {
+            	$(".wrap").css({position:"static"});
+            } 
+            else
+            {$(".wrap").css({position:"fixed"});}
     //         var isIOS = (/iphone|ipad/gi).test(navigator.appVersion);//判断是不是ios系统
 				//  if (isIOS) {
 				// $('#payments').on('focus', 'input', function () {

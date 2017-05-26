@@ -25,6 +25,7 @@ label#page-title {
     font-size: 0.3rem;
     z-index: 2;
 }
+.jm_r0{margin-right:0.5rem;}
 </style>
 
 
@@ -108,19 +109,8 @@ label#page-title {
 
     </section>
     <h2 class="g-titleH2">联系方式</h2>
-    <section class="g-xjlist" id="contacts">
-      <div class="g-xjlist-zt5 fn lb">
-        <div class="title jm_2"><div class="km_1">联系人：</div></div>
-        <div class="text lm jm_3"><span class="jm_r0" id="employee"></span></div>
-      </div>
-      <div class="g-xjlist-zt5 fn lb">
-        <div class="title jm_2"><div class="km_1">电话：</div></div>
-        <div class="text lm jm_3"><span class="jm_r0" id="employeePhone"></span></div>
-      </div>
-      <div class="g-xjlist-zt5 fn lb">
-        <div class="title jm_2"><div class="km_1">地址：</div></div>
-        <div class="text lm jm_3"><span class="jm_r0" id="address"></span></div>
-      </div>
+    <section class="g-xjlist" id="contracts">
+   
 
     </section>
 
@@ -648,10 +638,14 @@ $(function(){
     var item=$('<div class="g-xjlist-zt5 fn lb"></div>');
     $(item).append('<div class="title jm_2"><div class="km_1">联系人：</div></div>');
     $(item).append('<div class="text lm jm_3"><span class="jm_r0">'+get_value(contact.contactor)+'</span></div>')
+	//console.log(get_value(contact.contactor));
     $(html).append(item);
     item=$('<div class="g-xjlist-zt5 fn lb"></div>');
     $(item).append('<div class="title jm_2"><div class="km_1">电话：</div></div>')
-    $(item).append('<div class="text lm jm_3"><span class="jm_r0">'+get_value(contact.phone)+'</span></div>')
+	if(get_value(contact.mobile))
+    {$(item).append('<div class="text lm jm_3"><span class="jm_r0">'+get_value(contact.mobile)+'</span></div>');}
+	else
+	{$(item).append('<div class="text lm jm_3"><span class="jm_r0">'+get_value(contact.phone)+'</span></div>');}
     $(html).append(item);
     item=$('<div class="g-xjlist-zt5 fn lb"></div>');
     $(item).append('<div class="title jm_2"><div class="km_1">地址：</div></div>')
@@ -666,23 +660,26 @@ $(function(){
     var data = {
         userGroups:userGroups,
     };
-   console.log("data"+JSON.stringify(data));
-   // console.log(tenant.uuid);
+   //console.log("data"+JSON.stringify(data));
+   //console.log(tenant.uuid);
     $.HDAPI.get_tenant(tenant.uuid, data, function(result){
       m_loading.remove();//loading 移除
       if(result.success)
-      {console.log("result"+JSON.stringify(result));
+      {
+      	//console.log("result"+JSON.stringify(result));
       	if(result.body!=null)
-      	{console.log(JSON.stringify(result));
+      	{
+      		//console.log(JSON.stringify(result));
         $('#code').html(get_value(result.body.code));
         $('#legalPersion').html(get_value(result.body.legalPersion));
         $('#name').html(get_value(result.body.name));
-        $('#shortname').html(get_value(result.body.shortname));
+        $('#shortname').html(get_value(result.body.shortName));
         if(result.body.contracts.length > 0 )
           $('#status').html('已签约');
         else
           $('#status').html('未签约');
-        $('#shortname').html(get_value(result.body.shortname));
+        $('#shortname').html(get_value(result.body.shortName));
+		
         $('#employeePhone').html(get_value(result.body.telephone));
         $(result.body.contactInfos).each(function(idx, item){
           var contact = create_contact_item(item);

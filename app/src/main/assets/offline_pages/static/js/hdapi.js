@@ -15,8 +15,8 @@ HDAPI
   /* 世茂: 'http://hdcre.shimaoco.com:8280', */
   /* 月星: 'http://test195.yuexing.com.cn:8295', */
   $.HDAPI = {
-    version: '1.1.6',
-	  server: 'http://cre.test.hd123.cn:8280',
+    version: '1.1.7',
+	  server: 'http://test195.yuexing.com.cn:8295',
     getTasks: function(data, callback) {
       return HDgetTasks(data, callback);
     },
