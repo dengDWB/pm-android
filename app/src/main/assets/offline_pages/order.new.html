@@ -50,13 +50,13 @@
                                 <li class="boarditem">
                                     <span class="boarditem_t cols-2"><span class="ico phoneico"></span></span>
                                     <span class="boarditem_v cols-10">
-                                        <input type="tel" placeholder="请输入顾客联系电话" name="customerTelephone" data-valid="required,message:请输入顾客联系电话;phone" />
+                                        <input type="tel" placeholder="请输入顾客联系电话" name="customerTelephone" data-valid="required,message:请输入顾客联系电话;phone,请输入正确的顾客电话" />
                                     </span>
                                 </li>
                                 <li class="boarditem">
                                     <span class="boarditem_t cols-2"><span class="ico sellerico"></span></span>
                                     <span class="boarditem_v cols-10">
-                                        <input type="tel" placeholder="请输入营业员电话" name="boothTelephone" id="txtboothTelephone" data-valid="required,message:请输入营业员电话;phone" />
+                                        <input type="tel" placeholder="请输入营业员电话" name="boothTelephone" id="txtboothTelephone" data-valid="required,message:请输入营业员电话;phone,请输入正确的营业员电话" />
                                     </span>
                                 </li>
                                 <li class="boarditem">
@@ -98,7 +98,7 @@
                                     </li>
                                     <li class="boarditem op{{originalPrice}}">
                                         <span class="boarditem_t cols-3">折扣</span><span class="boarditem_v cols-9">
-                                            <input type="number" placeholder="请输入折扣" class="cell width85" id="cell{{code}}" code="{{code}}" value="100" data-valid="required,message:请输入折扣;number" />%
+                                            <input type="number" placeholder="请输入折扣" class="cell width85 cell{{code}}" orprice="{{originalPrice}}" id="cell{{code}}" code="{{code}}" value="100" data-valid="required,message:请输入折扣;number" />%
                                         </span>
                                     </li>
                                     <li class="boarditem">
@@ -116,7 +116,9 @@
                             <ul>
                                 <li class="boarditem">
                                     <div class="boarditem_c rows-fix-3 over piclist" id="piclist">
-                                        <div class="boarditem_c_i cols-margin-4"><button id="uploadPic" class="uploadPic" onclick="uploadImg()" type="button"><span>+</span><span>上传附件</span></button></div>
+                                        <div class="boarditem_c_i cols-margin-4">
+                                            <input type="file" id="uploadPic" class="uploadPic">
+                                    </div>
                                     </div>
                                 </li>
                             </ul>
@@ -165,8 +167,8 @@
                                 </li>
                                 <li class="boarditem orderdate">
                                     <span class="boarditem_t">
-                                        <span class="ico dateico">订货日期</span><span>
-                                            <a href="javascript:;" onclick="showOrderDate()"><span id="lorderdate">请选择</span></a>
+                                        <span class="ico dateico padding_r">订货日期</span><span>
+                                            <a href="javascript:;" class="padding_r" onclick="showOrderDate()"><span id="lorderdate">请选择</span></a>
                                             <a href="javascript:;" onclick="showOrderTime()"><span id="lordertime">请选择</span></a>
                                             <input type="hidden" id="ordertime" />
                                             <input type="hidden" id="orderdate" />
@@ -271,13 +273,13 @@
     <script src="static/js/user_permission.js"></script>
     <script src="static/js/syp_v1.js"></script>
     <script type="text/javascript">
-        var calcer;
+        var calcers;
         var isOpen = false;
         var shopcar;
-        var goodslist;
-        var activitylist;
-        var orderDate;
-        var orderTime;
+        var goodlist;
+        var activityslist;
+        var ordersDate;
+        var ordersTime;
         var bookDate;
         var now = new Date();
         var sourceData = JSON.parse(sessionStorage.getItem("goods")).data;
@@ -323,7 +325,7 @@
                     $("#preDeposit").val("");
                 }
             })
-            calcer = $("#calcer").dialog({
+            calcers = $("#calcer").dialog({
                 vertical: true,
                 size: 100,
                 needHeader: false
@@ -338,7 +340,7 @@
             $("#lordertime").text(nowTimeFormat);
             $("#lbooktime").text(nowDate);
             $("#booktime").val(nowDateFormat + " " + nowTimeFormat + ":" + now.getSeconds());
-            activitylist = $("#activitylist").bindData({
+            activityslist = $("#activitylist").bindData({
                 url: apiUrl + "prom/query",
                 type: "post",
                 param: {
@@ -351,7 +353,7 @@
                     activityData = data;
                 }
             })
-            goodslist = $("#goodslist").bindData({
+            goodlist = $("#goodslist").bindData({
                 data: sourceData,
                 dataColumn: ""
             })
@@ -359,14 +361,14 @@
                 data: sourceData,
                 dataColumn: ""
             })
-            orderDate = $.dater({
+            ordersDate = $.dater({
                 endDate: new Date(),//结束日期
                 callback: function (data) {
                     $("#lorderdate").text(data[0].value + "-" + data[1].value + "-" + data[2].value)
                     $("#orderdate").val(data[0].value + "." + data[1].value + "." + data[2].value)
                 }
             })
-            orderTime = $.timer({
+            ordersTime = $.timer({
                 needSecond: false,//结束日期
                 callback: function (data) {
                     $("#lordertime").text(data[0].value + ":" + data[1].value)
@@ -384,6 +386,10 @@
             countMoney();
             $(document).on("change", ".paymoney", function () {
                 $(this).val((parseFloat($(this).val()) === parseInt($(this).val())) ? parseInt($(this).val()):parseFloat($(this).val()).toFixed(2));
+                var code = $(this).attr("code");
+                if (parseFloat($("#cell" + code).attr("orprice")) > 0) {
+                    $("#cell" + code).val((parseInt(($(this).val() / parseFloat($("#cell" + code).attr("orprice")))*100)))
+                }
                 countMoney();
             })
             $(document).on("change", ".cell", function () {
@@ -405,21 +411,21 @@
         })
         
         function showOrderTime() {
-             orderTime.show();
+             ordersTime.show();
         }
         function showOrderDate() {
-            orderDate.show();
+            ordersDate.show();
         }
         function showBookOrderTime() {
             bookDate.show();
         }
         function showCalcer() {
             if (isOpen) {
-                calcer.close();
+                calcers.close();
                 isOpen = false;
             }
             else if (sourceData.length > 0) {
-                calcer.show();
+                calcers.show();
                 isOpen = true;
             }
         }
@@ -490,7 +496,7 @@
             }
             sessionStorage.setItem("order", JSON.stringify({ data: ordersinfo }));
             //window.location.href = "goods.html";
-            window.SYP.pageLink("商品列表", "goods.html", -1);
+            window.SYP.pageLink("商品列表", "offline://goods.html", -1);
         }
         function delPic(code) {
             $.tooltip({
@@ -504,6 +510,9 @@
                 }
             })
 
+        }
+        function finishChoice(files){
+            
         }
     </script>
 </body>

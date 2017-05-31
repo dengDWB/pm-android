@@ -33,7 +33,7 @@
             <div class="detail bg">
                 <div class="board ">
                     <div class="board_t search_t">
-                        <span class="searchboard"><span class="searchipt cols-9"><input type="text" class="searchtxt ico searchico" id="txtSearch" placeholder="请输入商品名称或型号" /></span><span class="searchhandler cols-3 alignright"><button class="ico codeico margin_r"></button><button class="ico searchico" type="button" onclick="goodssearch()"></button></span></span>
+                        <span class="searchboard"><span class="searchipt cols-9"><input type="text" class="searchtxt ico searchico" id="txtSearch" placeholder="请输入商品名称或编号" /></span><span class="searchhandler cols-3 alignright"><button class="ico codeico margin_r" onclick="qCode()"></button><button class="ico searchico" type="button" onclick="goodssearch()"></button></span></span>
                     </div>
                 </div>
                 <div class="board form">
@@ -45,7 +45,7 @@
                                         <div class="boarditem_t_l padding_r cols-12">
                                             <input type="checkbox" name="goodscode" value="{{code}}" text="{{name}}" id="chk{{code}}" class="cols-2 chk" />
                                             <label for="chk{{code}}" class="ico ricylecheckboxico over">
-                                                <span class="boarditem_t_c cols-" style="width: calc(65% - 0px)" data-cell="{{name}}"></span>
+                                                <span class="boarditem_t_c cols-" style="width: calc(65% - 0px)" data-cell="{{code}}{{name}}"></span>
                                                 <span class="boarditem_t_r alignright cols-" style="width: calc(25% - 0px)" data-cell="{{price}}"></span>
                                             </label>
                                         </div>
@@ -72,7 +72,7 @@
                                         <div class="board_c_l cols-6"></div>
                                         <div class="board_c_l cols-2"><em class="money" base="{{price}}" id="singleCount{{code}}" data-cell="{{price}}"></em></div>
                                         <div class="board_c_r cols-4">
-                                            <span><button class="ico subico" name="{{code}}" type="button" onclick="sub()"></button></span><span class="numresult num{{code}}">1</span><input type="hidden" name="v{{code}}" value="1" /><span><button class="ico sumico" name="{{code}}" type="button" onclick="sum()"></button></span>
+                                            <span><button class="ico subico sub{{code}}" name="{{code}}" type="button" onclick="sub()"></button></span><span class="numresult num{{code}}">1</span><input type="hidden" name="v{{code}}" value="1" /><span><button class="ico sumico" name="{{code}}" type="button" onclick="sum()"></button></span>
                                         </div>
                                     </div>
                                 </li>
@@ -133,12 +133,12 @@
     <script src="static/js/user_permission.js"></script>
     <script src="static/js/syp_v1.js"></script>
     <script type="text/javascript">
-        var calcer;
+        var calcers;
         var shopcar;
-        var goodslist;
+        var goodlist;
         var isOpen = false;
         $(function () {
-            calcer = $("#calcer").dialog({
+            calcers = $("#calcer").dialog({
                 vertical: true,
                 needHeader: false
             });
@@ -181,11 +181,11 @@
         }
         function showCalcer() {
             if (isOpen) {
-                calcer.close();
+                calcers.close();
                 isOpen = false;
             }
             else {
-                calcer.show();
+                calcers.show();
                 isOpen = true;
             }
         }
@@ -196,7 +196,7 @@
             var nownum = $("[name='v" + code + "']").val();
             if (nownum == 0) {
                 $("#chk" + code).prop("checked", false);
-                $(event.target).css("visibility", "hidden");
+                $(".sub"+code).css("visibility", "hidden");
                 $(".num" + code).css("visibility", "hidden");
             }
             else {
@@ -225,6 +225,7 @@
             countMoney(code)
         }
         function countMoney(code) {
+            if(code){
             var singleCount = $("[name='v" + code + "']").val() * $("#singleCount" + code).attr("base");
             if (singleCount > 0) {
                 $("#singleCount" + code).css("visibility", "visible");
@@ -232,6 +233,7 @@
             }
             else {
                 $("#singleCount" + code).css("visibility", "hidden");
+            }
             }
             var summoney = 0;
             var checkNum = 0;
@@ -245,7 +247,7 @@
         function confirmOrder() {
             var datas = [];
             if ($(":checked").length > 0) {
-                var source = goodslist.listControl.getData();
+                var source = goodlist.listControl.getData();
                 $.each($(":checked"), function (i, v) {
                     var _i = $(".chk").index($(this));
                     source[_i].goodsnum = $("[name='v" + $(v).val() + "']").val();
@@ -254,7 +256,7 @@
                 })
                 sessionStorage.setItem("goods", JSON.stringify({ data: datas }));
                 //window.location.href = "order.new.html";
-                window.SYP.pageLink("新增订单", "order.new.html", -1);
+                window.SYP.pageLink("新增订单", "offline://order.new.html", -1);
             }
             else {
                 $.tooltip({
@@ -264,6 +266,9 @@
                 })
             }
 
+        }
+        function qCode(){
+            window.SYP.showBarCodeScanner();
         }
     </script>
 </body>

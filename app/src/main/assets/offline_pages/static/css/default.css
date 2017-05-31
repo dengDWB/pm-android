@@ -11,13 +11,16 @@ html, body {
 html, body, .fullheight, .detail, .main, .content, .tabs {
     height: 100%;
 }
-
-    html *, body * {
-        box-sizing: border-box;
-        border-collapse: collapse;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 1.2rem;
-    }
+input, button, select, textarea,label {
+    outline: none;
+}
+html *, body * {
+    box-sizing: border-box;
+    border-collapse: collapse;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.2rem;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
 
 body {
     background-color: #f6f6f6;
@@ -107,13 +110,13 @@ body, ul, li, h2, h3, h1 {
 
 .sumico:before {
     content: "\e696";
-    font-size: 1.8rem;
+    font-size: 2rem;
     color: #1f4ba5;
 }
 
 .subico:before {
     content: "\e74a";
-    font-size: 1.8rem;
+    font-size: 2rem;
     color: #1f4ba5;
 }
 
@@ -1300,7 +1303,7 @@ select {
 }
 
 .form input[type="text"], .form .choiceitem, .form select {
-    color: #666;
+    color: #1f4ba5;
 }
 
 .form input[type="radio"], .form input[type="checkbox"] {
@@ -1419,6 +1422,9 @@ select {
 }
 /*搜索工具栏完*/
 /*提示框*/
+.dialogpanel>.tooltip:first-child {
+    margin-top: 70% !important;
+}
 .tooltip {
     display: block;
     text-align: center;
@@ -1701,7 +1707,7 @@ select {
 .shopfooter {
     border: 0px !important;
     height: 50px;
-    z-index: 99999
+    z-index: 10000
 }
 
     .shopfooter .navrows, .shopcount {
@@ -1797,7 +1803,7 @@ vertical-align:top;
     margin-right:5px;
 }
 #shopcarlist {
-    max-height:40vh;
+    max-height:35vh;
     overflow-x:hidden;
 overflow-y:auto;
 }

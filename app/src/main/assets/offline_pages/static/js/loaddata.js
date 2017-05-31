@@ -2,8 +2,8 @@
 
 function goodssearch(key) {
     key = key ? key : $("#txtSearch").val();
-    if (goodslist) {
-        goodslist.setUrl(apiUrl + "order/products", {
+    if (goodlist) {
+        goodlist.setUrl(apiUrl + "order/products", {
             storeUuid: stores[0].uuid,
             tenantUuid: tenant.uuid,
             contractUuid: contracts[0].uuid,
@@ -11,7 +11,7 @@ function goodssearch(key) {
         }, true);
     }
     else {
-        goodslist = $("#goodslist").paging({
+        goodlist = $("#goodslist").paging({
             pagingUrl: apiUrl + "order/products",
             pagingType: "post",
             param: {
@@ -27,6 +27,7 @@ function goodssearch(key) {
                         $("#chk" + resultData[i].code).prop("checked", true);   
                     }
                     sessionStorage.removeItem("goods");
+                    countMoney();
                 }
             }
         });
@@ -38,7 +39,9 @@ function ordersearch() {
     var param = {
         storeUuid: stores[0].uuid,
         tenantUuid: tenant.uuid,
-        contracts: [contracts[0].uuid]
+        contracts: [contracts[0].uuid],
+        pageSize:20,
+        page:0
     }
     if (/((\d{11})|^((\d{7,8})|(\d{4}|\d{3})-(\d{7,8})|(\d{4}|\d{3})-(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1})|(\d{7,8})-(\d{4}|\d{3}|\d{2}|\d{1}))$)/.test($("#txtSearch").val())) {
         param.customerTelephone = $("#txtSearch").val()
@@ -46,11 +49,11 @@ function ordersearch() {
     else {
         param.customerName = $("#txtSearch").val()
     }
-    if (orderlist) {
-        orderlist.setUrl(apiUrl + "order/orders", param, true);
+    if (orderslist) {
+        orderslist.setUrl(apiUrl + "order/orders", param, true);
     }
     else {
-        orderlist = $("#orderlist").paging({
+        orderslist = $("#orderlist").paging({
             pagingUrl: apiUrl + "order/orders",
             param: param,
             pagingType: "post"
@@ -71,7 +74,7 @@ function delOrder(uuid, isDetail, version) {
                     if (data.success) {
                         if (isDetail) {
                             //window.location.href = "order.html";
-                            window.SYP.pageLink("订单列表", "order.html", -1);
+                            window.SYP.pageLink("订单列表", "offline://order.html", -1);
                         }
                         else { 
                         delConfirm.close();
@@ -185,7 +188,7 @@ function save() {
             pparam: params,
             success: function (data) {
                 if (data.success) {
-                    window.SYP.pageLink("订单列表", "order.html", -1);
+                    window.SYP.pageLink("订单列表", "offline://order.html", -1);
                     //window.location.href = "order.html";
                 }
             }
@@ -212,12 +215,22 @@ function bindOrderDetail() {
         onBind: function (data) {
             goodsData = data.lines;
             activityData = data.preActivities;
+            picsData = {};
+            for (var i = 0; i < data.fileIds; i++) {
+                picsData[i] = { id: data.fileIds[i] };
+            }
+            
             for (var i = 0; i < goodsData.length; i++) {
                 goodsData[i].stdTotal1 = goodsData[i].stdTotal;
             }
             $("#goodslist").bindData({
                 data: goodsData,
                 dataColumn: ""
+            })
+            
+            $("#piclist").bindData({
+                data: picsData,
+                dataColumn:"data"
             })
             $("#countnum").text(goodsData.length);
             $("#countmoney").text(data.stdTotal);

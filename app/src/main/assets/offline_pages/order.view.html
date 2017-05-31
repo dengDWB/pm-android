@@ -171,10 +171,8 @@
                         <div class="board_c form_c">
                             <ul>
                                 <li class="boarditem">
-                                    <div class="boarditem_c rows-fix-3 over piclist">
-                                        <div class="boarditem_c_i cols-margin-4"><img src="static/images/1.jpg" onclick="showLarge()" /></div>
-                                        <div class="boarditem_c_i cols-margin-4"><img src="static/images/1.jpg" onclick="showLarge()" /></div>
-                                        <div class="boarditem_c_i cols-margin-4"><img src="static/images/1.jpg" onclick="showLarge()" /></div>
+                                    <div class="boarditem_c rows-fix-3 over piclist" id="piclist">
+                                        <div class="boarditem_c_i cols-margin-4"><img src="http://test195.yuexing.com.cn:8295/HDMediaService-Web/fileget?fileID={{id}}" onclick="showLarge()" /></div>
                                     </div>
                                 </li>
                             </ul>
@@ -208,7 +206,7 @@
                                     <div class="boarditem_t"><span class="ico radioico checkedico margin_r" data-format="sendWay" data-cell="{{deliveryMode}}"></span><span data-format="installWay" data-cell="{{install}}"><span class="ico radioico checkedico"></span></div>
                                     <div class="boarditem_c over">
                                         <div class="boarditem_c_l cols-margin-4">订货日期</div>
-                                        <div class="boarditem_c_r cols-margin-8" data-format="datetime,yyyy-MM-dd" data-cell="{{orderDate}}"></div>
+                                        <div class="boarditem_c_r cols-margin-8" data-format="datetime,yyyy-MM-dd hh:mm" data-cell="{{orderDate}}"></div>
                                     </div>
                                     <div class="boarditem_c over">
                                         <div class="boarditem_c_l cols-margin-4">预约送货日期</div>
@@ -273,14 +271,15 @@
     <script type="text/javascript">
         var goodsData;
         var activityData;
-        var picDialog;
+        var picsDialog;
+        var picsData;
         $(function () {
             bindOrderDetail();
-            picDialog = $("#picDialog").dialog()
+            picsDialog = $("#picDialog").dialog()
         })
         function showLarge() {
             $("#largePic").attr("src", event.target.getAttribute("src"));
-            picDialog.show();
+            picsDialog.show();
         }
     </script>
 </body>

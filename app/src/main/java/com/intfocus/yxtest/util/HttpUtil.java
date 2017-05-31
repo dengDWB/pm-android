@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -456,6 +458,7 @@ public class HttpUtil {
 
             retMap.put(URLs.kCode, String.format("%d", response.code()));
             retMap.put("body", response.body().string());
+            Log.i("testlog", response.body().string() + response.code());
         } catch (UnknownHostException e) {
             if(e != null && e.getMessage() != null) {
                 LogUtil.d("UnknownHostException2", e.getMessage());

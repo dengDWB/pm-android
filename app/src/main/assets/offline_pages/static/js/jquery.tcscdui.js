@@ -164,8 +164,9 @@ window.validatetype = {
         message: '请输入正确的月份'
     },
     numerinterval: {
-        validator: function (value,param) {
-            return (param[0] < value) && (value < param[1]);
+        validator: function (value, param) {
+            //console.log(value+","+(param[0]<value)+","+(value<param[1])+","+param[0]+","+param[1])
+            return parseFloat(param[0]) < parseFloat(value) && parseFloat(value) < parseFloat(param[1]);
         },
         message: '请输入大于{0}，小于{1}的数字'
     },
@@ -564,14 +565,30 @@ $.extendpost.getHeader = function () {
             var _dom = this.dom;
             var options = this.options;
             prep = prep != undefined ? prep : options.prep;
+            var result="";
             if (data.length) {
                 $.each(data, function (index, row) {
-                    regexData(row, prep);
+                    result+=regexData(row, prep);
                 });
             }
             else {
-                regexData(data, prep);
+                result=regexData(data, prep);
             }
+            var cont = $(result).appendTo(_dom)
+            $.each(cont.find("[data-cell]"), function (i, r) {
+                    _r = $(r);
+                    if (_r.attr("data-format") != undefined) {
+                        if (_r.attr("data-cell") != "") {
+                            _r.formatter({ value: _r.attr("data-cell") });
+                        }
+                    }
+                    else {
+                        _r.html(_r.attr("data-cell"));
+                    }
+                    //_r.removeAttr("data-cell")
+            });
+            
+            $.rows({ control: _dom });
             options.onBind(data, options.data);
 
             function regexData(data, prep) {
@@ -584,34 +601,35 @@ $.extendpost.getHeader = function () {
                 for (var i = 0; i < regexResult.length; i++) {
                     result = result.replace(new RegExp("{{" + regexResult[i] + "}}", "g"), ((eval("data." + regexResult[i]) == "0" || eval("data." + regexResult[i]) == "1" || eval("data." + regexResult[i]) == "true" || eval("data." + regexResult[i]) == "false") ? (eval("data." + regexResult[i]).toString() === false) : !(eval("data." + regexResult[i]))) ? (eval("data." + regexResult[i]) === undefined ? "{{" + regexResult[i] + "}}" : "") : eval("data." + regexResult[i]))
                 }
-                var cont;
+                return result;
+                //var cont;
                 //如果holdindex>0，则把所有数据加载index的数据前面
-                if (options.holdIndex > -1) {
-                    cont = $(result).insertBefore(options.holdCtrl);
-                }
-                else {
-                    //如果holdindex<0，判断prep决定加在原有数据前面还是后面
-                    if (prep != undefined && prep) {
-                        cont = $(result).prependTo(_dom);
-                    }
-                    else {
-                        cont = $(result).appendTo(_dom);
-                    }
-                }
+                //if (options.holdIndex > -1) {
+                //    cont = $(result).insertBefore(options.holdCtrl);
+                //}
+                //else {
+                //    //如果holdindex<0，判断prep决定加在原有数据前面还是后面
+                //    if (prep != undefined && prep) {
+                //        cont = $(result).prependTo(_dom);
+                //    }
+                //    else {
+                //        cont = $(result).appendTo(_dom);
+                //    }
+                //}
                 //当实际数据添加到变量后，判断该条html是否需要进行格式化，如果需要，则先进行格式化，再进行显示，如果不需要，则直接显示
-                $.each(cont.find("[data-cell]"), function (i, r) {
-                    _r = $(r);
-                    if (_r.attr("data-format") != undefined) {
-                        if (_r.attr("data-cell") != "") {
-                            _r.formatter({ value: _r.attr("data-cell") });
-                        }
-                    }
-                    else {
-                        _r.html(_r.attr("data-cell"));
-                    }
-                    //_r.removeAttr("data-cell")
-                });
-                $.rows({ control: _dom });
+                //$.each($(result).find("[data-cell]"), function (i, r) {
+                //    _r = $(r);
+                //    if (_r.attr("data-format") != undefined) {
+                //        if (_r.attr("data-cell") != "") {
+                //            _r.formatter({ value: _r.attr("data-cell") });
+                //        }
+                //    }
+                //    else {
+                //        _r.html(_r.attr("data-cell"));
+                //    }
+                //    //_r.removeAttr("data-cell")
+                //});
+                
             }
         },
         getData: function () {
@@ -1395,7 +1413,7 @@ $.extendpost.getHeader = function () {
             data: [],//初始值
             param: {
             },//分页请求时，除了分页和时间之外的其他参数
-            pageSize: 10,//分页请求数量
+            pageSize: 5,//分页请求数量
             pageIndexColumn: "page",//请求分页时，自动添加到url参数的页数
             pageSizeColumn: "pageSize",//请求分页时，自动添加到url参数的请求数量
             timeColumn: "endtime",//下拉刷新时，自动添加到url参数的数据截止时间
@@ -1445,6 +1463,7 @@ $.extendpost.getHeader = function () {
         style = "paging";
         var pagingHtml = tcscdui.helper.createLoadingDom(cont.tagName, "paging_" + contId, style, options.pagingStyle);
         _dom.pagingCont = $(pagingHtml)
+        var canpaging = false;
         var pagingHeight = _dom.pagingCont.height();
         var startPointX = 0;
         var startPointY = 0;
@@ -1512,12 +1531,14 @@ $.extendpost.getHeader = function () {
                         event.preventDefault();
                         reloadOrPaging = "reload";
                         _dom.pagingCont.hide(0);
-                        reloadCont.show(0)
+                        reloadCont.show(0);
+                        canpaging = true;
                         reloadCont.css("height", Math.log(offsetY) * 7);
                     }
                     //如果是上拉分页，则通过拖动量计算能够显示加载状态的高度
-                    else if (offsetY < 0 && _this.scrollTop() + $(parent).height() >= cont.scrollHeight && allowPage) {
+                    else if (offsetY < 0 && $(".detail").scrollTop() + $(".main").height() >= cont.scrollHeight && allowPage) {
                         event.preventDefault();
+                        canpaging = true;
                         reloadOrPaging = "paging";
                         reloadCont.hide(0)
                         _dom.pagingCont.show(0)
@@ -1533,7 +1554,7 @@ $.extendpost.getHeader = function () {
                 switch (reloadOrPaging) {
                     case "reload":
                         //放手之后，更改状态显示文字，并开始加载，如果是下拉刷新，则会判断reloadUrl地址是否为空，如果为空，则刷新页面
-                        if (reloadCont.height() >= reloadHeight) {
+                        if (reloadCont.height() >= reloadHeight && canpaging) {
                             tcscdui.helper.createTouchDom(reloadCont, options.reloadLoadText, options.reloadImg);
                             if (options.reloadUrl == "" && options.allowReload) {
                                 window.location.href = window.location;
@@ -1621,6 +1642,7 @@ $.extendpost.getHeader = function () {
                         _this.pagingCont.show(0);
                         options.hasend = true;
                     }
+                    canpaging = false;
                     options.onBind(_data, result);
                 }
             })

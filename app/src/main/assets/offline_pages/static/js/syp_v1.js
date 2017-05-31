@@ -1,348 +1,372 @@
-SHENGYIPLUSVERSION = '1.0.1'
-String.prototype.trim = function() {
-  return this.replace(/(^\s*)|(\s*$)/g,'');
+SHENGYIPLUSVERSION = '1.0.3'
+String.prototype.trim = function () {
+  return this.replace(/(^\s*)|(\s*$)/g, '');
 }
 
 /*
-  - Á´½ÓÕ»Âß¼­£ººó½øÏÈ³ö¡¢²»¿ÉÖØ¸´¡¢ÖØ¸´Ê±ÒÆ³ıÆä¼äÏî¡¢Ò»¼üÇå¿Õ
-      - ºó½øÏÈ³ö£¬²»½âÊÍ
-      - ²»¿ÉÖØ¸´£¬²»´æÔÚÔòÈëÕ»
-      - ÖØ¸´Ê±£¬ÈôÊÇ½áÎ²ÏîÔòË¢ĞÂÒ³Ãæ£¨Õ»²»¶¯£©£¬ÈôÊÇÖĞ¼äÏîÔòÒÆ³ı½áÎ²ÏîÖÁÒÑ´æÔÚÏîÎ»ÖÃ
-      - Ò»½¡Çå¿Õ£¬¹Ø±ÕÖ÷ÌâÒ³Ãæ
+  - é“¾æ¥æ ˆé€»è¾‘ï¼šåè¿›å…ˆå‡ºã€ä¸å¯é‡å¤ã€é‡å¤æ—¶ç§»é™¤å…¶é—´é¡¹ã€ä¸€é”®æ¸…ç©º
+      - åè¿›å…ˆå‡ºï¼Œä¸è§£é‡Š
+      - ä¸å¯é‡å¤ï¼Œä¸å­˜åœ¨åˆ™å…¥æ ˆ
+      - é‡å¤æ—¶ï¼Œè‹¥æ˜¯ç»“å°¾é¡¹åˆ™åˆ·æ–°é¡µé¢ï¼ˆæ ˆä¸åŠ¨ï¼‰ï¼Œè‹¥æ˜¯ä¸­é—´é¡¹åˆ™ç§»é™¤ç»“å°¾é¡¹è‡³å·²å­˜åœ¨é¡¹ä½ç½®
+      - ä¸€å¥æ¸…ç©ºï¼Œå…³é—­ä¸»é¢˜é¡µé¢
 
-  - Á´½Ó·ÖÁ½´óÀà£¬ÔÚÏßÁ´½Ó£¨http[s]://£©¡¢ÀëÏßÁ´½Ó£¨offline://£©
-      - ÔÚÏßÁ´½Ó£¨http[s]://£©£¬²»½âÊÍ
-      - ÀëÏßÁ´½Ó£¨offline://£©
-          - ¸ñÊ½£ºoffline://ÀëÏßÍøÕ¾Ãû³Æ@ÀëÏßÒ³Ãæ
-          - ÀëÏßÍøÕ¾Î»ÖÃ£ºShared/ÀëÏßÍøÕ¾ÎÄ¼ş¼Ğ
-          - ÊµÀı£ºoffline://HD@list.html
-          - Ò»¼üÇå¿Õ£ºoffline:////
+  - é“¾æ¥åˆ†ä¸¤å¤§ç±»ï¼Œåœ¨çº¿é“¾æ¥ï¼ˆhttp[s]://ï¼‰ã€ç¦»çº¿é“¾æ¥ï¼ˆoffline://ï¼‰
+      - åœ¨çº¿é“¾æ¥ï¼ˆhttp[s]://ï¼‰ï¼Œä¸è§£é‡Š
+      - ç¦»çº¿é“¾æ¥ï¼ˆoffline://ï¼‰
+          - æ ¼å¼ï¼šoffline://ç¦»çº¿ç½‘ç«™åç§°@ç¦»çº¿é¡µé¢
+          - ç¦»çº¿ç½‘ç«™ä½ç½®ï¼šShared/ç¦»çº¿ç½‘ç«™æ–‡ä»¶å¤¹
+          - å®ä¾‹ï¼šoffline://HD@list.html
+          - ä¸€é”®æ¸…ç©ºï¼šoffline:////
  */
 
 /*
- * Android <=> JS ½»»¥½Ó¿Ú
+ * Android <=> JS äº¤äº’æ¥å£
  */
 window.SYPWithinAndroid = {
-  version: function() {
+  version: function () {
     return 'android ' + SHENGYIPLUSVERSION;
   },
   /*
-   * javascript Òì³£Ê±Í¨ÖªÔ­Éú´úÂë£¬»òÌá½»·şÎñÆ÷£¬»ò popup ÌáÊ¾ÓÃ»§
+   * javascript å¼‚å¸¸æ—¶é€šçŸ¥åŸç”Ÿä»£ç ï¼Œæˆ–æäº¤æœåŠ¡å™¨ï¼Œæˆ– popup æç¤ºç”¨æˆ·
    */
-  jsException: function(e) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.jsException) === "function") {
+  jsException: function (e) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.jsException) === "function") {
       window.AndroidJSBridge.jsException(e);
     }
   },
   /*
-   * ¸ÃÖĞ¼ä¼ş°æ±¾¹ıµÍÊ±£¬APP »á¸ø³öÌáÊ¾
+   * è¯¥ä¸­é—´ä»¶ç‰ˆæœ¬è¿‡ä½æ—¶ï¼ŒAPP ä¼šç»™å‡ºæç¤º
    */
-  checkVersion: function() {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.checkVersion) === "function") {
+  checkVersion: function () {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.checkVersion) === "function") {
       window.AndroidJSBridge.checkVersion(SHENGYIPLUSVERSION);
     }
   },
   /*
-   * ä¯ÀÀÆ÷¡º·µ»Ø¡»
+   * æµè§ˆå™¨ã€è¿”å›ã€
    */
-  goBack: function() {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.goBackBehavior) === "function") {
+  goBack: function () {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.goBackBehavior) === "function") {
       window.AndroidJSBridge.goBack();
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android): goBack");
+      alert("Error æœªå®šä¹‰æ¥å£(Android): goBack");
     }
   },
   /*
-   * Á´½ÓÌø×ª
-   * ÊµÀı£º
+   * é“¾æ¥è·³è½¬
+   * å®ä¾‹ï¼š
    *     offline://index.html
    *     offline://syp@index.html
    *     http://host.com/index.html
    *
-   * bannerName : ±êÌâÀ¸Ê¹ÓÃÔ­Éú´úÂë¿ª·¢£¬¸Ã²ÎÊıÏÔÊ¾Îª±êÌâ
-   * link       : Ö÷ÌåÎªä¯ÀÀÆ÷£¬¼ÓÔØ¸ÃÁ´½Ó
-   * objectId   : ÒµÎñ¶ÔÏóID (ÏîÄ¿ÄÚ²¿Ê¹ÓÃ£¬ÆäËû¿É´« -1)
+   * bannerName : æ ‡é¢˜æ ä½¿ç”¨åŸç”Ÿä»£ç å¼€å‘ï¼Œè¯¥å‚æ•°æ˜¾ç¤ºä¸ºæ ‡é¢˜
+   * link       : ä¸»ä½“ä¸ºæµè§ˆå™¨ï¼ŒåŠ è½½è¯¥é“¾æ¥
+   * objectId   : ä¸šåŠ¡å¯¹è±¡ID (é¡¹ç›®å†…éƒ¨ä½¿ç”¨ï¼Œå…¶ä»–å¯ä¼  -1)
    */
-  pageLink: function(bannerName, link, objectId) {
+  pageLink: function (bannerName, link, objectId) {
     link = link.trim();
     var match = link.match(/^offline:\/\/(.*?)@(.*?)$/);
-    if(match && match.length === 3) {
-        window.AndroidJSBridge.pageLinkWithinModule(bannerName, match[1], match[2]);
+    if (match && match.length === 3) {
+      window.AndroidJSBridge.pageLinkWithinModule(bannerName, match[1], match[2]);
     } else {
-      if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.pageLink) === "function") {
+      if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.pageLink) === "function") {
         window.AndroidJSBridge.pageLink(bannerName, link, objectId);
       } else {
-        alert("Error Î´¶¨Òå½Ó¿Ú(Android): pageLink");
+        alert("Error æœªå®šä¹‰æ¥å£(Android): pageLink");
       }
     }
   },
   /*
-   * ÏîÄ¿ÄÚ²¿Ä£¿éÒ³ÃæÌø×ª£¨ÀëÏßÒ³Ãæ£©
+   * é¡¹ç›®å†…éƒ¨æ¨¡å—é¡µé¢è·³è½¬ï¼ˆç¦»çº¿é¡µé¢ï¼‰
    *
-   * ÊµÀı£ºoffline://syp@index.html
+   * å®ä¾‹ï¼šoffline://syp@index.html
    *
-   * bannerName : ±êÌâÀ¸Ê¹ÓÃÔ­Éú´úÂë¿ª·¢£¬¸Ã²ÎÊıÏÔÊ¾Îª±êÌâ
-   * module     : Ä£¿éÎÄ¼ş¼ĞÃû³Æ
-   * pageName   : Ä£¿éÄÚÀëÏßÒ³ÃæÃû³Æ
+   * bannerName : æ ‡é¢˜æ ä½¿ç”¨åŸç”Ÿä»£ç å¼€å‘ï¼Œè¯¥å‚æ•°æ˜¾ç¤ºä¸ºæ ‡é¢˜
+   * module     : æ¨¡å—æ–‡ä»¶å¤¹åç§°
+   * pageName   : æ¨¡å—å†…ç¦»çº¿é¡µé¢åç§°
    */
-  pageLinkWithinModule: function(bannerName, module, pageName) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.pageLinkWithinModule) === "function") {
+  pageLinkWithinModule: function (bannerName, module, pageName) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.pageLinkWithinModule) === "function") {
       window.AndroidJSBridge.pageLinkWithinModule(bannerName, module, pageName);
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android): pageLink");
+      alert("Error æœªå®šä¹‰æ¥å£(Android): pageLink");
     }
   },
   /*
-   * Ô­Éúµ¯³ö¿ò
+   * åŸç”Ÿå¼¹å‡ºæ¡†
    *
-   * ÍøÒ³ÄÚ²¿µÄ `alert` µ¯³ö¿ò£¬±êÌâÎªÍøÒ³ËùÔÚÎÄ¼ş¼ĞÃû³Æ£¬ÓÃ»§ÌåÑé²»¼Ñ¡£
+   * ç½‘é¡µå†…éƒ¨çš„ `alert` å¼¹å‡ºæ¡†ï¼Œæ ‡é¢˜ä¸ºç½‘é¡µæ‰€åœ¨æ–‡ä»¶å¤¹åç§°ï¼Œç”¨æˆ·ä½“éªŒä¸ä½³ã€‚
    *
-   * title  : ±êÌâÃû³Æ£¨ÔİÎ´Ê¹ÓÃ£¬¿É´«¿Õ£©
-   * message: µ¯³ö¿òÄÚÈİ
+   * title  : æ ‡é¢˜åç§°ï¼ˆæš‚æœªä½¿ç”¨ï¼Œå¯ä¼ ç©ºï¼‰
+   * message: å¼¹å‡ºæ¡†å†…å®¹
    */
-  showAlert: function(title, message) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.showAlert) === "function") {
+  showAlert: function (title, message) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.showAlert) === "function") {
       window.AndroidJSBridge.showAlert(title, message);
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android): showAlert");
+      alert("Error æœªå®šä¹‰æ¥å£(Android): showAlert");
     }
   },
   /*
-   * Ô­Éúµ¯³ö¿ò£¬µã»÷¡ºÈ·¶¨¡»ºóÌø×ªÖÁÆäËûÁ´½Ó
+   * åŸç”Ÿå¼¹å‡ºæ¡†ï¼Œç‚¹å‡»ã€ç¡®å®šã€åè·³è½¬è‡³å…¶ä»–é“¾æ¥
    *
-   * Ê¹ÓÃÔ­Éúµ¯³ö¿òµ«¼ÌĞøÊ¹ÓÃÍøÒ³ÄÚ²¿µÄÌø×ª·½Ê½Ê±£¬Ìø×ª²Ù×÷²»»áµÈµ¯³ö¿òµÄÒµÎñ²Ù×÷
+   * ä½¿ç”¨åŸç”Ÿå¼¹å‡ºæ¡†ä½†ç»§ç»­ä½¿ç”¨ç½‘é¡µå†…éƒ¨çš„è·³è½¬æ–¹å¼æ—¶ï¼Œè·³è½¬æ“ä½œä¸ä¼šç­‰å¼¹å‡ºæ¡†çš„ä¸šåŠ¡æ“ä½œ
    *
-   * title       : ±êÌâÃû³Æ£¨ÔİÎ´Ê¹ÓÃ£¬¿É´«¿Õ£©
-   * message     : µ¯³ö¿òÄÚÈİ
-   * redirectUrl : ´ıÌø×ªµÄÁ´½Ó
+   * title       : æ ‡é¢˜åç§°ï¼ˆæš‚æœªä½¿ç”¨ï¼Œå¯ä¼ ç©ºï¼‰
+   * message     : å¼¹å‡ºæ¡†å†…å®¹
+   * redirectUrl : å¾…è·³è½¬çš„é“¾æ¥
    */
-  showAlertAndRedirect: function(title, message, redirectUrl) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.showAlertAndRedirectV1) === "function") {
+  showAlertAndRedirect: function (title, message, redirectUrl) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.showAlertAndRedirectV1) === "function") {
       window.AndroidJSBridge.showAlertAndRedirectV1(title, message, redirectUrl, 'no');
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android): showAlertAndRedirect");
+      alert("Error æœªå®šä¹‰æ¥å£(Android): showAlertAndRedirect");
     }
   },
   /*
-   * Ô­Éúµ¯³ö¿ò£¬µã»÷¡ºÈ·¶¨¡»ºóÌø×ªÖÁÆäËûÁ´½Ó£¬Çå¿ÕÁ´½ÓÕ»
+   * åŸç”Ÿå¼¹å‡ºæ¡†ï¼Œç‚¹å‡»ã€ç¡®å®šã€åè·³è½¬è‡³å…¶ä»–é“¾æ¥ï¼Œæ¸…ç©ºé“¾æ¥æ ˆ
    *
-   * ÓĞĞ©ÒµÎñÁ÷³Ì²»¿ÉÒÔ·µ»ØÀúÊ·Á´½Ó£¬±ÈÈç¡ºĞÂ½¨¡»£¬ËùÒÔÌø×ªÖÁ¸ÃÁ´½ÓÊ±£¬Çå¿ÕÕ»£¬µã»÷±êÌâÀ¸ÖĞµÄ¡º·µ»Ø¡»Ôò¹Ø±Õä¯ÀÀÆ÷
+   * æœ‰äº›ä¸šåŠ¡æµç¨‹ä¸å¯ä»¥è¿”å›å†å²é“¾æ¥ï¼Œæ¯”å¦‚ã€æ–°å»ºã€ï¼Œæ‰€ä»¥è·³è½¬è‡³è¯¥é“¾æ¥æ—¶ï¼Œæ¸…ç©ºæ ˆï¼Œç‚¹å‡»æ ‡é¢˜æ ä¸­çš„ã€è¿”å›ã€åˆ™å…³é—­æµè§ˆå™¨
    *
-   * title       : ±êÌâÃû³Æ£¨ÔİÎ´Ê¹ÓÃ£¬¿É´«¿Õ£©
-   * message     : µ¯³ö¿òÄÚÈİ
-   * redirectUrl : ´ıÌø×ªµÄÁ´½Ó
+   * title       : æ ‡é¢˜åç§°ï¼ˆæš‚æœªä½¿ç”¨ï¼Œå¯ä¼ ç©ºï¼‰
+   * message     : å¼¹å‡ºæ¡†å†…å®¹
+   * redirectUrl : å¾…è·³è½¬çš„é“¾æ¥
    */
-  showAlertAndRedirectWithCleanStack: function(title, message, redirectUrl) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.showAlertAndRedirectV1) === "function") {
+  showAlertAndRedirectWithCleanStack: function (title, message, redirectUrl) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.showAlertAndRedirectV1) === "function") {
       window.AndroidJSBridge.showAlertAndRedirectV1(title, message, redirectUrl, 'yes');
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android): showAlertAndRedirect");
+      alert("Error æœªå®šä¹‰æ¥å£(Android): showAlertAndRedirect");
     }
   },
   /*
-   * ¿ØÖÆÔ­Éú±êÌâÀ¸µÄÒş²Ø¼°ÏÔÊ¾
+   * æ§åˆ¶åŸç”Ÿæ ‡é¢˜æ çš„éšè—åŠæ˜¾ç¤º
    *
-   * ÓĞĞ©ÒµÎñ²Ù×÷ÔÚµ¯³öÒ³ÃæÖĞÒÑÓĞ±êÌâÀ¸£¬´ËÊ±¿ÉÒÔÍ¨¹ı¸Ãº¯Êı¿ØÖÆÔ­Éú±êÌâÀ¸µÄÒş²Ø¼°ÏÔÊ¾
+   * æœ‰äº›ä¸šåŠ¡æ“ä½œåœ¨å¼¹å‡ºé¡µé¢ä¸­å·²æœ‰æ ‡é¢˜æ ï¼Œæ­¤æ—¶å¯ä»¥é€šè¿‡è¯¥å‡½æ•°æ§åˆ¶åŸç”Ÿæ ‡é¢˜æ çš„éšè—åŠæ˜¾ç¤º
    *
-   * state: ÏÔÊ¾»òÒş²Ø£¨show/hidden£©
+   * state: æ˜¾ç¤ºæˆ–éšè—ï¼ˆshow/hiddenï¼‰
    */
-  toggleShowBanner: function(state) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.toggleShowBanner) === "function") {
+  toggleShowBanner: function (state) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.toggleShowBanner) === "function") {
       window.AndroidJSBridge.toggleShowBanner(state);
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android):  toggleShowBanner");
+      alert("Error æœªå®šä¹‰æ¥å£(Android):  toggleShowBanner");
     }
   },
   /*
-   * Ê×Ò³µ×²¿Ò³Ç©ÏÔÊ¾ badge Êı×Ö
+   * é¦–é¡µåº•éƒ¨é¡µç­¾æ˜¾ç¤º badge æ•°å­—
    *
-   * type: ÀàĞÍ£¨½öÖ§³Ö: total£©
-   * num : badge Êı×Ö
+   * type: ç±»å‹ï¼ˆä»…æ”¯æŒ: totalï¼‰
+   * num : badge æ•°å­—
    */
-  appBadgeNum: function(type, num) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.appBadgeNum) === "function") {
+  appBadgeNum: function (type, num) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.appBadgeNum) === "function") {
       window.AndroidJSBridge.appBadgeNum(type, num);
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android): appBadgeNum");
+      alert("Error æœªå®šä¹‰æ¥å£(Android): appBadgeNum");
     }
   },
   /*
-   * ¿ØÖÆ±êÌâÀ¸ÖĞ±êÌâÄÚÈİ
+   * æ§åˆ¶æ ‡é¢˜æ ä¸­æ ‡é¢˜å†…å®¹
    *
-   * title: ±êÌâÄÚÈİ
+   * title: æ ‡é¢˜å†…å®¹
    */
-  setBannerTitle: function(title) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.setBannerTitle) === "function") {
+  setBannerTitle: function (title) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.setBannerTitle) === "function") {
       window.AndroidJSBridge.setBannerTitle(title);
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú(Android): setBannerTitle");
+      alert("Error æœªå®šä¹‰æ¥å£(Android): setBannerTitle");
     }
   },
   /*
-   * Ìí¼Ó×óÉÏ½ÇµÄ²Ëµ¥Ïî
+   * æ·»åŠ å·¦ä¸Šè§’çš„èœå•é¡¹
    *
-   * menu_items: ²Ëµ¥ÏîÄÚÈİ£¨Êı×é£©
+   * menu_items: èœå•é¡¹å†…å®¹ï¼ˆæ•°ç»„ï¼‰
    *
    * [{
-   *   title: 'ÏúÊÛÂ¼ÈëÀúÊ·',
+   *   title: 'é”€å”®å½•å…¥å†å²',
    *   link: 'offline://sale.input.historical.html'
    *  }];
    */
-  addSubjectMenuItems: function(menuItems) {
-    if(window.AndroidJSBridge && typeof(window.AndroidJSBridge.addSubjectMenuItems) === "function") {
+  addSubjectMenuItems: function (menuItems) {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.addSubjectMenuItems) === "function") {
       window.AndroidJSBridge.addSubjectMenuItems(JSON.stringify(menu_items));
     } else {
-      alert("Error Î´¶¨Òå½Ó¿Ú:  addSubjectMenuItems");
+      alert("Error æœªå®šä¹‰æ¥å£:  addSubjectMenuItems");
+    }
+  },
+  showBarCodeScanner: function () {
+    if (window.AndroidJSBridge && typeof (window.AndroidJSBridge.showBarCodeScanner) === "function") {
+      window.AndroidJSBridge.showBarCodeScanner();
+    } else {
+      alert("Error æœªå®šä¹‰æ¥å£:  showBarCodeScanner");
     }
   }
 };
 
 /*
- * iOS <=> JS ½»»¥½Ó¿Ú
+ * iOS <=> JS äº¤äº’æ¥å£
  */
 window.SYPWithinIOS = {
-  version: function() {
+  version: function () {
     return 'ios ' + SHENGYIPLUSVERSION;
   },
-  connectWebViewJavascriptBridge: function(callback) {
-    if(window.WebViewJavascriptBridge) {
+  connectWebViewJavascriptBridge: function (callback) {
+    if (window.WebViewJavascriptBridge) {
       callback(WebViewJavascriptBridge)
     }
     else {
-      document.addEventListener('WebViewJavascriptBridgeReady', function() {
+      document.addEventListener('WebViewJavascriptBridgeReady', function () {
         callback(WebViewJavascriptBridge)
       }, false)
     }
   },
-  jsException: function(e) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('jsException', {ex: e}, function(response) {});
+  jsException: function (e) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('jsException', { ex: e }, function (response) { });
     })
   },
-  checkVersion: function() {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('checkVersion', {version: SHENGYIPLUSVERSION}, function(response) {});
+  checkVersion: function () {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('checkVersion', { version: SHENGYIPLUSVERSION }, function (response) { });
     })
   },
-  goBack: function() {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('goBack', {}, function(response) {});
+  goBack: function () {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('goBack', {}, function (response) { });
     })
   },
-  pageLink: function(bannerName, link, objectId) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('pageLink', {'bannerName': bannerName, 'link': link, 'objectID': objectId}, function(response) {});
+  pageLink: function (bannerName, link, objectId) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('pageLink', { 'bannerName': bannerName, 'link': link, 'objectID': objectId }, function (response) { });
     })
   },
-  pageLinkWithinModule: function(bannerName, link, objectId) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('pageLinkWithinModule', {'bannerName': bannerName, 'link': link, 'objectID': objectId}, function(response) {});
+  pageLinkWithinModule: function (bannerName, link, objectId) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('pageLinkWithinModule', { 'bannerName': bannerName, 'link': link, 'objectID': objectId }, function (response) { });
     })
   },
-  showAlert: function(title, message) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('showAlert', {'title': title, 'content': message}, function(response) {});
+  showAlert: function (title, message) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('showAlert', { 'title': title, 'content': message }, function (response) { });
     })
   },
-  showAlertAndRedirect: function(title, message, redirectUrl) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('showAlertAndRedirect', {'title': title, 'content': message, 'redirectUrl': redirectUrl, 'cleanStack': 'no'}, function(response) {});
+  showAlertAndRedirect: function (title, message, redirectUrl) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('showAlertAndRedirect', { 'title': title, 'content': message, 'redirectUrl': redirectUrl, 'cleanStack': 'no' }, function (response) { });
     })
   },
-  showAlertAndRedirectWithCleanStack: function(title, message, redirectUrl) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('showAlertAndRedirect', {'title': title, 'content': message, 'redirectUrl': redirectUrl, 'cleanStack': 'yes'}, function(response) {});
+  showAlertAndRedirectWithCleanStack: function (title, message, redirectUrl) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('showAlertAndRedirect', { 'title': title, 'content': message, 'redirectUrl': redirectUrl, 'cleanStack': 'yes' }, function (response) { });
     })
   },
-  toggleShowBanner: function(state) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('toggleShowBanner', {'state': state}, function(response) {});
+  toggleShowBanner: function (state) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('toggleShowBanner', { 'state': state }, function (response) { });
     })
   },
-  appBadgeNum: function(type, num) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('appBadgeNum', {'type': type, 'num': num}, function(response) {});
+  appBadgeNum: function (type, num) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('appBadgeNum', { 'type': type, 'num': num }, function (response) { });
     })
   },
-  setBannerTitle: function(title) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('setBannerTitle', {'title': title}, function(response) {});
+  setBannerTitle: function (title) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('setBannerTitle', { 'title': title }, function (response) { });
     })
   },
-  addSubjectMenuItems: function(menuItems) {
-    SYPWithinIOS.connectWebViewJavascriptBridge(function(bridge){
-      bridge.callHandler('addSubjectMenuItems', {'menu_items': menuItems}, function(response) {});
+  addSubjectMenuItems: function (menuItems) {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('addSubjectMenuItems', { 'menu_items': menuItems }, function (response) { });
+    })
+  },
+  showBarCodeScanner: function () {
+    SYPWithinIOS.connectWebViewJavascriptBridge(function (bridge) {
+      bridge.callHandler('showBarCodeScanner', {}, function (response) { });
     })
   }
 };
 
 /*
- * PC <=> JS ½»»¥½Ó¿Ú
+ * PC <=> JS äº¤äº’æ¥å£
  */
 window.SYP = {
-  version: function() {
+  version: function () {
     return 'default ' + SHENGYIPLUSVERSION;
   },
-  checkVersion: function() {
+  checkVersion: function () {
     console.log('default ' + SHENGYIPLUSVERSION);
   },
-  jsException: function(e) {
-    console.log(typeof(e));
+  jsException: function (e) {
+    console.log(typeof (e));
     console.log(e);
   },
-  goBack: function() {
+  goBack: function () {
     window.history.back();
   },
-  pageLink: function(bannerName, link, objectId) {
-    window.location.href = link;
+  pageLinkWithinModule: function (bannerName, module, pageName) {
+    window.location.href = pageName;
   },
-  showAlert: function(title, message) {
+  pageLink: function (bannerName, link, objectId) {
+    var match = link.match(/^offline:\/\/(.*?)@(.*?)$/);
+    if (match && match.length === 3) {
+      window.SYP.pageLinkWithinModule(bannerName, match[1], match[2]);
+    } else {
+      var match2 = link.match(/^offline:\/\/(.*?)$/);
+      if (match2 && match2.length === 2) {
+        link = match2[1];
+      }
+      window.location.href = link;
+    }
+  },
+  showAlert: function (title, message) {
     alert(message);
   },
-  showAlertAndRedirect: function(title, message, redirectUrl) {
+  showAlertAndRedirect: function (title, message, redirectUrl) {
     window.location.href = redirectUrl.split('@')[1];
   },
-  showAlertAndRedirectWithCleanStack: function(title, message, redirectUrl) {
+  showAlertAndRedirectWithCleanStack: function (title, message, redirectUrl) {
     alert(message);
     window.SYP.pageLink(redirectUrl.split('@')[1]);
   },
-  toggleShowBanner: function(state) {
-    console.log({'toggleShowBanner state': state});
+  toggleShowBanner: function (state) {
+    console.log({ 'toggleShowBanner state': state });
   },
-  appBadgeNum: function(type, num) {
-    console.log({'type': type, 'num': num});
+  appBadgeNum: function (type, num) {
+    console.log({ 'type': type, 'num': num });
   },
-  setBannerTitle: function(title) {
+  setBannerTitle: function (title) {
     $(document).attr("title", title);
   },
-  addSubjectMenuItems: function(menuItems) {
-    console.log({'menu_items': menuItems});
+  addSubjectMenuItems: function (menuItems) {
+    console.log({ 'menu_items': menuItems });
   }
 };
 
 var userAgent = navigator.userAgent,
-    isAndroid = userAgent.indexOf('Android') > -1 || userAgent.indexOf('Adr') > -1,
-    isiOS = !!userAgent.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/);
-if(isiOS) {
+  isAndroid = userAgent.indexOf('Android') > -1 || userAgent.indexOf('Adr') > -1,
+  isiOS = !!userAgent.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/);
+if (isiOS) {
   window.SYP = window.SYPWithinIOS;
-} else if(isAndroid) {
+} else if (isAndroid) {
   window.SYP = window.SYPWithinAndroid;
 }
 
 console.log(window.SYP.version());
 window.SYP.checkVersion();
-window.onerror = function(e) {
+window.onerror = function (e) {
   window.SYP.jsException(e);
 }
 
 function goto_url(url) {
-  if(url !== undefined && url !== null && url.trim().length) {
+  if (url !== undefined && url !== null && url.trim().length) {
     window.SYP.pageLinkV1(url, 'offline://hd_cre@' + url.trim(), 0);
   } else {
-    alert('¸ÃÁ´½Ó²»Ö§³ÖÌø×ª: ' + url);
+    alert('è¯¥é“¾æ¥ä¸æ”¯æŒè·³è½¬: ' + url);
   }
 }
 
-$(function() {
+$(function () {
   window.SYP.setBannerTitle($(document).attr("title"));
 });

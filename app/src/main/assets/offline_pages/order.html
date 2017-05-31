@@ -113,18 +113,18 @@
     <script src="static/js/user_permission.js"></script>
     <script src="static/js/syp_v1.js"></script>
     <script type="text/javascript">
-        var orderlist;
+        var orderslist;
         var goodsData;
         var activityData;
         $(function () {
             ordersearch();
         })
         function goDetail(id) {
-            window.SYP.pageLink("商品列表", "order.view.html?id="+id, -1);
+            window.SYP.pageLink("商品列表", "offline://order.view.html?id="+id, -1);
             //window.location.href = "order.view.html";
         }
         function createOrder() {
-            window.SYP.pageLink("商品列表", "goods.html", -1);
+            window.SYP.pageLink("商品列表", "offline://goods.html", -1);
             //window.location.href = "goods.html";
         }
     </script>
