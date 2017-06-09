@@ -44,6 +44,7 @@ import com.intfocus.yxtest.util.PrivateURLs;
 import com.intfocus.yxtest.util.URLs;
 import com.umeng.message.util.HttpRequest;
 import com.umeng.socialize.ShareAction;
+import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.media.UMImage;
@@ -67,7 +68,7 @@ import java.util.Map;
 
 import static android.webkit.WebView.enableSlowWholeDocumentDraw;
 import static com.intfocus.yxtest.util.K.kUploadImgAPIPath;
-import static com.intfocus.yxtest.util.PrivateURLs.kBaseUrl;
+
 import static java.lang.String.format;
 
 public class SubjectActivity extends BaseActivity {
@@ -312,7 +313,7 @@ public class SubjectActivity extends BaseActivity {
         popupWindow.showAsDropDown(mBannerSetting, dip2px(this, -47), dip2px(this, 10));
 
 		/*
-		 * 用户行为记录, 单独异常处理，不可影响用户体验
+         * 用户行为记录, 单独异常处理，不可影响用户体验
 		 */
         try {
             logParams = new JSONObject();
@@ -395,7 +396,7 @@ public class SubjectActivity extends BaseActivity {
         isWeiXinShared = false;
 
 		/*
-		 * 判断是否允许浏览器复制
+         * 判断是否允许浏览器复制
 		 */
         isAllowBrowerCopy();
         if (!urlStack.empty() && isInnerLink) {
@@ -721,8 +722,8 @@ public class SubjectActivity extends BaseActivity {
         }
 
         @JavascriptInterface
-        public void showAlertAndRedirect(final String title, final String content, final String redirect_url, String cleanStack) {
-            Log.d("pages1", title + ":" + content + ":" + redirect_url);
+        public void showAlertAndRedirectV1(final String title, final String content, final String redirect_url, String cleanStack) {
+
             if (cleanStack.equals("yes")) {
                 urlStack.clear();
             }
@@ -740,7 +741,7 @@ public class SubjectActivity extends BaseActivity {
         }
 
         @JavascriptInterface
-        public void showAlertAndRedirect(final String title, final String content, final String redirect_url) {
+        public void showAlertAndRedirectV1(final String title, final String content, final String redirect_url) {
             Log.d("pages1", title + ":" + content + ":" + redirect_url);
             if (!(title.equals("")) && !(content.equals(""))) {
                 runOnUiThread(new Runnable() {
@@ -903,6 +904,11 @@ public class SubjectActivity extends BaseActivity {
             toast("打开扫码");
         }
 
+//        @JavascriptInterface
+//        public void uploadFile() {
+//            showOptions();
+//        }
+
         @JavascriptInterface
         public void showAlert(final String title, final String content) {
             runOnUiThread(new Runnable() {
@@ -998,7 +1004,7 @@ public class SubjectActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-//        imgUploadString = String.format(kUploadImgAPIPath, kBaseUrl);
+        UMShareAPI.get(this).onActivityResult(requestCode, resultCode, intent);
         Log.e("uploadImg", resultCode + "");
         if (resultCode != Activity.RESULT_OK) {
             toast("上传图片失败, 请尝试其他方式上传图片");
@@ -1019,8 +1025,7 @@ public class SubjectActivity extends BaseActivity {
                             return;
                         }
 
-                        File cameraFile = new File(Environment.getExternalStorageDirectory(), "upload.jpg");
-                        imgSourcePath = Environment.getExternalStorageDirectory() + "upload.jpg";
+                        File cameraFile = new File(Environment.getExternalStorageDirectory(),"upload.jpg");
 
                         Uri uri = Uri.fromFile(cameraFile);
                         mUploadMessage.onReceiveValue(uri);
@@ -1029,12 +1034,12 @@ public class SubjectActivity extends BaseActivity {
                         if (mUploadMessage1 == null) {        // for android 5.0+
                             return;
                         }
-                        File cameraFile = new File(Environment.getExternalStorageDirectory(), "upload.jpg");
-                        imgSourcePath = Environment.getExternalStorageDirectory() + "upload.jpg";
+
+                        File cameraFile = new File(Environment.getExternalStorageDirectory(),"upload.jpg");
+
                         Uri uri = Uri.fromFile(cameraFile);
                         mUploadMessage1.onReceiveValue(new Uri[]{uri});
                     }
-                    myupload();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1047,13 +1052,12 @@ public class SubjectActivity extends BaseActivity {
                         }
 
                         String sourcePath = ImageUtil.retrievePath(this, mSourceIntent, intent);
+
                         if (TextUtils.isEmpty(sourcePath) || !new File(sourcePath).exists()) {
                             Log.e("uploadImg", "sourcePath empty or not exists.");
                             break;
                         }
-                        imgSourcePath = sourcePath;
 
-                        mWebView.loadUrl("javascript:finishChoice(" + new File(sourcePath) + ")");
                         Uri uri = Uri.fromFile(new File(sourcePath));
                         mUploadMessage.onReceiveValue(uri);
 
@@ -1063,22 +1067,46 @@ public class SubjectActivity extends BaseActivity {
                         }
 
                         String sourcePath = ImageUtil.retrievePath(this, mSourceIntent, intent);
-                        imgSourcePath = sourcePath;
-                        mWebView.loadUrl("javascript:finishChoice(" + new File(sourcePath) + ")");
+
                         if (TextUtils.isEmpty(sourcePath) || !new File(sourcePath).exists()) {
+                            Log.e("uploadImg", "sourcePath empty or not exists.");
                             break;
                         }
 
                         Uri uri = Uri.fromFile(new File(sourcePath));
                         mUploadMessage1.onReceiveValue(new Uri[]{uri});
                     }
-                    myupload();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
             }
         }
+//        super.onActivityResult(requestCode, resultCode, intent);
+//        Log.e("uploadImg", resultCode + "");
+//        if (resultCode != Activity.RESULT_OK) {
+//            toast("上传图片失败, 请尝试其他方式上传图片");
+//            return;
+//        }
+//        switch (requestCode) {
+//            case CODE_CAMERA_RESULT:
+//                imgSourcePath = Environment.getExternalStorageDirectory() + "upload.jpg";
+//                if (TextUtils.isEmpty(imgSourcePath) || !new File(imgSourcePath).exists()) {
+//                    Log.e("uploadImg", "sourcePath empty or not exists.");
+//                    break;
+//                }
+//                myUpload();
+//                break;
+//            case CODE_RESULT_REQUEST: {
+//                imgSourcePath = ImageUtil.retrievePath(this, mSourceIntent, intent);
+//                if (TextUtils.isEmpty(imgSourcePath) || !new File(imgSourcePath).exists()) {
+//                    Log.e("uploadImg", "sourcePath empty or not exists.");
+//                    break;
+//                }
+//                myUpload();
+//                break;
+//            }
+//        }
     }
 
 
@@ -1142,19 +1170,31 @@ public class SubjectActivity extends BaseActivity {
         }
     }
 
-    private void myupload() {
+    private void myUpload() {
         RequestParams params = new RequestParams(kUploadImgAPIPath);
         params.setMultipart(true);
-        params.addBodyParameter("file", new File(imgSourcePath));//设置上传的文件路径
+        params.addBodyParameter("file", new File(imgSourcePath)); //设置上传的文件路径
         x.http().post(params, new Callback.CommonCallback<String>() {
             @Override
-            public void onSuccess(String result) {
-                Log.i("testlog", result);
+            public void onSuccess(final String result) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JSONObject jsonObject = new JSONObject(result);
+                            Log.i("testlog", jsonObject.get("body").toString());
+                            mWebView.loadUrl("javascript:finishChoice(" + jsonObject.get("body").toString() + ")");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-                Log.i("testlog", "onError");
+                Log.i("testlog", "onError" + ex.toString());
             }
 
             @Override
