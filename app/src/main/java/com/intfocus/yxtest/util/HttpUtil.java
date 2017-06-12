@@ -5,13 +5,20 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Message;
+import android.os.PowerManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.intfocus.yxtest.BaseActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -695,5 +703,230 @@ public class HttpUtil {
         }
 
         return false;
+    }
+
+    /**
+     * 检测服务器端静态文件是否更新
+     * to do
+     */
+    public static void checkAssetsUpdated(Context context, boolean shouldReloadUIThread) {
+        checkAssetUpdated(context, shouldReloadUIThread, "loading", false);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kFonts, true);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kImages, true);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kIcons, true);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kStylesheets, true);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kJavaScripts, true);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kBarCodeScan, false);
+//        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePages, false);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kOfflinePagesHtml, false);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kOfflinePagesImages, false);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kOfflinePagesJavascripts, false);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kOfflinePagesStylesheets, false);
+        checkAssetUpdated(context, shouldReloadUIThread, URLs.kAdvertisement, false);
+        String sharedPath = FileUtil.sharedPath(context);
+
+        String userConfigPath = String.format("%s/%s", FileUtil.basePath(context), K.kUserConfigFileName);
+        if ((new File(userConfigPath)).exists()) {
+            JSONObject user = FileUtil.readConfigFile(userConfigPath);
+            ApiHelper.downloadUserJs(context, sharedPath, user);
+        }
+    }
+
+    private static boolean checkAssetUpdated(Context context, boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
+        try {
+            boolean isShouldUpdateAssets = false;
+            String sharedPath = FileUtil.sharedPath(context);
+            String localKeyName = "";
+            String keyName = "";
+            String assetZipPath = String.format("%s/%s.zip", sharedPath, assetName);
+            isShouldUpdateAssets = !(new File(assetZipPath)).exists();
+
+            String userConfigPath = String.format("%s/%s", FileUtil.basePath(context), K.kUserConfigFileName);
+            JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+            if (assetName.contains("offline_pages_")) {
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName.replace("offline_pages_", ""));
+            } else {
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName);
+            }
+            if (assetName.contains("offline_pages_")) {
+                JSONObject jsonObject = userJSON.getJSONObject("offline_pages");
+                isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(jsonObject.getString(keyName));
+            } else {
+                isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(userJSON.getString(keyName));
+            }
+
+            if (!isShouldUpdateAssets) {
+                return false;
+            }
+
+//            LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
+            // execute this when the downloader must be fired
+            final DownloadAssetsTask downloadTask = new DownloadAssetsTask(context, shouldReloadUIThread, assetName, isInAssets);
+            final String downloadPath = FileUtil.dirPath(context, "Cached/" + String.format("%d", new Date().getTime()), String.format("%s.zip", assetName));
+            downloadTask.execute(String.format(K.kDownloadAssetsAPIPath, K.kBaseUrl, assetName), downloadPath);
+
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static class DownloadAssetsTask extends AsyncTask<String, Integer, String> {
+        private final Context context;
+        private PowerManager.WakeLock mWakeLock;
+        private final boolean isReloadUIThread;
+        private final String assetFilename;
+        private final boolean isInAssets;
+        private String downloadPath = "";
+        private JSONObject user;
+        private String sharedPath;
+
+        public DownloadAssetsTask(Context context, boolean shouldReloadUIThread, String assetFilename, boolean isInAssets) {
+            this.context = context;
+            this.isReloadUIThread = shouldReloadUIThread;
+            this.assetFilename = assetFilename;
+            this.isInAssets = isInAssets;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                // expect HTTP 200 OK, so we don't mistakenly save error report
+                // instead of the file
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return "Server returned HTTP " + connection.getResponseCode() + " " + connection.getResponseMessage();
+                }
+
+                // this will be useful to display download percentage
+                // might be -1: server did not report the length
+                int fileLength = connection.getContentLength();
+                input = connection.getInputStream();
+                output = new FileOutputStream(params[1]);
+                downloadPath = params[1];
+
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    // allow canceling with back button
+                    if (isCancelled()) {
+                        input.close();
+                        return null;
+                    }
+                    total += count;
+                    // publishing the progress....
+                    if (fileLength > 0) // only if total length is known
+                        publishProgress((int) (total * 100 / fileLength));
+                    output.write(data, 0, count);
+                }
+            } catch (Exception e) {
+                LogUtil.d("Exception", e.toString());
+                return e.toString();
+            } finally {
+                try {
+                    if (output != null)
+                        output.close();
+                    if (input != null)
+                        input.close();
+                } catch (IOException ignored) {
+                }
+
+                if (connection != null)
+                    connection.disconnect();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // take CPU lock to prevent CPU from going off if the user
+            // presses the power button during download
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    getClass().getName());
+            mWakeLock.acquire();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mWakeLock.release();
+            sharedPath = FileUtil.sharedPath(context);
+
+            String userConfigPath = String.format("%s/%s", FileUtil.basePath(context), K.kUserConfigFileName);
+            if ((new File(userConfigPath)).exists()) {
+                user = FileUtil.readConfigFile(userConfigPath);
+            }
+            if (result != null) {
+                Toast.makeText(context, String.format("静态资源更新失败(%s)", result), Toast.LENGTH_LONG).show();
+            } else {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String keyName = "";
+                            String md5String = "";
+                            String offonlineMd5String = "";
+                            if (new File(downloadPath).exists()) {
+                                InputStream zipStream = new FileInputStream(downloadPath);
+                                md5String = FileUtil.MD5(zipStream);
+                                if (assetFilename.contains("offline_pages_")) {
+                                }
+                                keyName = String.format("%s_md5", assetFilename.replace("offline_pages_", ""));
+                            } else {
+                                keyName = String.format("%s_md5", assetFilename);
+                            }
+
+                            if (assetFilename.contains("offline_pages_")) {
+                                JSONObject jsonObject = user.getJSONObject("offline_pages");
+                                offonlineMd5String = jsonObject.getString(keyName);
+                            } else {
+                                offonlineMd5String = user.getString(keyName);
+                            }
+                            if (offonlineMd5String.equals(md5String)) {
+                                String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
+                                if (new File(downloadPath).exists()) {
+                                    if (new File(assetZipPath).exists()) {
+                                        new File(assetZipPath).delete();
+                                    }
+                                    FileUtil.copyZipFile(downloadPath, assetZipPath);
+
+                                }
+                                FileUtil.checkAssets(context, assetFilename, isInAssets);
+//                                runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        FileUtil.checkAssets(context, assetFilename, isInAssets);
+//                                        if (isReloadUIThread) {
+//                                            new Thread(mRunnableForDetecting).start();
+//                                        }
+//                                    }
+//                                });
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
     }
 }

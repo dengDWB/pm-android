@@ -36,13 +36,10 @@ import android.widget.Toast;
 
 import com.intfocus.yxtest.util.ApiHelper;
 import com.intfocus.yxtest.util.FileUtil;
-import com.intfocus.yxtest.util.HttpUtil;
 import com.intfocus.yxtest.util.ImageUtil;
 import com.intfocus.yxtest.util.K;
 import com.intfocus.yxtest.util.LogUtil;
-import com.intfocus.yxtest.util.PrivateURLs;
 import com.intfocus.yxtest.util.URLs;
-import com.umeng.message.util.HttpRequest;
 import com.umeng.socialize.ShareAction;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.UMShareListener;
@@ -53,8 +50,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xutils.common.Callback;
-import org.xutils.common.util.KeyValue;
-import org.xutils.ex.HttpException;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
@@ -68,7 +63,6 @@ import java.util.Map;
 
 import static android.webkit.WebView.enableSlowWholeDocumentDraw;
 import static com.intfocus.yxtest.util.K.kUploadImgAPIPath;
-
 import static java.lang.String.format;
 
 public class SubjectActivity extends BaseActivity {
@@ -901,7 +895,7 @@ public class SubjectActivity extends BaseActivity {
 
         @JavascriptInterface
         public void showBarCodeScanner() {
-            toast("打开扫码");
+            toast("功能未开放");
         }
 
 //        @JavascriptInterface

@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="support-fragment-24.2.1">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.android/build-cache/b63255047591eaa0900d5dc6f2db8cb869498260/output/jars/classes.jar!/" />
-      <root url="jar://$USER_HOME$/.android/build-cache/b63255047591eaa0900d5dc6f2db8cb869498260/output/jars/libs/internal_impl-24.2.1.jar!/" />
-      <root url="file://$USER_HOME$/.android/build-cache/b63255047591eaa0900d5dc6f2db8cb869498260/output/res" />
+      <root url="jar://$USER_HOME$/.android/build-cache/a391a052e2774ed0b114efb988be4e333d93ad83/output/jars/libs/internal_impl-24.2.1.jar!/" />
+      <root url="file://$USER_HOME$/.android/build-cache/a391a052e2774ed0b114efb988be4e333d93ad83/output/res" />
+      <root url="jar://$USER_HOME$/.android/build-cache/a391a052e2774ed0b114efb988be4e333d93ad83/output/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$USER_HOME$/Library/Android/sdk/extras/android/m2repository/com/android/support/support-fragment/24.2.1/support-fragment-24.2.1-sources.jar!/" />
+      <root url="jar://D:/androidstudiosdk/extras/android/m2repository/com/android/support/support-fragment/24.2.1/support-fragment-24.2.1-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

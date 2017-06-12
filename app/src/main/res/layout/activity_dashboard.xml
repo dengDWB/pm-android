@@ -19,13 +19,13 @@
             android:layout_centerInParent="true"
             android:src="@drawable/banner_logo"/>
 
-        <ImageView
-            android:id="@+id/bannerSetting"
-            style="@style/BannerRightButton"
-            android:layout_alignBottom="@+id/colorViewLayout"
-            android:layout_marginTop="0dp"
-            android:onClick="launchDropMenuActivity"
-            android:src="@drawable/banner_setting"/>
+        <!--<ImageView-->
+            <!--android:id="@+id/bannerSetting"-->
+            <!--style="@style/BannerRightButton"-->
+            <!--android:layout_alignBottom="@+id/colorViewLayout"-->
+            <!--android:layout_marginTop="0dp"-->
+            <!--android:onClick="launchDropMenuActivity"-->
+            <!--android:src="@drawable/banner_setting"/>-->
 
         <RelativeLayout
             android:id="@+id/colorViewLayout"
@@ -79,7 +79,8 @@
             style="@style/ToolBarTab"
             app:active_src="@drawable/tab_analysis_s"
             app:src="@drawable/tab_analysis"
-            app:text="待办"/>
+            app:text="待办"
+            android:visibility="gone"/>
 
         <!--<com.intfocus.hdmcre.view.TabView-->
         <!--android:id="@+id/tabApp"-->
@@ -95,7 +96,21 @@
             app:src="@drawable/tab_report"
             app:text="报表"/>
 
+        <com.intfocus.yxtest.view.TabView
+            android:id="@+id/tabUser"
+            style="@style/ToolBarTab"
+            app:active_src="@drawable/icon_user"
+            app:src="@drawable/icon_user"
+            app:text="个人信息"/>
+
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fragment"
+        android:visibility="gone"
+        android:layout_above="@id/toolBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
     <FrameLayout
         android:layout_width="match_parent"

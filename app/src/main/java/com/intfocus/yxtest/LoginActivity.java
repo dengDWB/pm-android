@@ -112,8 +112,8 @@ public class LoginActivity extends BaseActivity {
         }
 
         RelativeLayout loginLayout = (RelativeLayout) findViewById(R.id.login_layout);
-        Button mMarketLogin = (Button) findViewById(R.id.btn_login_market);
-        controlKeyboardLayout(loginLayout, mMarketLogin);
+        Button mTenantLogin = (Button) findViewById(R.id.btn_login_tenant);
+        controlKeyboardLayout(loginLayout, mTenantLogin);
 
         /*
          * 检测登录界面，版本是否升级
@@ -281,10 +281,6 @@ public class LoginActivity extends BaseActivity {
 
     public void onTenantLogin(View v) {
         actionSubmit("tenant");
-    }
-
-    public void onMarketLogin(View v) {
-        actionSubmit("market");
     }
 
     /*

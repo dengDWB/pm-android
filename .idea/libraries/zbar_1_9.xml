@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="zbar-1.9">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.android/build-cache/2b932de6955707b529b7f12a085fd58695682e3f/output/jars/libs/zbar.jar!/" />
-      <root url="file://$USER_HOME$/.android/build-cache/2b932de6955707b529b7f12a085fd58695682e3f/output/res" />
-      <root url="jar://$USER_HOME$/.android/build-cache/2b932de6955707b529b7f12a085fd58695682e3f/output/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.android/build-cache/60d87291b029c97ddda25169e415a4edb6546d88/output/jars/libs/zbar.jar!/" />
+      <root url="file://$USER_HOME$/.android/build-cache/60d87291b029c97ddda25169e415a4edb6546d88/output/res" />
+      <root url="jar://$USER_HOME$/.android/build-cache/60d87291b029c97ddda25169e415a4edb6546d88/output/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

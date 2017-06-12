@@ -38,6 +38,8 @@ public class PrivateURLs {
   public final static boolean kTabBarAnalyse = true;
   public final static boolean kTabBarApp     = true;
   public final static boolean kTabBarMessage = true;
+  public final static boolean kTabBarUser = true;
+
 
   public final static boolean kSubjectComment = true;
   public final static boolean kTabBarKPI     = true;

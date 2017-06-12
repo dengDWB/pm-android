@@ -1,13 +1,15 @@
-package com.intfocus.yxtest;
+package com.intfocus.yxtest.fragment;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -17,7 +19,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.provider.MediaStore;
+import android.provider.Settings;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
@@ -33,16 +39,25 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.intfocus.yxtest.LaunchActivity;
+import com.intfocus.yxtest.LoginActivity;
+import com.intfocus.yxtest.R;
+import com.intfocus.yxtest.ResetPasswordActivity;
+import com.intfocus.yxtest.ThursdaySayActivity;
+import com.intfocus.yxtest.YHApplication;
 import com.intfocus.yxtest.screen_lock.InitPassCodeActivity;
 import com.intfocus.yxtest.util.ApiHelper;
 import com.intfocus.yxtest.util.FileUtil;
 import com.intfocus.yxtest.util.HttpUtil;
 import com.intfocus.yxtest.util.K;
+import com.intfocus.yxtest.util.LogUtil;
 import com.intfocus.yxtest.util.PrivateURLs;
 import com.intfocus.yxtest.util.URLs;
 import com.intfocus.yxtest.view.CircleImageView;
 import com.intfocus.yxtest.view.RedPointView;
+import com.pgyersdk.javabean.AppBean;
 import com.pgyersdk.update.PgyUpdateManager;
+import com.pgyersdk.update.UpdateManagerListener;
 import com.readystatesoftware.viewbadger.BadgeView;
 import com.umeng.message.PushAgent;
 
@@ -50,13 +65,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SettingActivity extends BaseActivity {
+import static android.app.Activity.RESULT_CANCELED;
+import static android.content.Context.MODE_PRIVATE;
+
+/**
+ * Created by 40284 on 2017/6/9.
+ */
+
+public class SettingFragment extends Fragment {
     public final static String kGravatar = "gravatar";
     public final static String kGravatarId = "gravatar_id";
     private TextView mUserID;
@@ -85,42 +113,66 @@ public class SettingActivity extends BaseActivity {
     private TextView mCheckThursdaySay;
     private Context mContext;
     private PushAgent mPushAgent;
-
+    private Activity activity;
+    Context mAppContext;
+    protected YHApplication mMyApp;
+    JSONObject user;
+    Toast toast;
+    JSONObject logParams = new JSONObject();
+    protected ProgressDialog mProgressDialog;
+    public final static String kVersionCode = "versionCode";
+    public final static String kLoading = "loading";
+    protected String sharedPath;
 
     /* 请求识别码 */
     private static final int CODE_GALLERY_REQUEST = 0xa0;
     private static final int CODE_CAMERA_REQUEST = 0xa1;
     private static final int CODE_RESULT_REQUEST = 0xa2;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setting);
+    public SettingFragment(Activity activity) {
+        this.activity = activity;
+    }
 
-        mContext = this;
+//    public SettingFragment(){
+//
+//    }
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        mContext = activity;
+
+        mMyApp = (YHApplication) activity.getApplication();
+        mAppContext = mMyApp.getAppContext();
+        sharedPath = FileUtil.sharedPath(mAppContext);
 
         mPushAgent = PushAgent.getInstance(mContext);
 
-        mUserID = (TextView) findViewById(R.id.user_id);
-        mRoleID = (TextView) findViewById(R.id.role_id);
-        mGroupID = (TextView) findViewById(R.id.group_id);
-        mChangePWD = (TextView) findViewById(R.id.change_pwd);
-        mWarnPWD = (TextView) findViewById(R.id.warn_pwd);
-        mCheckUpgrade = (TextView) findViewById(R.id.check_upgrade);
-        mPygerLink = (TextView) findViewById(R.id.pgyer_link);
-        mAppName = (TextView) findViewById(R.id.app_name);
-        mAppVersion = (TextView) findViewById(R.id.app_version);
-        mDeviceID = (TextView) findViewById(R.id.device_id);
-        mApiDomain = (TextView) findViewById(R.id.api_domain);
-        mAppIdentifier = (TextView) findViewById(R.id.app_identifier);
-        mPushState = (TextView) findViewById(R.id.push_state);
-        TextView mChangeLock = (TextView) findViewById(R.id.change_lock);
-        TextView mCheckAssets = (TextView) findViewById(R.id.check_assets);
-        Button mLogout = (Button) findViewById(R.id.logout);
-        mLockSwitch = (Switch) findViewById(R.id.lock_switch);
-        mDashboardSwitch = (Switch) findViewById(R.id.dashboard_switch);
-        mIconImageView =(CircleImageView) findViewById(R.id.img_icon);
-        mCheckThursdaySay = (TextView) findViewById(R.id.check_thursday_say);
+        String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
+        if ((new File(userConfigPath)).exists()) {
+            user = FileUtil.readConfigFile(userConfigPath);
+        }
+
+        View view = inflater.inflate(R.layout.activity_setting, null);
+        mUserID = (TextView) view.findViewById(R.id.user_id);
+        mRoleID = (TextView) view.findViewById(R.id.role_id);
+        mGroupID = (TextView) view.findViewById(R.id.group_id);
+        mChangePWD = (TextView) view.findViewById(R.id.change_pwd);
+        mWarnPWD = (TextView) view.findViewById(R.id.warn_pwd);
+        mCheckUpgrade = (TextView) view.findViewById(R.id.check_upgrade);
+        mPygerLink = (TextView) view.findViewById(R.id.pgyer_link);
+        mAppName = (TextView) view.findViewById(R.id.app_name);
+        mAppVersion = (TextView) view.findViewById(R.id.app_version);
+        mDeviceID = (TextView) view.findViewById(R.id.device_id);
+        mApiDomain = (TextView) view.findViewById(R.id.api_domain);
+        mAppIdentifier = (TextView) view.findViewById(R.id.app_identifier);
+        mPushState = (TextView) view.findViewById(R.id.push_state);
+        TextView mChangeLock = (TextView) view.findViewById(R.id.change_lock);
+        TextView mCheckAssets = (TextView) view.findViewById(R.id.check_assets);
+        Button mLogout = (Button) view.findViewById(R.id.logout);
+        mLockSwitch = (Switch) view.findViewById(R.id.lock_switch);
+        mDashboardSwitch = (Switch) view.findViewById(R.id.dashboard_switch);
+        mIconImageView =(CircleImageView) view.findViewById(R.id.img_icon);
+        mCheckThursdaySay = (TextView) view.findViewById(R.id.check_thursday_say);
 
         screenLockInfo = "取消锁屏成功";
         mLockSwitch.setChecked(FileUtil.checkIsLocked(mAppContext));
@@ -133,16 +185,16 @@ public class SettingActivity extends BaseActivity {
                 betaJSON.put("image_within_screen",true);
                 FileUtil.writeFile(betaConfigPath,betaJSON.toString());
             }
-            mLongCatSwitch = (Switch) findViewById(R.id.longcat_switch);
+            mLongCatSwitch = (Switch) view.findViewById(R.id.longcat_switch);
             mLongCatSwitch.setChecked(betaJSON.has("image_within_screen") && betaJSON.getBoolean("image_within_screen"));
             mDashboardSwitch.setChecked(betaJSON.has("allow_brower_copy") && betaJSON.getBoolean("allow_brower_copy"));
         } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
 
-        bvCheckUpgrade = new BadgeView(this, mCheckUpgrade);
-        bvChangePWD = new BadgeView(this, mChangePWD);
-        bvCheckThursdaySay = new BadgeView(this, mCheckThursdaySay);
+        bvCheckUpgrade = new BadgeView(activity, mCheckUpgrade);
+        bvChangePWD = new BadgeView(activity, mChangePWD);
+        bvCheckThursdaySay = new BadgeView(activity, mCheckThursdaySay);
 
         mChangeLock.setOnClickListener(mChangeLockListener);
         mChangePWD.setOnClickListener(mChangePWDListener);
@@ -153,21 +205,23 @@ public class SettingActivity extends BaseActivity {
         mDashboardSwitch.setOnCheckedChangeListener(mDashboardListener);
         mPygerLink.setOnClickListener(mPgyerLinkListener);
         mIconImageView.setOnClickListener(mIconImageViewListener);
+        mCheckThursdaySay.setOnClickListener(mThursdaySayListener);
 
         initIconMenu();
         initializeUI();
         setSettingViewControlBadges();
+        return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mMyApp.setCurrentActivity(this);
+        mMyApp.setCurrentActivity(activity);
         mLockSwitch.setChecked(FileUtil.checkIsLocked(mAppContext));
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         PgyUpdateManager.unregister(); // 解除注册蒲公英版本更新检查
         popupWindow = null;
         if (mProgressDialog != null){
@@ -193,8 +247,8 @@ public class SettingActivity extends BaseActivity {
             mUserID.setText(user.getString("user_name") + "(" + mLoginType + ")");
             mRoleID.setText(user.getString("role_name"));
             mGroupID.setText(user.getString("group_name"));
-            mAppName.setText(getApplicationName(SettingActivity.this));
-            String deviceInfo = String.format("%s(Android %s)",TextUtils.split(android.os.Build.MODEL, " - ")[0],Build.VERSION.RELEASE);
+            mAppName.setText(getApplicationName(activity));
+            String deviceInfo = String.format("%s(Android %s)", TextUtils.split(android.os.Build.MODEL, " - ")[0], Build.VERSION.RELEASE);
             mDeviceID.setText(deviceInfo);
             mApiDomain.setText(K.kBaseUrl.replace("http://", "").replace("https://", ""));
 
@@ -211,7 +265,7 @@ public class SettingActivity extends BaseActivity {
                 }
             }
 
-            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
             String versionInfo = String.format("%s(%d)", packageInfo.versionName, packageInfo.versionCode);
             int currentVersionCode = packageInfo.versionCode;
             mAppVersion.setText(versionInfo);
@@ -230,7 +284,7 @@ public class SettingActivity extends BaseActivity {
             }
             mPygerLink.setText(betaLink.isEmpty() ? "已是最新版本" : String.format("有发布版本%s", pgyerInfo));
 //            mPygerLink.setTextColor(Color.parseColor(betaLink.isEmpty() ? "#808080" : "#0000ff"));
-        } catch (NameNotFoundException | JSONException e) {
+        } catch (PackageManager.NameNotFoundException | JSONException e) {
             e.printStackTrace();
         }
     }
@@ -244,7 +298,7 @@ public class SettingActivity extends BaseActivity {
     final View.OnClickListener mCheckUpgradeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            checkPgyerVersionUpgrade(SettingActivity.this,true);
+            checkPgyerVersionUpgrade(activity,true);
             bvCheckUpgrade.setVisibility(View.GONE);
 
             /*
@@ -263,23 +317,46 @@ public class SettingActivity extends BaseActivity {
     private final View.OnClickListener mIconImageViewListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            int cameraPermission = ContextCompat.checkSelfPermission(mAppContext,Manifest.permission.CAMERA);
+            int cameraPermission = ContextCompat.checkSelfPermission(mAppContext, Manifest.permission.CAMERA);
             if(cameraPermission != PackageManager.PERMISSION_GRANTED) {
-                setAlertDialog(SettingActivity.this, "相机权限获取失败，是否到本应用的设置界面设置权限");
+                setAlertDialog(activity, "相机权限获取失败，是否到本应用的设置界面设置权限");
             }else{
                 popupWindow.showAtLocation(mIconImageView, Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL, 0, 0);
             }
         }
     };
 
+    public void setAlertDialog(Context context, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("温馨提示")
+                .setMessage(message)
+                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", activity.getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 返回DashboardActivity
+                    }
+                });
+        builder.show();
+    }
+
     public void initIconMenu() {
-        final View iconMenuView = LayoutInflater.from(this).inflate(R.layout.activity_icon_dialog, null);
+        final View iconMenuView = LayoutInflater.from(activity).inflate(R.layout.activity_icon_dialog, null);
 
         Button btnTakePhoto =(Button) iconMenuView.findViewById(R.id.btn_icon_takephoto);
         Button btnGetPhoto  =(Button) iconMenuView.findViewById(R.id.btn_icon_getphoto);
         Button btnCancel =(Button) iconMenuView.findViewById(R.id.btn_icon_cancel);
 
-        popupWindow = new PopupWindow(this);
+        popupWindow = new PopupWindow(activity);
         popupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
         popupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         popupWindow.setContentView(iconMenuView);
@@ -330,7 +407,7 @@ public class SettingActivity extends BaseActivity {
         if (hasSdcard()) {
             Uri imageUri;
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                imageUri = FileProvider.getUriForFile(SettingActivity.this, "com.intfocus.hdmcre.fileprovider", new File(Environment.getExternalStorageDirectory(),"icon.jpg"));
+                imageUri = FileProvider.getUriForFile(activity, "com.intfocus.hdmcre.fileprovider", new File(Environment.getExternalStorageDirectory(),"icon.jpg"));
                 intentFromCapture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intentFromCapture.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }else {
@@ -353,10 +430,10 @@ public class SettingActivity extends BaseActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode,Intent intent) {
+    public void onActivityResult(int requestCode, int resultCode,Intent intent) {
         // 用户没有选择图片，返回
         if (resultCode == RESULT_CANCELED) {
-            Toast.makeText(getApplication(), "取消", Toast.LENGTH_LONG).show();
+            Toast.makeText(mAppContext, "取消", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -367,7 +444,7 @@ public class SettingActivity extends BaseActivity {
             case CODE_CAMERA_REQUEST:
                 File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                    Uri photoURI = FileProvider.getUriForFile(this,
+                    Uri photoURI = FileProvider.getUriForFile(activity,
                             "com.hd.shimao.fileprovider",
                             tempFile);
                     cropPhoto(photoURI);
@@ -392,7 +469,7 @@ public class SettingActivity extends BaseActivity {
         File tempFile = new File(Environment.getExternalStorageDirectory(),"icon.jpg");
         Uri outPutUri = Uri.fromFile(tempFile);
         if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.KITKAT) {
-            String url=FileUtil.getBitmapUrlPath(this, uri);
+            String url=FileUtil.getBitmapUrlPath(activity, uri);
             intent.setDataAndType(Uri.fromFile(new File(url)), "image/*");
         }else{
             intent.setDataAndType(uri, "image/*");
@@ -528,20 +605,20 @@ public class SettingActivity extends BaseActivity {
         return state.equals(Environment.MEDIA_MOUNTED);
     }
 
-    /*
-     * 返回
-     */
-    public void dismissActivity(View v) {
-        SettingActivity.this.onBackPressed();
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent(this, DashboardActivity.class);
-        startActivity(intent);
-        finish();
-    }
+//    /*
+//     * 返回
+//     */
+//    public void dismissActivity(View v) {
+//        activity.onBackPressed();
+//    }
+//
+//    @Override
+//    public void onBackPressed() {
+//        super.onBackPressed();
+//        Intent intent = new Intent(this, DashboardActivity.class);
+//        startActivity(intent);
+//        finish();
+//    }
 
     public void launchThursdaySayActivity(View v) {
         try {
@@ -550,7 +627,7 @@ public class SettingActivity extends BaseActivity {
             notificationJson.put(URLs.kSettingThursdaySay, 0);
             FileUtil.writeFile(noticePath, notificationJson.toString());
 
-            Intent blogLinkIntent = new Intent(SettingActivity.this,ThursdaySayActivity.class);
+            Intent blogLinkIntent = new Intent(activity,ThursdaySayActivity.class);
             blogLinkIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(blogLinkIntent);
         } catch (JSONException | IOException e) {
@@ -558,11 +635,19 @@ public class SettingActivity extends BaseActivity {
         }
     }
 
-    public void launchDeveloperActivity(View v) {
-        Intent developerIntent = new Intent(SettingActivity.this, DeveloperActivity.class);
-        developerIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(developerIntent);
-    }
+    View.OnClickListener mThursdaySayListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent ThursdaySayIntent = new Intent(getActivity(), ThursdaySayActivity.class);
+            ThursdaySayIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(ThursdaySayIntent);
+        }
+    };
+//    public void launchDeveloperActivity(View v) {
+//        Intent developerIntent = new Intent(getActivity(), DeveloperActivity.class);
+//        developerIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//        startActivity(developerIntent);
+//    }
 
     /*
      * 退出登录
@@ -584,23 +669,23 @@ public class SettingActivity extends BaseActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            String userPermissionPath = FileUtil.sharedPath(SettingActivity.this) + "/offline_pages/static/js/user_permission.js";
+            String userPermissionPath = FileUtil.sharedPath(activity) + "/offline_pages/static/js/user_permission.js";
             if (new File(userPermissionPath).exists()){
                 new File(userPermissionPath).delete();
             }
 
-            String adPath = FileUtil.sharedPath(SettingActivity.this) + "/advertisement/assets/javascripts/user_permission.js";
+            String adPath = FileUtil.sharedPath(activity) + "/advertisement/assets/javascripts/user_permission.js";
             if (new File(adPath).exists()){
                 new File(adPath).delete();
             }
 
-            String configPath = FileUtil.dirPath(SettingActivity.this, "config", "user_permission.js");
+            String configPath = FileUtil.dirPath(activity, "config", "user_permission.js");
             if (new File(configPath).exists()){
                 new File(configPath).delete();
             }
 
             Intent intent = new Intent();
-            intent.setClass(SettingActivity.this, LaunchActivity.class);
+            intent.setClass(activity, LaunchActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
 
@@ -626,9 +711,24 @@ public class SettingActivity extends BaseActivity {
                 e.printStackTrace();
             }
 
-            finish();
+            activity.finish();
         }
     };
+
+    void modifiedUserConfig(JSONObject configJSON) {
+        try {
+            String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
+            JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+
+            userJSON = ApiHelper.mergeJson(userJSON, configJSON);
+            FileUtil.writeFile(userConfigPath, userJSON.toString());
+
+            String settingsConfigPath = FileUtil.dirPath(mAppContext, K.kConfigDirName, K.kSettingConfigFileName);
+            FileUtil.writeFile(settingsConfigPath, userJSON.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /*
     * 修改密码
@@ -636,7 +736,7 @@ public class SettingActivity extends BaseActivity {
     private final View.OnClickListener mChangePWDListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(mContext, ResetPasswordActivity.class);
+            Intent intent = new Intent(getActivity(), ResetPasswordActivity.class);
             mContext.startActivity(intent);
 
             /*
@@ -658,7 +758,7 @@ public class SettingActivity extends BaseActivity {
     private final View.OnClickListener mChangeLockListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast.makeText(SettingActivity.this, "TODO: 修改锁屏密码", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "TODO: 修改锁屏密码", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -668,12 +768,12 @@ public class SettingActivity extends BaseActivity {
     private final View.OnClickListener mCheckAssetsListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mProgressDialog = ProgressDialog.show(SettingActivity.this, "稍等", "加载中");
+            mProgressDialog = ProgressDialog.show(activity, "稍等", "加载中");
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        String info = ApiHelper.authentication(SettingActivity.this, user.getString(URLs.kUserNum), user.getString(URLs.kPassword),user.getString("loginType"));
+                        String info = ApiHelper.authentication(activity, user.getString(URLs.kUserNum), user.getString(URLs.kPassword),user.getString("loginType"));
                         if (!info.isEmpty() && info.equals("success")) {
                             /*
                              * 用户报表数据 js 文件存放在公共区域
@@ -722,10 +822,9 @@ public class SettingActivity extends BaseActivity {
                             /*
                              * 检测服务器静态资源是否更新，并下载
                              */
-                            runOnUiThread(new Runnable() {
+                            activity.runOnUiThread(new Runnable() {
                                 @Override public void run() {
 //                                    new DownloadGravatar().execute(); //校正头像,必须在主线程运行
-
                                     checkAssetsUpdated(false);
                                     if (mProgressDialog != null){
                                         mProgressDialog.dismiss();
@@ -735,15 +834,15 @@ public class SettingActivity extends BaseActivity {
                             });
                         }else {
                             toast(info);
-                            runOnUiThread(new Runnable() {
+                            activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     if (mProgressDialog != null){
                                         mProgressDialog.dismiss();
                                     }
-                                    Intent intent = new Intent(SettingActivity.this, LoginActivity.class);
+                                    Intent intent = new Intent(activity, LoginActivity.class);
                                     startActivity(intent);
-                                    finish();
+                                    activity.finish();
                                 }
                             });
                         }
@@ -917,5 +1016,340 @@ public class SettingActivity extends BaseActivity {
         }
 
     }
+    protected void toast(final String info) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (null == toast) {
+                        toast = Toast.makeText(mAppContext, info, Toast.LENGTH_SHORT);
+                    } else {
+                        toast.setText(info); //若当前已有 Toast 在显示,则直接修改当前 Toast 显示的内容
+                    }
+                    toast.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    Runnable mRunnableForLogger = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                String action = logParams.getString(URLs.kAction);
+                if (action == null) {
+                    return;
+                }
+                if (!action.contains("登录") && !action.equals("解屏") && !action.equals("点击/主页面/浏览器")) {
+                    return;
+                }
+
+                ApiHelper.actionLog(mAppContext, logParams);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    /*
+     * 托管在蒲公英平台，对比版本号检测是否版本更新
+     * 对比 build 值，只准正向安装提示
+     * 奇数: 测试版本，仅提示
+     * 偶数: 正式版本，点击安装更新
+     */
+    void checkPgyerVersionUpgrade(final Activity activity, final boolean isShowToast) {
+        UpdateManagerListener updateManagerListener = new UpdateManagerListener() {
+            @Override
+            public void onUpdateAvailable(final String result) {
+                try {
+                    Log.d("aaaaa", result);
+                    final AppBean appBean = getAppBeanFromString(result);
+
+                    if (result == null || result.isEmpty()) {
+                        return;
+                    }
+
+                    PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                    int currentVersionCode = packageInfo.versionCode;
+
+                    JSONObject response = new JSONObject(result);
+                    String message = response.getString("message");
+
+                    JSONObject responseVersionJSON = response.getJSONObject(URLs.kData);
+                    int newVersionCode = responseVersionJSON.getInt(kVersionCode);
+                    Log.i("1111", newVersionCode + "");
+                    String newVersionName = responseVersionJSON.getString("versionName");
+
+                    if (currentVersionCode >= newVersionCode) {
+                        return;
+                    }
+
+                    String pgyerVersionPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kPgyerVersionConfigFileName);
+                    FileUtil.writeFile(pgyerVersionPath, result);
+
+                    if (newVersionCode % 2 == 1) {
+                        if (isShowToast) {
+                            toast(String.format("有发布测试版本%s(%s)", newVersionName, newVersionCode));
+                        }
+
+                        return;
+                    } else if (HttpUtil.isWifi(activity) && newVersionCode % 10 == 8) {
+
+                        startDownloadTask(activity, appBean.getDownloadURL());
+
+                        return;
+                    }
+                    new AlertDialog.Builder(activity)
+                            .setTitle("版本更新")
+                            .setMessage(message.isEmpty() ? "无升级简介" : message)
+                            .setPositiveButton(
+                                    "确定",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            startDownloadTask(activity, appBean.getDownloadURL());
+                                        }
+                                    })
+                            .setNegativeButton("下一次",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    })
+                            .setCancelable(false)
+                            .show();
+
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onNoUpdateAvailable() {
+                if (isShowToast) {
+                    toast("已是最新版本");
+                }
+            }
+        };
+
+        PgyUpdateManager.register(activity, updateManagerListener);
+    }
+    /**
+     * 检测服务器端静态文件是否更新
+     * to do
+     */
+    synchronized void checkAssetsUpdated(boolean shouldReloadUIThread) {
+        checkAssetUpdated(shouldReloadUIThread, kLoading, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kFonts, true);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kImages, true);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kIcons, true);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kStylesheets, true);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kJavaScripts, true);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kBarCodeScan, false);
+//        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePages, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesHtml, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesImages, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesJavascripts, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kOfflinePagesStylesheets, false);
+        checkAssetUpdated(shouldReloadUIThread, URLs.kAdvertisement, false);
+        ApiHelper.downloadUserJs(mAppContext, sharedPath, user);
+    }
+
+    private boolean checkAssetUpdated(boolean shouldReloadUIThread, String assetName, boolean isInAssets) {
+        try {
+            boolean isShouldUpdateAssets = false;
+            String localKeyName = "";
+            String keyName = "";
+            String assetZipPath = String.format("%s/%s.zip", sharedPath, assetName);
+            isShouldUpdateAssets = !(new File(assetZipPath)).exists();
+
+            String userConfigPath = String.format("%s/%s", FileUtil.basePath(mAppContext), K.kUserConfigFileName);
+            JSONObject userJSON = FileUtil.readConfigFile(userConfigPath);
+            if (assetName.contains("offline_pages_")) {
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName.replace("offline_pages_", ""));
+            } else {
+                localKeyName = String.format("local_%s_md5", assetName);
+                keyName = String.format("%s_md5", assetName);
+            }
+            if (assetName.contains("offline_pages_")) {
+                JSONObject jsonObject = userJSON.getJSONObject("offline_pages");
+                isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(jsonObject.getString(keyName));
+            } else {
+                isShouldUpdateAssets = !isShouldUpdateAssets && !userJSON.getString(localKeyName).equals(userJSON.getString(keyName));
+            }
+
+            if (!isShouldUpdateAssets) {
+                return false;
+            }
+
+//            LogUtil.d("checkAssetUpdated", String.format("%s: %s != %s", assetZipPath, userJSON.getString(localKeyName), userJSON.getString(keyName)));
+            // execute this when the downloader must be fired
+            final DownloadAssetsTask downloadTask = new DownloadAssetsTask(mAppContext, shouldReloadUIThread, assetName, isInAssets);
+            final String downloadPath = FileUtil.dirPath(mAppContext, "Cached/" + String.format("%d", new Date().getTime()), String.format("%s.zip", assetName));
+            downloadTask.execute(String.format(K.kDownloadAssetsAPIPath, K.kBaseUrl, assetName), downloadPath);
+
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    class DownloadAssetsTask extends AsyncTask<String, Integer, String> {
+        private final Context context;
+        private PowerManager.WakeLock mWakeLock;
+        private final boolean isReloadUIThread;
+        private final String assetFilename;
+        private final boolean isInAssets;
+        private String downloadPath = "";
+
+        public DownloadAssetsTask(Context context, boolean shouldReloadUIThread, String assetFilename, boolean isInAssets) {
+            this.context = context;
+            this.isReloadUIThread = shouldReloadUIThread;
+            this.assetFilename = assetFilename;
+            this.isInAssets = isInAssets;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                // expect HTTP 200 OK, so we don't mistakenly save error report
+                // instead of the file
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return "Server returned HTTP " + connection.getResponseCode() + " " + connection.getResponseMessage();
+                }
+
+                // this will be useful to display download percentage
+                // might be -1: server did not report the length
+                int fileLength = connection.getContentLength();
+                input = connection.getInputStream();
+                output = new FileOutputStream(params[1]);
+                downloadPath = params[1];
+
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    // allow canceling with back button
+                    if (isCancelled()) {
+                        input.close();
+                        return null;
+                    }
+                    total += count;
+                    // publishing the progress....
+                    if (fileLength > 0) // only if total length is known
+                        publishProgress((int) (total * 100 / fileLength));
+                    output.write(data, 0, count);
+                }
+            } catch (Exception e) {
+                LogUtil.d("Exception", e.toString());
+                return e.toString();
+            } finally {
+                try {
+                    if (output != null)
+                        output.close();
+                    if (input != null)
+                        input.close();
+                } catch (IOException ignored) {
+                }
+
+                if (connection != null)
+                    connection.disconnect();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // take CPU lock to prevent CPU from going off if the user
+            // presses the power button during download
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    getClass().getName());
+            mWakeLock.acquire();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mWakeLock.release();
+
+            if (result != null) {
+                Toast.makeText(context, String.format("静态资源更新失败(%s)", result), Toast.LENGTH_LONG).show();
+            } else {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String keyName = "";
+                            String md5String = "";
+                            String offonlineMd5String = "";
+                            if (new File(downloadPath).exists()) {
+                                InputStream zipStream = new FileInputStream(downloadPath);
+                                md5String = FileUtil.MD5(zipStream);
+                                if (assetFilename.contains("offline_pages_")) {
+                                }
+                                keyName = String.format("%s_md5", assetFilename.replace("offline_pages_", ""));
+                            } else {
+                                keyName = String.format("%s_md5", assetFilename);
+                            }
+
+                            if (assetFilename.contains("offline_pages_")) {
+                                JSONObject jsonObject = user.getJSONObject("offline_pages");
+                                offonlineMd5String = jsonObject.getString(keyName);
+                            } else {
+                                offonlineMd5String = user.getString(keyName);
+                            }
+                            if (offonlineMd5String.equals(md5String)) {
+                                String assetZipPath = String.format("%s/%s.zip", sharedPath, assetFilename);
+                                if (new File(downloadPath).exists()) {
+                                    if (new File(assetZipPath).exists()) {
+                                        new File(assetZipPath).delete();
+                                    }
+                                    FileUtil.copyZipFile(downloadPath, assetZipPath);
+
+                                }
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        FileUtil.checkAssets(mAppContext, assetFilename, isInAssets);
+//                                        if (isReloadUIThread) {
+//                                            new Thread(mRunnableForDetecting).start();
+//                                        }
+                                    }
+                                });
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
+    }
+
 
 }
