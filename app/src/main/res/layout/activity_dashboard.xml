@@ -74,13 +74,13 @@
             app:src="@drawable/tab_kpi"
             app:text="首页"/>
 
-        <com.intfocus.yxtest.view.TabView
-            android:id="@+id/tabAnalyse"
-            style="@style/ToolBarTab"
-            app:active_src="@drawable/tab_analysis_s"
-            app:src="@drawable/tab_analysis"
-            app:text="待办"
-            android:visibility="gone"/>
+        <!--<com.intfocus.yxtest.view.TabView-->
+            <!--android:id="@+id/tabAnalyse"-->
+            <!--style="@style/ToolBarTab"-->
+            <!--app:active_src="@drawable/tab_analysis_s"-->
+            <!--app:src="@drawable/tab_analysis"-->
+            <!--app:text="待办"-->
+            <!--android:visibility="gone"/>-->
 
         <!--<com.intfocus.hdmcre.view.TabView-->
         <!--android:id="@+id/tabApp"-->
@@ -99,8 +99,8 @@
         <com.intfocus.yxtest.view.TabView
             android:id="@+id/tabUser"
             style="@style/ToolBarTab"
-            app:active_src="@drawable/icon_user"
-            app:src="@drawable/icon_user"
+            app:active_src="@drawable/tab_user_s"
+            app:src="@drawable/tab_user"
             app:text="个人信息"/>
 
     </LinearLayout>

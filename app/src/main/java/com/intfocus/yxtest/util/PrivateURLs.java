@@ -14,7 +14,7 @@ package com.intfocus.yxtest.util;
 public class PrivateURLs {
   public final static String kAppCode         = "shengyiplus";
   public final static String kThemeColor      = "#8C0122";
-  public final static String kBannerBgColor   = "#53a93f";
+  public final static String kBannerBgColor   = "#+53a93f";
   public final static String kBannerTextColor = "#ffffff";
   public final static String kInitPassword    = "123456";
 

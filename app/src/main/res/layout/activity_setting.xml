@@ -241,7 +241,7 @@
                 <RelativeLayout
                     style="@style/SettingGroup"
                     android:layout_width="wrap_content"
-                    android:visibility="visible">
+                    android:visibility="gone">
 
                     <TextView
                         android:id="@+id/change_pwd"
