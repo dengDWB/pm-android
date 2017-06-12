@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -33,6 +34,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.intfocus.yxtest.fragment.SettingFragment;
@@ -553,6 +555,9 @@ public class DashboardActivity extends FragmentActivity {
     @SuppressLint("SetJavaScriptEnabled")
     @JavascriptInterface
     private void initTab() {
+        Typeface mtypeface= Typeface.createFromAsset(getAssets(),"logo_textview.ttf");
+        ((TextView)findViewById(R.id.bannerTv)).setTypeface(mtypeface);
+
         mTabKPI = (TabView) findViewById(R.id.tabKPI);
 //        mTabAnalyse = (TabView) findViewById(R.id.tabAnalyse);
         mTabUser = (TabView) findViewById(R.id.tabUser);

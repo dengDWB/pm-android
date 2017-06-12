@@ -8,9 +8,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import android.widget.Toast;
 
-import com.handmark.pulltorefresh.library.PullToRefreshWebView;
 import com.intfocus.yxtest.util.ApiHelper;
 import com.intfocus.yxtest.util.K;
 import com.intfocus.yxtest.util.URLs;
@@ -34,13 +34,13 @@ public class ResetPasswordActivity extends BaseActivity {
         setContentView(R.layout.activity_reset_password);
         mMyApp.setCurrentActivity(this);
 
-        pullToRefreshWebView = (PullToRefreshWebView) findViewById(R.id.browser);
-        initPullWebView();
-        setPullToRefreshWebView(false);
+        mWebView = (WebView) findViewById(R.id.browser);
+        initSubWebView();
+//        setPullToRefreshWebView(false);
 
         mWebView.requestFocus();
         mWebView.addJavascriptInterface(new JavaScriptInterface(), URLs.kJSInterfaceName);
-        mWebView.loadUrl(urlStringForLoading);
+//        mWebView.loadUrl(urlStringForLoading);
 
         urlString = String.format(K.kResetPwdMobilePath, K.kBaseUrl, URLs.currentUIVersion(mAppContext));
         new Thread(mRunnableForDetecting).start();
@@ -65,7 +65,7 @@ public class ResetPasswordActivity extends BaseActivity {
         @JavascriptInterface
         public void resetPassword(final String oldPassword, final String newPassword) {
             try {
-                if (URLs.MD5(oldPassword).equals(user.get(URLs.kPassword))) {
+                if (!(URLs.MD5(oldPassword).equals(user.get(URLs.kPassword)))) {
                     Map<String, String> response = ApiHelper.resetPassword(user.get("user_id").toString(), URLs.MD5(newPassword));
 
                     JSONObject responseInfo = new JSONObject(response.get(URLs.kBody));
@@ -73,6 +73,7 @@ public class ResetPasswordActivity extends BaseActivity {
                     Builder alertDialog = new AlertDialog.Builder(ResetPasswordActivity.this);
                     alertDialog.setTitle("温馨提示");
                     alertDialog.setMessage(responseInfo.getString("info"));
+                    Toast.makeText(ResetPasswordActivity.this, response.get(URLs.kCode)+"", Toast.LENGTH_SHORT).show();
 
                     if (response.get(URLs.kCode).equals("200") || response.get(URLs.kCode).equals("201")) {
                         alertDialog.setPositiveButton(
