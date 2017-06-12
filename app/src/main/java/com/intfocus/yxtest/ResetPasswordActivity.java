@@ -66,7 +66,7 @@ public class ResetPasswordActivity extends BaseActivity {
         public void resetPassword(final String oldPassword, final String newPassword) {
             try {
                 if (!(URLs.MD5(oldPassword).equals(user.get(URLs.kPassword)))) {
-                    Map<String, String> response = ApiHelper.resetPassword(user.get("user_id").toString(), URLs.MD5(newPassword));
+                    Map<String, String> response = ApiHelper.resetPassword(user.get("user_id").toString(), newPassword);
 
                     JSONObject responseInfo = new JSONObject(response.get(URLs.kBody));
 

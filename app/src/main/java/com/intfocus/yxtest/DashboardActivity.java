@@ -100,6 +100,8 @@ public class DashboardActivity extends FragmentActivity {
     String assetsPath;
     protected String urlStringForDetecting;
     protected String relativeAssetsPath;
+    FragmentManager fragmentManager;
+    FragmentTransaction fragmentTransaction;
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
@@ -110,6 +112,8 @@ public class DashboardActivity extends FragmentActivity {
         mAppContext = mMyApp.getAppContext();
         mContext = this;
         sharedPath = FileUtil.sharedPath(mAppContext);
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
 
         initUserJson();
         initUrlStrings();
@@ -137,7 +141,11 @@ public class DashboardActivity extends FragmentActivity {
         if (urlStrings.get(2).equals(urlString)) {
             setWebViewLongListener(false);
         }
-        isLoadErrorHtml();
+        if (urlString.equals("")){
+            launchFragment();
+        }else {
+            isLoadErrorHtml();
+        }
 
         checkUserModifiedInitPassword();
 //        getQeuryCount();
@@ -169,6 +177,24 @@ public class DashboardActivity extends FragmentActivity {
                 return flag;
             }
         });
+    }
+
+    public void launchFragment(){
+        objectType = 4;
+//                        urlString = String.format(K.kKPIMobilePath, K.kBaseUrl, currentUIVersion, user.getString(
+//                                kGroupId), user.getString(URLs.kRoleId));
+        bvUser.setVisibility(View.GONE);
+        animLoading.setVisibility(View.GONE);
+        FileUtil.writeBehaviorFile(mAppContext, urlString, 3);
+        findViewById(R.id.fragment).setVisibility(View.VISIBLE);
+        findViewById(R.id.actionBar).setVisibility(View.GONE);
+        findViewById(R.id.webViewFrame).setVisibility(View.GONE);
+        mWebView.setVisibility(View.GONE);
+        SettingFragment settingFragment = new SettingFragment(DashboardActivity.this);
+        if (settingFragment != null){
+            fragmentTransaction.add(R.id.fragment, settingFragment);
+        }
+        fragmentTransaction.commit();
     }
 
     protected void onResume() {
@@ -625,6 +651,8 @@ public class DashboardActivity extends FragmentActivity {
             }
             mWebView.setVisibility(View.VISIBLE);
             findViewById(R.id.fragment).setVisibility(View.GONE);
+            findViewById(R.id.actionBar).setVisibility(View.VISIBLE);
+            findViewById(R.id.webViewFrame).setVisibility(View.VISIBLE);
 			/*
 		     * 判断是否允许浏览器复制
 		 	 */
@@ -670,12 +698,13 @@ public class DashboardActivity extends FragmentActivity {
                         animLoading.setVisibility(View.GONE);
                         FileUtil.writeBehaviorFile(mAppContext, urlString, 3);
                         findViewById(R.id.fragment).setVisibility(View.VISIBLE);
+                        findViewById(R.id.actionBar).setVisibility(View.GONE);
+                        findViewById(R.id.webViewFrame).setVisibility(View.GONE);
                         mWebView.setVisibility(View.GONE);
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         SettingFragment settingFragment = new SettingFragment(DashboardActivity.this);
-                        fragmentTransaction.add(R.id.fragment, settingFragment);
-                        fragmentTransaction.addToBackStack(null);
+                        if (settingFragment != null){
+                            fragmentTransaction.add(R.id.fragment, settingFragment);
+                        }
                         fragmentTransaction.commit();
                     default:
                         objectType = 1;
@@ -749,7 +778,11 @@ public class DashboardActivity extends FragmentActivity {
                             objectType = 4;
                             break;
                     }
-                    urlString = urlStrings.get(tabIndex);
+                    if (tabIndex != 3){
+                        urlString = urlStrings.get(tabIndex);
+                    }else {
+                        urlString = "";
+                    }
                 } else {
                     mCurrentTab = mTabKPI;
                     mCurrentTab.setActive(true);

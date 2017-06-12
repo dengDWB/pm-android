@@ -123,6 +123,7 @@ public class SettingFragment extends Fragment {
     public final static String kVersionCode = "versionCode";
     public final static String kLoading = "loading";
     protected String sharedPath;
+    View view;
 
     /* 请求识别码 */
     private static final int CODE_GALLERY_REQUEST = 0xa0;
@@ -133,9 +134,6 @@ public class SettingFragment extends Fragment {
         this.activity = activity;
     }
 
-//    public SettingFragment(){
-//
-//    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -151,8 +149,7 @@ public class SettingFragment extends Fragment {
         if ((new File(userConfigPath)).exists()) {
             user = FileUtil.readConfigFile(userConfigPath);
         }
-
-        View view = inflater.inflate(R.layout.activity_setting, null);
+        view = inflater.inflate(R.layout.activity_setting, null);
         mUserID = (TextView) view.findViewById(R.id.user_id);
         mRoleID = (TextView) view.findViewById(R.id.role_id);
         mGroupID = (TextView) view.findViewById(R.id.group_id);
@@ -211,6 +208,13 @@ public class SettingFragment extends Fragment {
         initializeUI();
         setSettingViewControlBadges();
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ViewGroup parent = (ViewGroup) view.getParent();
+        parent.removeView(view);
     }
 
     @Override
